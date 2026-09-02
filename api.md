@@ -1,0 +1,168 @@
+# api.md — Spesifikasi API REST
+
+Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub. Setiap endpoint mencakup: method HTTP, path, role auth yang minimal, request body/params, respons structure, dan traceability ke requirement PRD.md & module G_DESIGN.md.
+
+---
+
+## 1. Konvensi Umum
+
+| Konsep | Spesifikasi |
+|--------|-------------|
+| **Base URL** | `https://api.campus-talent-hub.dev/v1` (atau `http://localhost:3000/api/v1` development) |
+| **Format Response** | JSON standar: `{ success: boolean, data: {}, message: string, errors: [...] }` |
+| **Format Error** | `{ success: false, message: "Keterangan error", errors: [{ field: "nama_field", message: "detail error" }] }` |
+| **Status Code** | 200 = OK, 201 = Created, 400 = Bad Request (validasi gagal), 401 = Unauthorized (token hilang/salah), 403 = Forbidden (role tidak izin), 404 = Not Found, 422 = Validation Unprocessable, 429 = Too Many Requests, 500 = Internal Server Error |
+| **API Versioning** | URL-based: `/v1/`, `/v2/` untuk major update. Minor fix tidak mempengaruhi version. |
+| **Rate Limiting** | Default 60 request/menit per IP; 30 request/menit per authenticated user. Melebihinya → 429 with message "Too Many Requests". |
+| **Pagination** | Default 15 items per halaman. Parameter: `page` (awal 1), `limit` (opsional). Link pagination di response header: `Link: <url>; rel="next", <url>; rel="prev"`. |
+| **Filtering** | Parameter query string: `?filter[field]=value`. Contoh: `?filter[status]=active&filter[skill_name]=React`. |
+| **Sorting** | Parameter: `sort[field]=desc/asc`. Contoh: `sort[created_at]=desc`. |
+| **Fields** | Parameter: `fields=field1,field2` untuk memilih field yang dikirim (mengurangi payload). |
+
+---
+
+## 2. Auth API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| POST | `/auth/register` | Public | `name`, `email`, `password`, `role` (mahasiswa/perusahaan/kampus) | `{ success: true, data: { user, token }, message: "Daftar berhasil" }` | Buat user baru & kirim verifikasi email |
+| POST | `/auth/login` | Public | `email`, `password` | `{ success: true, data: { user, token }, message: "Login berhasil" }` | Terima token JWT |
+| POST | `/auth/logout` | Bearer token | — | `{ success: true, message: "Logout berhasil" }` | Buang token, invalidate sesi |
+| GET | `/auth/me` | Bearer token | — | `{ success: true, data: { user } }` | Ambil profil user yang sedang login |
+| POST | `/auth/password-reset` | Public | `email` | `{ success: true, message: "Link reset dikirim ke email" }` | Kirim link reset password via email |
+| GET | `/auth/password-reset/confirm/{token}` | Public | `token` | `{ success: true, data: { canReset: true } }` | Validasi token reset password |
+
+---
+
+## 3. User API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/users/profile` | Bearer token | — | `{ success: true, data: { profile } }` | Ambil profil sesuai role user |
+| PUT | `/users/profile` | Bearer token | `name`, `bio`, `foto_profile` (url) | `{ success: true, data: { profile }, message: "Profile updated" }` | Update profil personal |
+| POST | `/users/profile/photo-upload` | Bearer token | `file` (multipart) | `{ success: true, data: { photo_url }, message: "Foto berhasil diunggah" }` | Upload foto profil (validasi tipe/ukuran) |
+
+---
+
+## 4. Student API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/students/skills` | Bearer token | — | `{ success: true, data: { skills } }` | Ambil daftar skill mahasiswa + proficency |
+| POST | `/students/skills` | Bearer token | `skill_id`, `proficiency_level`, `source` | `{ success: true, data: { student_skill }, message: "Skill ditambahkan" }` | Tambah skill ke profil mahasiswa |
+| PUT | `/students/skills/{skill_id}` | Bearer token | `proficiency_level` | `{ success: true, data: { student_skill }, message: "Skill diupdate" }` | Update level skill |
+| DELETE | `/students/skills/{skill_id}` | Bearer token | — | `{ success: true, message: "Skill dihapus" }` | Hapus skill mahasiswa (jika tidak dipakai project) |
+| GET | `/students/gaps` | Bearer token | — | `{ success: true, data: { gaps } }` | Hitung skill gap vs project yang minggulkan |
+| GET | `/students/recommendations` | Bearer token | — | `{ success: true, data: { recommendations } }` | Ambil rekomendasi kursus/workshop berdasarkan gap |
+| GET | `/students/dashboard` | Bearer token | — | `{ success: true, data: { dashboard } }` | Ringkasan dashboard: project baru, notifikasi, rekomendasi |
+
+---
+
+## 5. Company API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| POST | `/companies/projects` | Bearer token | `judul`, `deskripsi`, `sektor_industri`, `deadline`, `status`, `skill_ids[]`, `level_required[]` | `{ success: true, data: { project }, message: "Project dibuat" }` | Buat project baru (validasi skill ada di taxonomy) |
+| GET | `/companies/projects` | Bearer token | `?filter[status]=active`, `?filter[skill_name]=React`, `?sort[created_at]=desc` | `{ success: true, data: { projects, pagination } }` | Ambil project dengan filter/sort |
+| GET | `/companies/projects/{id}` | Bearer token | — | `{ success: true, data: { project } }` | Detail project beserta skill requirement |
+| PUT | `/companies/projects/{id}` | Bearer token | same as POST | `{ success: true, data: { project }, message: "Project diupdate" }` | Edit project (hanya pemilik perusahaan) |
+| DELETE | `/companies/projects/{id}` | Bearer token | — | `{ success: true, message: "Project dihapus" }` | Hapus project (soft-delete) |
+| GET | `/companies/candidates` | Bearer token | `?min_match_score=70`, `?skill=React`, `?sort=match_score` | `{ success: true, data: { candidates, pagination } }` | Daftar kandidat terurut match score |
+| POST | `/companies/applications/{app_id}/evaluate` | Bearer token | `rating_skill`, `rating_communication`, `rating_punctuality`, `rating_overall`, `comments` | `{ success: true, data: { assessment }, message: "Evaluasi disimpan" }` | Perusahaan evaluasi mahasiswa |
+| GET | `/companies/dashboard` | Bearer token | — | `{ success: true, data: { dashboard } }` | Ringkasan: project aktif, kandidat, evaluasi menunggu |
+
+---
+
+## 6. Project API (Mahasiswa/Tampilan Umum)
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/projects` | Public/Token | `?filter[sector]=tech`, `?filter[skill]=React`, `?sort=match_score` | `{ success: true, data: { projects, pagination } }` | Browse project industry (filter skill/level) |
+| GET | `/projects/{id}` | Public/Token | — | `{ success: true, data: { project } }` | Detail project lengkap beserta info perusahaan |
+| POST | `/projects/{id}/apply` | Bearer token | `cover_letter`, `portfolio_url`, `skills_showcase[]` (skill_id yang dipakai) | `{ success: true, data: { application }, message: "Aplikasi terkirim" }` | Mahasiswa mendaftar project |
+| GET | `/projects/{id}/match` | Bearer token | — | `{ success: true, data: { match_score, breakdown } }` | Hitung match score mahasiswa vs project (untuk kandidat) |
+
+---
+
+## 7. Matching Engine API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| POST | `/matching/calculate` | Bearer token | `student_skill_ids[]`, `project_skill_ids[]` (atau ambil dari DB) | `{ success: true, data: { match_score, per_skill_breakdown } }` | Kalkulasi formula 50/20/10/10/10 (proposal MVP) |
+| GET | `/matching/ranking` | Bearer token | `project_id`, `min_score` (opsional) | `{ success: true, data: { candidates ranked } }` | Ranking kandidat untuk project tertentu |
+
+---
+
+## 8. Skill Gap API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/gap-analysis/{student_id}/{project_id?}` | Bearer token | — | `{ success: true, data: { gaps: [{skill_name, required, current, gap_value, classification, recommendation}], summary } }` | Hitung & klasifikasi skill gap |
+| GET | `/gap-analysis/student/{student_id}` | Bearer token | — | `{ success: true, data: { overall_gap_distribution } }` | Distribusi gap keseluruhan mahasiswa |
+
+---
+
+## 9. Recommendation API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/recommendations/student/{student_id}` | Bearer token | — | `{ success: true, data: { recommendations: [{type, title, description, priority, source, status}], total } }` | Ambil rekomendasi berdasarkan gap skill |
+| POST | `/recommendations/{rec_id}/action` | Bearer token | `action` (start/completed/consumed) | `{ success: true, data: { recommendation }, message: "Status diupdate" }` | Mahasiswa menandai rekomendasi sudah diproses |
+
+---
+
+## 10. Assessment & Evaluation API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| POST | `/assessments` | Bearer token (company/dosen) | `project_id`, `student_id`, `rating_skill`, `rating_communication`, `rating_punctuality`, `rating_overall`, `comments` | `{ success: true, data: { assessment }, message: "Evaluasi disimpan" }` | Buat evaluasi project |
+| GET | `/evaluations/{project_id}/{student_id}` | Bearer token | — | `{ success: true, data: { evaluation } }` | Ambil hasil evaluasi beserta rating |
+| PUT | `/evaluations/{project_id}/{student_id}` | Bearer token | same as POST | `{ success: true, data: { assessment }, message: "Evaluasi diupdate" }` | Perusahaan/dosen update evaluasi |
+
+---
+
+## 11. Notification API
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/notifications` | Bearer token | `?type=apply&is_read=0` | `{ success: true, data: { notifications, pagination } }` | Ambil notifikasi user yang login |
+| PUT | `/notifications/{notif_id}/read` | Bearer token | — | `{ success: true, message: "Notifikasi ditandai sebagai baca" }` | Tandai notifikasi sudah dibaca |
+
+---
+
+## 12. Analytics API (Kampus/Admin)
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/analytics/skill-distribution` | Bearer token | `?period=last_6_months`, `?program_studi=X` | `{ success: true, data: { pie_chart_data } }` | Distribusi skill mahasiswa |
+| GET | `/analytics/industry-demand` | Bearer token | `?period=last_6_months` | `{ success: true, data: { line_chart_data } }` | Tren skill yang dicari perusahaan |
+| GET | `/analytics/gap-heatmap` | Bearer token | `?period=last_6_months`, `?program_studi=X` | `{ success: true, data: { heatmap_matrix } }` | Heatmap skill gap per program studi |
+| GET | `/analytics/export` | Bearer token | `?format=csv&period=last_6_months` | `{ success: true, data: { download_url } }` | Export data ke CSV/Excel |
+
+---
+
+## 13. Traceability Mapping (Endpoint ↔ PRD & G_DESIGN)
+
+| Endpoint | Modul G_DESinden | Requirement PRD | Fitur Utama |
+|----------|------------------|-----------------|-------------|
+| POST /auth/register | Auth Service | Fitur 1: Authentication | Login/register semua user |
+| GET /students/skills | Skill Management | Fitur 3: Skill Profile | Lihat/edit skill mahasiswa |
+| POST /students/skills | Skill Management | Fitur 3: Skill Profile | Tambah skill + level |
+| GET /students/gaps | Skill Gap Engine | Fitur 10: Skill Gap Analysis | Hitung gap required vs current |
+| GET /students/recommendations | Recommendation Engine | Fitur 11: Recommendation System | Rekomendasi berdasarkan gap |
+| POST /companies/projects | Project Marketplace | Fitur 5: Project Management | Buat project perusahaan |
+| GET /companies/candidates | Matching Engine | Fitur 8: Talent Matching | Lihat kandidat terurut score |
+| POST /companies/applications/{app_id}/evaluate | Assessment | Fitur 12: Assessment | Evaluasi project dari perusahaan |
+| GET /projects | Industry Project Marketplace | Fitur 5: Project Marketplace | Browse project mahasiswa |
+| POST /projects/{id}/apply | Application | Fitur 6: Application | Mahasiswa daftar project |
+| GET /recommendations/student | Recommendation Engine | Fitur 11: Recommendation System | Rekomendasi kursus/workshop |
+| GET /gap-analysis | Skill Gap Engine | Fitur 10: Skill Gap Analysis | Analisis kesenjangan skill |
+| GET /analytics/skill-distribution | Analytics | Fitur 16: Analytics | Visualisasi data skill |
+| GET /notifications | Notification | Fitur 14: Notification | Notifikasi seluruh fitur |
+
+**Catatan Traceability:**
+- Setiap endpoint di atas harus memiliki unit test dan integration test sebelum DONE.
+- Jika endpoint baru ditambahkan, harus dicantumkan di tabel ini beserta ID requirement PRD yang didukung.
+- Versi API v1 wajib memenuhi semuanya; v2 hanya untuk fitur tambahan non-breaking.
+
+---
