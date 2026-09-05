@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.7.0"
+version: "1.8.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.7.0 — TASK-070: catat persist snapshot + asumsi gap tanpa project"
+changelog: "2026-09-05 v1.8.0 — TASK-080/081: generate otomatis, progres, aturan transisi"
 ---
 
 # api.md — Spesifikasi API REST
@@ -126,8 +126,8 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 
 | Method | Endpoint | Auth | Request | Respons | Keterangan |
 |--------|----------|------|---------|---------|------------|
-| GET | `/recommendations/student/{student_id}` | Bearer token | — | `{ success: true, data: { recommendations: [{type, title, description, priority, source, status}], total } }` | Ambil rekomendasi berdasarkan gap skill |
-| POST | `/recommendations/{rec_id}/action` | Bearer token | `action` (start/completed/consumed) | `{ success: true, data: { recommendation }, message: "Status diupdate" }` | Mahasiswa menandai rekomendasi sudah diproses |
+| GET | `/recommendations/student/{student_id}` | Bearer token (mahasiswa self-only) | `?priority=high` `?type=course` | `{ success: true, data: { recommendations: [{type, title, description, priority, source, status}], total, progress } }` | Ambil rekomendasi berdasarkan gap skill. Generate otomatis (idempotent) setiap analisis gap + notifikasi 'rec' (2026-09-05 TASK-080) |
+| POST | `/recommendations/{rec_id}/action` | Bearer token (pemilik) | `action` (start/completed/consumed) | `{ success: true, data: { recommendation }, message: "Status diupdate" }` | Transisi: pending→in-progress→completed (+consumed_at); consumed dari status apa pun (2026-09-05 TASK-081) |
 
 ---
 

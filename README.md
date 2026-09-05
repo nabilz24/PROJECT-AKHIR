@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 7 (Skill Gap) — DONE. Gap calc + klasifikasi + persist + distribusi, 107 test hijau.
+**Status**: Phase 8 (Recommendation) — DONE. Engine rule-based + progress tracking, 119 test hijau.

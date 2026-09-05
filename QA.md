@@ -250,4 +250,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.7.0), api.md (v1.7.0: persist + asumsi), README (status Phase 7).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 8 (Recommendation).
 
+### Phase 8 — Recommendation (2026-09-05): TASK-080, TASK-081 → DONE
+
+- ✅ Requirement implemented — `services/recommendation.js` rule-based: small→course(low), medium→course+practice(medium), large→certification+mentor(high), critical→workshop+mentor(high); tiap item punya judul/deskripsi/durasi/prioritas/sumber generik (`[ASSUMPTION]` katalog kurasi menunggu keputusan); migrasi `013_recommendations` (+skill_id documented); generate idempotent per student+skill+type; **auto-generate setiap analisis gap** + 1 notifikasi 'rec'; `GET /recommendations/student/:id` (?priority/?type + ringkasan progress) & `POST /:id/action` (pending→in-progress→completed+consumed_at; consumed terminal; milik sendiri).
+- ✅ Unit test passed — `tests/unit/recommendation.test.js` (5): aturan per klasifikasi + kelengkapan field.
+- ✅ Integration test passed — `tests/integration/recommendations.test.js` (7): TC-STU-005 (4 recs + progres), filter, anti-duplikat, alur status + 400/422/404, notif rec. Total: 14 suite, 119/119 hijau; generate otomatis tak merusak test gap Phase 7.
+- ✅ UI tested — N/A (kartu rekomendasi + tombol Mulai/Selesai + progres dashboard ikut halaman Phase 10; API sediakan status + progress).
+- ✅ Security checked — RBAC self-only; validasi action vs status.
+- ✅ Acceptance criteria passed — semua checklist TASK-080/081 terpenuhi.
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×2), QA.md (bagian ini), database.md (v1.8.0), api.md (v1.8.0: generate + transisi), README (status Phase 8).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 9 (Assessment).
+
 ---

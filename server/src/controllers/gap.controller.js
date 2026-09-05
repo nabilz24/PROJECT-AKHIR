@@ -2,6 +2,7 @@
 const { getDb } = require('../db/connection');
 const { ok, fail } = require('../utils/response');
 const { analyzeGaps } = require('../services/gapAnalysis');
+const { generateForStudent } = require('./recommendations.controller');
 
 function assertScope(req, res, studentId) {
   if (req.user.role === 'mahasiswa' && req.user.id !== Number(studentId)) {
@@ -96,6 +97,8 @@ function analyze(req, res, next) {
     }));
     const result = analyzeGaps({ requiredSkills: required, studentSkills });
     persistGaps(db, studentId, projectId, result.gaps);
+    // TASK-080: tiap analisis gap otomatis men-generate rekomendasi (idempotent).
+    generateForStudent(db, studentId, result.gaps);
     return ok(res, { student_id: studentId, project_id: projectId, ...result }, 'OK');
   } catch (err) {
     return next(err);
