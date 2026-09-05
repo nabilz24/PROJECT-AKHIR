@@ -1,17 +1,56 @@
 {
   "name": "campus-industry-talent-hub",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Campus Industry Talent Hub — Platform menghubungkan industri dengan mahasiswa kampus melalui project marketplace dan talent intelligence",
+  "main": "server/src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --watch server/src/server.js",
+    "start": "node server/src/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "db:migrate": "node server/db/migrate.js",
+    "db:seed": "node server/db/seed.js",
+    "lint": "echo \"Lint not configured yet (Phase 11)\" && exit 0"
   },
-  "keywords": [],
+  "keywords": [
+    "campus",
+    "industry",
+    "talent",
+    "matching",
+    "skill-gap",
+    "project-marketplace"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
     "ecc-universal": "^2.2.0",
-    "impeccable": "^3.6.1"
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
+    "impeccable": "^3.6.1",
+    "jsonwebtoken": "^9.0.3",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "session": "^0.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "server/**/*.js"
+    ],
+    "coverageDirectory": "coverage",
+    "verbose": true
   }
 }
