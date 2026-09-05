@@ -1,8 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.0.0"
+version: "1.1.0"
 date: "2026-09-05"
 status: "Approved"
+changelog: "2026-09-05 v1.1.0 — TASK-010: tambah endpoint POST /auth/password-reset/confirm/{token}"
 ---
 
 # api.md — Spesifikasi API REST
@@ -38,6 +39,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | GET | `/auth/me` | Bearer token | — | `{ success: true, data: { user } }` | Ambil profil user yang sedang login |
 | POST | `/auth/password-reset` | Public | `email` | `{ success: true, message: "Link reset dikirim ke email" }` | Kirim link reset password via email |
 | GET | `/auth/password-reset/confirm/{token}` | Public | `token` | `{ success: true, data: { canReset: true } }` | Validasi token reset password |
+| POST | `/auth/password-reset/confirm/{token}` | Public | `token`, `password` (baru, ikut policy) | `{ success: true, message: "Password berhasil direset" }` | Set password baru (tambahan 2026-09-05 TASK-010; spek awal hanya punya GET confirm) |
 
 ---
 

@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 0 (Foundation) — Repo setup, CI, docs frontmatter.
+**Status**: Phase 1 (Authentication) — DONE. Auth API (register/login JWT/RBAC/logout/lockout/reset) + 26 test hijau.

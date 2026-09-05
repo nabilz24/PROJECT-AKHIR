@@ -166,4 +166,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (status DONE), QA.md (bagian ini), AGENTS.md, TECH_STACK.md, database.md.
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 1 (Auth).
 
+### Phase 1 — Authentication (2026-09-05): TASK-010 → DONE
+
+- ✅ Requirement implemented — `server/` scaffold (Express 5 + better-sqlite3, migrasi `users`/`revoked_tokens`/`audit_logs`, `npm run db:migrate`/`db:seed` fungsional); endpoint `POST /auth/register`, `POST /auth/login` (JWT 24 jam, bcrypt 10 rounds, lockout 3x/15 mnt), `POST /auth/logout` (denylist jti), `GET /auth/me`, password-reset 3 endpoint (email disimulasikan, `[NEEDS DECISION]` SMTP); middleware RBAC `requireRole`, rate-limit in-house (60/mnt IP, 30/mnt login — `express-rate-limit` ESM-only tak bisa di-require CJS), validasi `express-validator` (422), format respons api.md, audit log register/login/logout/gagal.
+- ✅ Unit test passed — `tests/unit/rbac.test.js` (3), `tests/unit/password.test.js` (3).
+- ✅ Integration test passed — `tests/integration/auth.test.js` (11): TC-AUTH-001..007 + validasi 422 + token palsu 400. Total suite: 4 lulus, 26/26 test hijau.
+- ✅ UI tested — N/A ("Halaman login" di AC dipenuhi via API; halaman EJS diputuskan di Phase 2).
+- ✅ Security checked — password policy huruf+angka+spesial ≥8, hash tak pernah diekspos, lockout + audit jejak gagal login, token logout ditolak, reset anti-enumeration.
+- ✅ Acceptance criteria passed — semua 7 checklist TASK-010 terpenuhi.
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE), QA.md (bagian ini), database.md (kolom lockout + `revoked_tokens`), api.md (endpoint reset POST).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 2 (User & Profile).
+
 ---

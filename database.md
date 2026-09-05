@@ -1,9 +1,9 @@
 ---
 title: "database.md — Desain Database & Schema"
-version: "1.1.0"
+version: "1.2.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.1.0 — TASK-002: tambah [ASSUMPTION] adaptasi SQLite untuk stack Node/Express"
+changelog: "2026-09-05 v1.2.0 — TASK-010: catat kolom lockout users + tabel revoked_tokens"
 ---
 
 # database.md — Desain Database & Schema
@@ -304,5 +304,7 @@ Sketsa tipe di Bagian 1 ditulis untuk PostgreSQL/MySQL. Implementasi SQLite (`be
 | `VARCHAR(n)` / `CHAR(8)` | `TEXT` + validasi panjang di application layer (`express-validator`) |
 
 **Batasan yang diterima untuk MVP:** tanpa tipe ENUM native (diganti CHECK); tanpa `HASH`/`BTREE` index eksplisit (SQLite memakai B-tree untuk semua index); foreign key enforcement via `PRAGMA foreign_keys = ON` di connection. Migrasi ke PostgreSQL tetap dimungkinkan di masa depan tanpa mengubah kontrak API — keputusan migrasi adalah `[NEEDS DECISION]` pasca-MVP.
+
+**Catatan 2026-09-05 (TASK-010, Phase 1 Auth):** implementasi menambah dua kolom di `users` di luar sketsa Bagian 1 — `failed_attempts INTEGER DEFAULT 0` dan `locked_until TEXT NULL` — untuk lockout login (QA TC-AUTH-005). Tabel baru `revoked_tokens (id, jti UNIQUE, user_id FK, expires_at, created_at)` mendukung invalidasi token saat logout (TASK-010). Lihat `server/src/db/migrations/001–003`.
 
 ---

@@ -24,7 +24,7 @@ Tahapan development dibagi menjadi 13 fase (Phase 0–12). Setiap task memiliki 
 
 | ID     | Title       | Description                          | Priority | Dependencies | Acceptance Criteria                                                                                                                                     | Status |
 |--------|-------------|--------------------------------------|----------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| TASK-010 | Implement Auth System | Sistem login/register beserta RBAC sederhana | High     | TASK-001     | - Halaman login bekerja dengan email+password\n- Registrasi membuat user dengan role terdefinisi (Mahasiswa/Perusahaan)\n- JWT token diterima setelah login\n- RBAC: tiap role dapat mengakses endpoint sesuai scope\n- Logout menghapus token\n- Validasi input email & password\n- Error handling: kredensial salah, akun kunci | TODO   |
+| TASK-010 | Implement Auth System | Sistem login/register beserta RBAC sederhana | High     | TASK-001     | - Halaman login bekerja dengan email+password\n- Registrasi membuat user dengan role terdefinisi (Mahasiswa/Perusahaan)\n- JWT token diterima setelah login\n- RBAC: tiap role dapat mengakses endpoint sesuai scope\n- Logout menghapus token\n- Validasi input email & password\n- Error handling: kredensial salah, akun kunci | DONE   |
 
 ---
 
