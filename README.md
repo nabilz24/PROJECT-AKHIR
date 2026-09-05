@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 4 (Project Marketplace) — DONE. CRUD project terverifikasi, browse/filter/sort, apply dengan gate skill, 66 test hijau.
+**Status**: Phase 5 (Application) — DONE. Workflow accept/reject, notifikasi in-app + email simulasi, 74 test hijau.

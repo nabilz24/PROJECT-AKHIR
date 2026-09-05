@@ -11,6 +11,10 @@ const {
   projectIdRules,
   marketplaceQueryRules,
 } = require('../validators/projects.validators');
+const {
+  applicationStatusRules,
+  projectApplicationsQueryRules,
+} = require('../validators/applications.validators');
 
 const router = express.Router();
 const onlyCompany = requireRole('perusahaan');
@@ -20,5 +24,7 @@ router.get('/projects', authLimiter, authenticateToken, onlyCompany, marketplace
 router.get('/projects/:id', authLimiter, authenticateToken, onlyCompany, projectIdRules, handleValidationErrors, controller.getMyProject);
 router.put('/projects/:id', authLimiter, authenticateToken, onlyCompany, projectUpdateRules, handleValidationErrors, controller.updateMyProject);
 router.delete('/projects/:id', authLimiter, authenticateToken, onlyCompany, projectIdRules, handleValidationErrors, controller.deleteMyProject);
+router.get('/projects/:projectId/applications', authLimiter, authenticateToken, onlyCompany, projectApplicationsQueryRules, handleValidationErrors, controller.listProjectApplications);
+router.patch('/applications/:id', authLimiter, authenticateToken, onlyCompany, applicationStatusRules, handleValidationErrors, controller.updateApplicationStatus);
 
 module.exports = router;

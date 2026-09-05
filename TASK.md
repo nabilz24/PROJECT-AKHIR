@@ -61,8 +61,8 @@ Tahapan development dibagi menjadi 13 fase (Phase 0–12). Setiap task memiliki 
 
 | ID     | Title                | Description                                                               | Priority | Dependencies | Acceptance Criteria                                                                                                                                    | Status |
 |--------|----------------------|---------------------------------------------------------------------------|----------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| TASK-050 | Application Entity    | Entity Application + status workflow (pending/accepted/rejected)           | High     | TASK-042     | - Setiap aplikasi memiliki status awal "pending"\n- Bisa diubah status oleh perusahaan (accepted/rejected)\n- Waktu applied_catat\n- Relasi ke Student & Project | TODO   |
-| TASK-051 | Notification on Apply | Notifikasi terkirim ke perusahaan & mahasiswa saat application dikirim/terverifikasi | Medium   | TASK-050     | - Email notifikasi terkirim ke keduanya\n- In-app notification muncul di dashboard\n- Konten notifikasi mencakup: nama project, nama applicant, status baru | TODO   |
+| TASK-050 | Application Entity    | Entity Application + status workflow (pending/accepted/rejected)           | High     | TASK-042     | - Setiap aplikasi memiliki status awal "pending"\n- Bisa diubah status oleh perusahaan (accepted/rejected)\n- Waktu applied_catat\n- Relasi ke Student & Project | DONE   |
+| TASK-051 | Notification on Apply | Notifikasi terkirim ke perusahaan & mahasiswa saat application dikirim/terverifikasi | Medium   | TASK-050     | - Email notifikasi terkirim ke keduanya\n- In-app notification muncul di dashboard\n- Konten notifikasi mencakup: nama project, nama applicant, status baru | DONE   |
 
 ---
 

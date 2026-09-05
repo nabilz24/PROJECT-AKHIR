@@ -2,6 +2,7 @@
 const { getDb } = require('../db/connection');
 const { ok, created, fail } = require('../utils/response');
 const { fetchProjectFull, overlapScore } = require('../utils/project');
+const { pushNotification, notifyEmail } = require('../utils/notify');
 const { logAudit } = require('../middlewares/audit');
 
 function studentSkillIds(db, studentId) {
@@ -120,6 +121,24 @@ function apply(req, res, next) {
       .run(req.user.id, full.id, 'pending', cover_letter, portfolio_url);
     const application = db.prepare('SELECT * FROM applications WHERE id = ?').get(result.lastInsertRowid);
     logAudit({ userId: req.user.id, action: 'apply_project', entityType: 'application', entityId: application.id, req });
+    // TASK-051: notifikasi in-app + email (simulasi) ke perusahaan.
+    const companyUser = db
+      .prepare('SELECT u.id, u.email FROM users u JOIN companies c ON c.user_id = u.id WHERE c.id = ?')
+      .get(full.company_id);
+    if (companyUser) {
+      pushNotification(db, {
+        recipientType: 'company',
+        recipientId: companyUser.id,
+        type: 'apply',
+        content: `Aplikasi baru dari ${req.user.name} untuk project "${full.judul}" (status: pending)`,
+      });
+      notifyEmail({
+        to: companyUser.email,
+        subject: `Aplikasi baru untuk project "${full.judul}"`,
+        body: `${req.user.name} (${req.user.email}) mendaftar ke project "${full.judul}". Status: pending. (simulasi)`,
+        meta: { kind: 'application-new', applicationId: application.id },
+      });
+    }
     return created(res, { application }, 'Aplikasi terkirim');
   } catch (err) {
     return next(err);

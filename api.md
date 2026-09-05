@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.4.0"
+version: "1.5.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.4.0 — TASK-040/041: format skills[] objek, filter difficulty, sort preliminary"
+changelog: "2026-09-05 v1.5.0 — TASK-050: tambah PATCH /companies/applications/{id} + GET project applications"
 ---
 
 # api.md — Spesifikasi API REST
@@ -85,6 +85,8 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | GET | `/companies/projects/{id}` | Bearer token | — | `{ success: true, data: { project } }` | Detail project beserta skill requirement |
 | PUT | `/companies/projects/{id}` | Bearer token | same as POST | `{ success: true, data: { project }, message: "Project diupdate" }` | Edit project (hanya pemilik perusahaan) |
 | DELETE | `/companies/projects/{id}` | Bearer token | — | `{ success: true, message: "Project dihapus" }` | Hapus project (soft-delete) |
+| GET | `/companies/projects/{id}/applications` | Bearer token (perusahaan pemilik) | `?filter[status]=pending` | `{ success: true, data: { applications, total } }` | Daftar pelamar + skill masing-masing (tambahan 2026-09-05 TASK-050) |
+| PATCH | `/companies/applications/{id}` | Bearer token (perusahaan pemilik) | `status` (accepted/rejected, hanya dari pending) | `{ success: true, data: { application } }` | Terima/tolak pelamar + notifikasi ke mahasiswa (tambahan 2026-09-05 TASK-050) |
 | GET | `/companies/candidates` | Bearer token | `?min_match_score=70`, `?skill=React`, `?sort=match_score` | `{ success: true, data: { candidates, pagination } }` | Daftar kandidat terurut match score |
 | POST | `/companies/applications/{app_id}/evaluate` | Bearer token | `rating_skill`, `rating_communication`, `rating_punctuality`, `rating_overall`, `comments` | `{ success: true, data: { assessment }, message: "Evaluasi disimpan" }` | Perusahaan evaluasi mahasiswa |
 | GET | `/companies/dashboard` | Bearer token | — | `{ success: true, data: { dashboard } }` | Ringkasan: project aktif, kandidat, evaluasi menunggu |
@@ -174,6 +176,9 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | POST /companies/applications/{app_id}/evaluate | Assessment | Fitur 12: Assessment | Evaluasi project dari perusahaan |
 | GET /projects | Industry Project Marketplace | Fitur 5: Project Marketplace | Browse project mahasiswa |
 | POST /projects/{id}/apply | Application | Fitur 6: Application | Mahasiswa daftar project |
+| GET /companies/projects/{id}/applications | Application | Fitur 6: Application | Perusahaan lihat pelamar |
+| PATCH /companies/applications/{id} | Application | Fitur 6: Application | Perusahaan terima/tolak pelamar |
+| GET /notifications | Notification | Fitur 14: Notification | Notifikasi in-app per user |
 | GET /recommendations/student | Recommendation Engine | Fitur 11: Recommendation System | Rekomendasi kursus/workshop |
 | GET /gap-analysis | Skill Gap Engine | Fitur 10: Skill Gap Analysis | Analisis kesenjangan skill |
 | GET /analytics/skill-distribution | Analytics | Fitur 16: Analytics | Visualisasi data skill |

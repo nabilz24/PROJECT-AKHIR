@@ -214,4 +214,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.5.0), api.md (v1.4.0: skills[] objek, difficulty, sort preliminary), README (status Phase 4).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 5 (Application).
 
+### Phase 5 — Application (2026-09-05): TASK-050, TASK-051 → DONE
+
+- ✅ Requirement implemented — migrasi `011_notifications` (sesuai sketsa); `GET /companies/projects/:id/applications` (pelamar + skill, ter-skup pemilik, filter status); `PATCH /companies/applications/:id` (accepted/rejected hanya dari pending; 404 lintas perusahaan); notifikasi in-app + email simulasi saat apply (ke perusahaan) & saat status berubah (ke mahasiswa; konten memuat nama project + nama applicant + status baru); `GET /notifications` (?type/?is_read + pagination) & `PUT /notifications/:id/read` (milik sendiri).
+- ✅ Unit test passed — suite unit Phase 1–2 tetap hijau.
+- ✅ Integration test passed — `tests/integration/applications.test.js` (8): TC-CMP-003 (accept/reject), TC-STU-004 penuh (pending + notif), transisi ganda 400, lintas-perusahaan 404, filter/read notifikasi. Total: 8 suite, 74/74 hijau, tanpa regresi.
+- ✅ UI tested — N/A (daftar pelamar & notifikasi center ikut halaman Phase 10).
+- ✅ Security checked — RBAC + ownership di semua endpoint aplikasi/notifikasi; notifikasi ter-skup recipient_id.
+- ✅ Acceptance criteria passed — semua checklist TASK-050/051 terpenuhi (email via simulasi, `[NEEDS DECISION]` SMTP).
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×2), QA.md (bagian ini), database.md (v1.6.0), api.md (v1.5.0: 2 endpoint + traceability), README (status Phase 5).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 6 (Talent Matching).
+
 ---
