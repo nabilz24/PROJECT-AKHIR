@@ -28,6 +28,9 @@ function tokenParam(req, res, next) {
 
 router.get('/', (req, res) => res.render('spa', { title: 'Campus Industry Talent Hub' }));
 
+// SPA dashboard React (TASK-106): /app — login + dashboard semua role + analytics.
+router.get('/app', (req, res) => res.render('app', { title: 'Dashboard App' }));
+
 router.get('/login', (req, res) => res.render('login', { title: 'Login' }));
 
 router.get(

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Campus Industry Talent Hub</title>
+  <!-- TASK-106: SPA dashboard React 18 UMD + Tailwind Play CDN (butuh internet).
+       Konsumsi endpoint JSON /api/v1 (dashboard per role + analytics).
+       Dashboard EJS di /dashboard/* tetap tersedia. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+</head>
+<body class="bg-slate-950">
+  <div id="app"><div class="min-h-screen flex items-center justify-center text-slate-400">Memuat dashboard…</div></div>
+  <noscript><div class="min-h-screen flex items-center justify-center text-slate-200">Aktifkan JavaScript.</div></noscript>
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect } = React;
+    const API = '/api/v1';
+
+    async function apiFetch(path, token, opts) {
+      const r = await fetch(API + path, Object.assign({ headers: { Authorization: 'Bearer ' + token } }, opts || {}));
+      if (r.status === 401) { const e = new Error('Sesi berakhir, silakan login ulang.'); e.code = 401; throw e; }
+      return r.json();
+    }
+
+    function matchColor(s) {
+      if (s == null) return 'bg-slate-700 text-slate-200';
+      if (s >= 70) return 'bg-green-600 text-white';
+      if (s >= 40) return 'bg-yellow-500 text-slate-900';
+      return 'bg-red-600 text-white';
+    }
+
+    function StatCard(props) {
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-wide text-slate-500">{props.label}</p>
+          <p className="text-3xl font-extrabold text-white mt-1">{props.value}</p>
+          {props.sub && <p className="text-xs text-slate-500 mt-1">{props.sub}</p>}
+        </div>
+      );
+    }
+
+    function Section(props) {
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mt-4">
+          <h3 className="font-bold text-white mb-3">{props.title}</h3>
+          {props.children}
+        </div>
+      );
+    }
+
+    function Bar(props) {
+      const pct = Math.min(100, Math.max(0, (props.value / (props.max || 100)) * 100));
+      return (
+        <div className="flex items-center gap-2 py-1">
+          <span className="w-36 truncate text-sm text-slate-300">{props.label}</span>
+          <div className="flex-1 h-2.5 rounded bg-slate-800 overflow-hidden">
+            <div className={'h-full rounded ' + (props.color || 'bg-indigo-500')} style={{ width: pct + '%' }}></div>
+          </div>
+          <span className="w-16 text-right text-sm text-slate-400">{props.value}</span>
+        </div>
+      );
+    }
+
+    function LoginView(props) {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [err, setErr] = useState('');
+      const [loading, setLoading] = useState(false);
+      async function submit(e) {
+        e.preventDefault(); setErr(''); setLoading(true);
+        try {
+          const r = await fetch(API + '/auth/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+          const j = await r.json();
+          if (!j.success) { setErr(j.message || 'Login gagal'); return; }
+          props.onLogin(j.data.token, j.data.user);
+        } catch (ex) { setErr('Tidak dapat menghubungi server.'); }
+        finally { setLoading(false); }
+      }
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <form onSubmit={submit} className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-8">
+            <h1 className="font-bold text-white text-lg">Dashboard App</h1>
+            <p className="text-sm text-slate-400 mb-5">Login untuk melihat dashboard sesuai role.</p>
+            <label className="block text-sm text-slate-300 mb-1">Email</label>
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="block text-sm text-slate-300 mb-1">Password</label>
+            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
+            <button disabled={loading} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2">
+              {loading ? 'Memproses…' : 'Login'}
+            </button>
+            <p className="text-xs text-slate-500 mt-3"><a className="underline" href="/">← Kembali ke landing</a></p>
+          </form>
+        </div>
+      );
+    }
+
+    function StudentDash(props) {
+      const d = props.data;
+      return (
+        <div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard label="Skill" value={d.skills_count} />
+            <StatCard label="Aplikasi Pending" value={d.pending_applications.length} />
+            <StatCard label="Notif Belum Dibaca" value={d.unread_notifications} />
+            <StatCard label="Project Baru" value={d.new_projects.length} />
+          </div>
+          <Section title="Project Baru + Match Score">
+            {d.new_projects.length === 0 && <p className="text-sm text-slate-500">Belum ada project aktif.</p>}
+            {d.new_projects.map((p) => (
+              <div key={p.id} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
+                <span className="flex-1 text-sm text-slate-200">{p.judul} <span className="text-slate-500">· {p.sektor_industri || ''}</span></span>
+                <span className={'text-xs font-bold px-2 py-1 rounded ' + matchColor(p.match_score)}>{p.match_score}</span>
+              </div>
+            ))}
+          </Section>
+          <Section title="Top Rekomendasi">
+            {d.top_recommendations.map((r) => (
+              <div key={r.id} className="py-2 border-b border-slate-800 last:border-0">
+                <p className="text-sm text-slate-200">{r.title} <span className="text-xs text-indigo-400">[{r.priority}]</span></p>
+                <p className="text-xs text-slate-500">{r.description || ''}</p>
+              </div>
+            ))}
+          </Section>
+          <Section title="Aplikasi Pending">
+            {d.pending_applications.length === 0 && <p className="text-sm text-slate-500">Tidak ada aplikasi pending.</p>}
+            {d.pending_applications.map((a) => (
+              <div key={a.id} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
+                <span className="flex-1 text-sm text-slate-200">{a.project_judul}</span>
+                <span className={'text-xs font-bold px-2 py-1 rounded ' + matchColor(a.match_score)}>{a.match_score == null ? '–' : a.match_score}</span>
+              </div>
+            ))}
+          </Section>
+          <Section title="Notifikasi Terbaru">
+            {d.latest_notifications.map((n) => (
+              <p key={n.id} className="text-sm text-slate-300 py-1 border-b border-slate-800 last:border-0">
+                <span className="text-indigo-400">[{n.type}]</span> {n.content}
+              </p>
+            ))}
+          </Section>
+        </div>
+      );
+    }
+
+    function CompanyDash(props) {
+      const d = props.data;
+      return (
+        <div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard label="Project Aktif" value={d.active_projects_count} />
+            <StatCard label="Kandidat Menunggu" value={d.waiting_candidates_count} />
+            <StatCard label="Evaluasi Menunggu" value={d.pending_evaluations_count} />
+            <StatCard label="Rata-rata Match" value={d.avg_match_score == null ? '–' : d.avg_match_score} />
+          </div>
+          <Section title="Project Aktif">
+            {d.active_projects.map((p) => (
+              <p key={p.id} className="text-sm text-slate-200 py-1 border-b border-slate-800 last:border-0">
+                {p.judul} <span className="text-slate-500">· deadline {p.deadline || '–'} · {p.difficulty || ''}</span>
+              </p>
+            ))}
+          </Section>
+          <Section title="Kandidat Menunggu">
+            {d.waiting_candidates.length === 0 && <p className="text-sm text-slate-500">Tidak ada kandidat menunggu.</p>}
+            {d.waiting_candidates.map((c) => (
+              <div key={c.application_id} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
+                <span className="flex-1 text-sm text-slate-200">{c.student_name} <span className="text-slate-500">· {c.project_judul}</span></span>
+                <span className={'text-xs font-bold px-2 py-1 rounded ' + matchColor(c.match_score)}>{c.match_score == null ? '–' : c.match_score}</span>
+              </div>
+            ))}
+          </Section>
+          <Section title="Evaluasi Menunggu">
+            {d.pending_evaluations.length === 0 && <p className="text-sm text-slate-500">Tidak ada evaluasi menunggu.</p>}
+            {d.pending_evaluations.map((e) => (
+              <p key={e.application_id} className="text-sm text-slate-200 py-1 border-b border-slate-800 last:border-0">
+                {e.student_name} <span className="text-slate-500">· {e.project_judul}</span>
+              </p>
+            ))}
+          </Section>
+        </div>
+      );
+    }
+
+    function CampusDash(props) {
+      const d = props.data;
+      const maxTop = Math.max.apply(null, [1].concat(d.top_demanded_skills.map((s) => s.c)));
+      return (
+        <div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <StatCard label="Mahasiswa" value={d.total_students} />
+            <StatCard label="Perusahaan" value={d.total_companies} />
+            <StatCard label="Project Aktif" value={d.total_active_projects} />
+            <StatCard label="Aplikasi Pending" value={d.pending_applications} />
+            <StatCard label="Rata-rata Gap" value={d.avg_gap} />
+          </div>
+          <Section title="Top Skill Dicari Industri">
+            {d.top_demanded_skills.map((s) => <Bar key={s.name} label={s.name} value={s.c} max={maxTop} />)}
+          </Section>
+          <Section title="Skill Baru 30 Hari (Alert)">
+            {d.new_skills_30d.length === 0 && <p className="text-sm text-slate-500">Tidak ada skill baru.</p>}
+            <div className="flex flex-wrap gap-2">
+              {d.new_skills_30d.map((s) => <span key={s} className="text-xs bg-indigo-900 text-indigo-200 px-2 py-1 rounded">{s}</span>)}
+            </div>
+          </Section>
+          <Section title="Aplikasi Terbaru">
+            {d.recent_applications.map((a, i) => (
+              <p key={i} className="text-sm text-slate-200 py-1 border-b border-slate-800 last:border-0">
+                {a.student_name} <span className="text-slate-500">→ {a.project_judul} [{a.status}]</span>
+              </p>
+            ))}
+          </Section>
+        </div>
+      );
+    }
+
+    function AnalyticsView(props) {
+      const [pie, setPie] = useState(null);
+      const [line, setLine] = useState(null);
+      const [heat, setHeat] = useState(null);
+      const [err, setErr] = useState('');
+      useEffect(() => {
+        let alive = true;
+        Promise.all([
+          apiFetch('/analytics/skill-distribution', props.token),
+          apiFetch('/analytics/industry-demand', props.token),
+          apiFetch('/analytics/gap-heatmap', props.token),
+        ]).then((arr) => { if (alive) { setPie(arr[0].data); setLine(arr[1].data); setHeat(arr[2].data); } })
+          .catch((e) => { if (alive) { if (e.code === 401) props.onExpire(); else setErr(e.message); } });
+        return () => { alive = false; };
+      }, []);
+      async function downloadCsv() {
+        try {
+          const r = await fetch(API + '/analytics/export?format=csv', { headers: { Authorization: 'Bearer ' + props.token } });
+          if (r.status === 401) { props.onExpire(); return; }
+          const blob = await r.blob();
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = 'gap-export.csv'; a.click();
+        } catch (ex) { setErr('Gagal mengunduh CSV.'); }
+      }
+      if (err) return <p className="text-sm text-red-400">{err}</p>;
+      if (!pie || !line || !heat) return <p className="text-sm text-slate-500">Memuat analytics…</p>;
+      const maxDist = Math.max.apply(null, [1].concat(pie.distribution.map((s) => s.students)));
+      const maxTop = Math.max.apply(null, [1].concat(line.top_skills.map((s) => s.c)));
+      return (
+        <div>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white">Analytics</h2>
+            <button onClick={downloadCsv} className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5">Export CSV</button>
+          </div>
+          <Section title={'Distribusi Skill (' + pie.total_students + ' mahasiswa)'}>
+            {pie.distribution.slice(0, 12).map((s) => (
+              <Bar key={s.name} label={s.name + ' (' + s.avg_level + ')'} value={s.students} max={maxDist} />
+            ))}
+          </Section>
+          <Section title="Tren Skill Dicari Industri">
+            {line.top_skills.map((s) => <Bar key={s.skill} label={s.skill} value={s.c} max={maxTop} color="bg-emerald-500" />)}
+          </Section>
+          <Section title="Heatmap Gap per Prodi">
+            <div className="overflow-x-auto">
+              <table className="text-xs text-slate-300 border-collapse">
+                <thead><tr><th className="p-1.5 text-left">Prodi</th>
+                  {heat.skills.map((s) => <th key={s} className="p-1.5 text-left font-normal">{s}</th>)}
+                </tr></thead>
+                <tbody>
+                  {heat.matrix.map((row) => (
+                    <tr key={row.program_studi} className="border-t border-slate-800">
+                      <td className="p-1.5 font-semibold">{row.program_studi}</td>
+                      {heat.skills.map((s) => {
+                        const v = row.gaps[s] || 0;
+                        const a = Math.min(0.85, v / 60);
+                        return <td key={s} className="p-1.5 text-center" style={{ background: 'rgba(239,68,68,' + a + ')' }}>{v}</td>;
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Section>
+        </div>
+      );
+    }
+
+    function App() {
+      const [token, setToken] = useState(localStorage.getItem('token') || '');
+      const [user, setUser] = useState(null);
+      const [data, setData] = useState(null);
+      const [view, setView] = useState('dash');
+      const [err, setErr] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      function logout(expireMsg) {
+        if (token) { fetch(API + '/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + token } }).catch(() => {}); }
+        localStorage.removeItem('token');
+        setToken(''); setUser(null); setData(null); setView('dash');
+        if (expireMsg) setErr(expireMsg);
+      }
+
+      function endpointFor(role) {
+        if (role === 'mahasiswa') return '/students/dashboard';
+        if (role === 'perusahaan') return '/companies/dashboard';
+        return '/campus/dashboard'; // kampus + dosen (RBAC route mengizinkan keduanya)
+      }
+
+      async function load(tk) {
+        setLoading(true); setErr('');
+        try {
+          const me = await apiFetch('/auth/me', tk);
+          const role = me.data.user.role;
+          setUser(me.data.user);
+          const dash = await apiFetch(endpointFor(role), tk);
+          setData(dash.data);
+        } catch (e) {
+          if (e.code === 401) { logout('Sesi berakhir, silakan login ulang.'); }
+          else setErr(e.message);
+        } finally { setLoading(false); }
+      }
+
+      useEffect(() => { if (token) load(token); }, []);
+      function onLogin(tk, usr) {
+        localStorage.setItem('token', tk);
+        setToken(tk); setUser(usr); setView('dash');
+        load(tk);
+      }
+
+      if (!token || !user) return <LoginView onLogin={onLogin} />;
+      const canAnalytics = user.role === 'kampus' || user.role === 'dosen';
+      const titles = { mahasiswa: 'Dashboard Mahasiswa', perusahaan: 'Dashboard Perusahaan', kampus: 'Dashboard Kampus', dosen: 'Dashboard Kampus (Dosen)' };
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-200 flex">
+          <aside className="w-52 shrink-0 bg-slate-900 border-r border-slate-800 p-4 flex flex-col">
+            <p className="font-bold text-white text-sm mb-1">Talent Hub App</p>
+            <p className="text-xs text-slate-500 mb-4">{user.name} · {user.role}</p>
+            <button onClick={() => setView('dash')}
+              className={'text-left text-sm rounded-lg px-3 py-2 mb-1 ' + (view === 'dash' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>Dashboard</button>
+            {canAnalytics && (
+              <button onClick={() => setView('analytics')}
+                className={'text-left text-sm rounded-lg px-3 py-2 mb-1 ' + (view === 'analytics' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>Analytics</button>
+            )}
+            <div className="flex-1"></div>
+            <a href="/" className="text-xs text-slate-500 hover:text-slate-300 px-3 py-1">← Landing</a>
+            <button onClick={() => logout()} className="text-left text-sm text-red-400 hover:text-red-300 px-3 py-2">Keluar</button>
+          </aside>
+          <main className="flex-1 p-5 max-w-5xl">
+            <h1 className="text-2xl font-extrabold text-white mb-4">{view === 'analytics' ? 'Analytics' : (titles[user.role] || 'Dashboard')}</h1>
+            {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
+            {loading && <p className="text-sm text-slate-500">Memuat data…</p>}
+            {!loading && data && view === 'dash' && user.role === 'mahasiswa' && <StudentDash data={data} />}
+            {!loading && data && view === 'dash' && user.role === 'perusahaan' && <CompanyDash data={data} />}
+            {!loading && data && view === 'dash' && (user.role === 'kampus' || user.role === 'dosen') && <CampusDash data={data} />}
+            {!loading && view === 'analytics' && canAnalytics && <AnalyticsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+          </main>
+        </div>
+      );
+    }
+
+    if (window.React && window.ReactDOM) {
+      ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+    } else {
+      document.getElementById('app').innerHTML =
+        '<div class="min-h-screen flex items-center justify-center text-slate-200 px-6 text-center">' +
+        'CDN tidak dapat dimuat (butuh internet).</div>';
+    }
+  </script>
+</body>
+</html>

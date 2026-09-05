@@ -301,4 +301,12 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Live verified — port 3112: `GET /` 200, `GET /login` 200, `GET /api/v1/health` 200.
 - ✅ Acceptance criteria passed — checklist TASK-105 terpenuhi.
 
+### TASK-106 — SPA Dashboard UI `/app` (2026-09-05): DONE
+
+- ✅ Requirement implemented — `server/views/app.ejs` (React 18 UMD + Tailwind CDN): login inline → `GET /auth/me` deteksi role → fetch dashboard sesuai role (`/students|companies|campus/dashboard`); sidebar + kartu + tabel; Analytics (kampus/dosen): bar distribusi & tren, heatmap gap, export CSV via blob; logout panggil `/auth/logout`; 401 → kembali login. Dosen memakai endpoint kampus (RBAC mengizinkan); evaluasi mentor tetap di EJS.
+- ✅ Integration test passed — `tests/integration/app.test.js` (2): `/app` 200 + penanda endpoint; `/` tetap landing. Total: 18 suite, 146/146 hijau.
+- ✅ Live verified — port 3113: `GET /app` 200; alur register → me → students/dashboard mengembalikan key sesuai konsumsi SPA.
+- ✅ Acceptance criteria passed — checklist TASK-106 terpenuhi.
+- Catatan: butuh internet untuk CDN; EJS `/dashboard/*` tidak berubah.
+
 ---

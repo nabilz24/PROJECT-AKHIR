@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 10 (Dashboard & Analytics) — DONE + TASK-104 SPA landing React di `/`. 144 test hijau.
+**Status**: Phase 10 — DONE + TASK-104/105/106 (SPA landing `/`, login `/login`, dashboard SPA `/app` React). 146 test hijau.

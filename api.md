@@ -165,6 +165,8 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 > **Catatan 2026-09-05 (TASK-104):** `GET /` menyajikan SPA landing React + Tailwind via CDN (butuh internet): sambutan + CTA ke `/login`.
 >
 > **Catatan 2026-09-05 (TASK-105):** pemisahan tegas — `/` landing only (tanpa form login), `/login` halaman login khusus (EJS, offline-ready), `/dashboard/*` dashboard per role.
+>
+> **Catatan 2026-09-05 (TASK-106):** `GET /app` SPA dashboard React: login inline → `GET /auth/me` → dashboard sesuai role + Analytics (kampus/dosen). Konsumsi endpoint JSON di atas apa adanya; EJS tidak berubah.
 
 ---
 
