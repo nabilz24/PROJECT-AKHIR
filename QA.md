@@ -238,4 +238,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), api.md (v1.6.0: calculate mode DB), README (status Phase 6). Tanpa migrasi baru (kolom match_score sudah ada sejak Phase 4).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 7 (Skill Gap).
 
+### Phase 7 — Skill Gap (2026-09-05): TASK-070, TASK-071, TASK-072 → DONE
+
+- ✅ Requirement implemented — `services/gapAnalysis.js` murni: gap = max(0, required−current), klasifikasi 0/small/medium/large/critical (angka TASK, `[NEEDS DECISION]`), rekomendasi aksi teks per klasifikasi (katalog penuh Phase 8); migrasi `012_skill_gaps` + persist snapshot (delete+insert transaksional); `GET /gap-analysis/:student/:project?` (tanpa project = vs requirement terberat aktif `[ASSUMPTION]`) + `GET /gap-analysis/student/:student` (distribusi + worst untuk data grafik); RBAC mahasiswa self-only.
+- ✅ Unit test passed — `tests/unit/gapAnalysis.test.js` (13): batas klasifikasi 0/1/20/21/40/41/60/61/100 + SKILL-001..004 + summary.
+- ✅ Integration test passed — `tests/integration/gap.test.js` (4): TC-STU-003 (gap 25 medium + rekomendasi course), persist tanpa duplikat, 403/404, distribusi. Total: 12 suite, 107/107 hijau, tanpa regresi.
+- ✅ UI tested — N/A (label klasifikasi + tombol Lihat rekomendasi + grafik pie/bar + tombol ke Recommendations ikut halaman Phase 10; API sediakan semua data).
+- ✅ Security checked — RBAC self-only mahasiswa; validasi param int.
+- ✅ Acceptance criteria passed — semua checklist TASK-070/071/072 + kasus SKILL-001..004 terpenuhi.
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.7.0), api.md (v1.7.0: persist + asumsi), README (status Phase 7).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 8 (Recommendation).
+
 ---

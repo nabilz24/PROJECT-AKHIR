@@ -1,9 +1,9 @@
 ---
 title: "database.md — Desain Database & Schema"
-version: "1.6.0"
+version: "1.7.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.6.0 — TASK-051: catat migrasi 011 notifications (sesuai sketsa)"
+changelog: "2026-09-05 v1.7.0 — TASK-070: catat migrasi 012 skill_gaps (student_skill_id/source nullable)"
 ---
 
 # database.md — Desain Database & Schema
@@ -330,5 +330,7 @@ Sketsa tipe di Bagian 1 ditulis untuk PostgreSQL/MySQL. Implementasi SQLite (`be
 **Catatan 2026-09-05 (TASK-040/042, Phase 4 Marketplace):** tabel `projects` + `project_skills` + `applications` (minimal) dibuat via `server/src/db/migrations/008–010`. Tambahan dari sketsa: `projects.difficulty` (CHECK easy/medium/hard, NULL; untuk filter TASK-041) dan `projects.deleted_at` (soft-delete sesuai aturan Bagian 5). `applications` Phase 4 berisi kolom inti (status default pending, match_score NULL, cover_letter, portfolio_url); workflow ubah status + notifikasi menyusul Phase 5. Duplikat apply dicegah di application layer (blokir bila ada pending/accepted; re-apply setelah rejected diizinkan) — tanpa UNIQUE constraint.
 
 **Catatan 2026-09-05 (TASK-051, Phase 5 Application):** tabel `notifications` dibuat via `server/src/db/migrations/011` persis sesuai sketsa Bagian 1 (tanpa tambahan kolom).
+
+**Catatan 2026-09-05 (TASK-070, Phase 7 Skill Gap):** tabel `skill_gaps` dibuat via `server/src/db/migrations/012` sesuai sketsa; `student_skill_id` dan `recommendation_source` nullable (skill belum dimiliki / katalog Phase 8). Persist berupa snapshot: setiap analisis menghapus baris scope (student+project) lalu insert ulang dalam transaksi.
 
 ---

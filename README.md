@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 6 (Talent Matching) — DONE. Formula 50/20/10/10/10, ranking + threshold, breakdown per-skill, 90 test hijau.
+**Status**: Phase 7 (Skill Gap) — DONE. Gap calc + klasifikasi + persist + distribusi, 107 test hijau.

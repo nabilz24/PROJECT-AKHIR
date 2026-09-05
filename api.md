@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.6.0"
+version: "1.7.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.6.0 — TASK-060: formula otoritatif, mode DB calculate, breakdown kuat/close/lemah"
+changelog: "2026-09-05 v1.7.0 — TASK-070: catat persist snapshot + asumsi gap tanpa project"
 ---
 
 # api.md — Spesifikasi API REST
@@ -117,7 +117,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 
 | Method | Endpoint | Auth | Request | Respons | Keterangan |
 |--------|----------|------|---------|---------|------------|
-| GET | `/gap-analysis/{student_id}/{project_id?}` | Bearer token | — | `{ success: true, data: { gaps: [{skill_name, required, current, gap_value, classification, recommendation}], summary } }` | Hitung & klasifikasi skill gap |
+| GET | `/gap-analysis/{student_id}/{project_id?}` | Bearer token (mahasiswa self-only) | — | `{ success: true, data: { gaps: [{skill_name, required, current, gap_value, classification, recommendation}], summary } }` | Hitung & klasifikasi skill gap + persist ke skill_gaps (snapshot per hitung). Tanpa project_id = vs requirement terberat pasar aktif (`[ASSUMPTION]` 2026-09-05 TASK-070). Rekomendasi = aksi teks per klasifikasi; katalog penuh Phase 8 |
 | GET | `/gap-analysis/student/{student_id}` | Bearer token | — | `{ success: true, data: { overall_gap_distribution } }` | Distribusi gap keseluruhan mahasiswa |
 
 ---
