@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 8 (Recommendation) — DONE. Engine rule-based + progress tracking, 119 test hijau.
+**Status**: Phase 9 (Assessment) — DONE. Evaluasi 1–5 + auto-evaluasi + bump skill + riwayat, 125 test hijau.

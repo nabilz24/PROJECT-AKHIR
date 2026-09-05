@@ -262,4 +262,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×2), QA.md (bagian ini), database.md (v1.8.0), api.md (v1.8.0: generate + transisi), README (status Phase 8).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 9 (Assessment).
 
+### Phase 9 — Assessment & Evaluation (2026-09-05): TASK-090, TASK-091, TASK-092 → DONE
+
+- ✅ Requirement implemented — migrasi `014_assessments` (+evaluator_id, +UNIQUE pair+role) + `015_project_evaluations`; `POST /assessments` (company: aplikasi accepted + project closed miliknya; dosen: accepted mana pun; rating 1–5; tolak duplikat) → auto `project_evaluations` (overall = rata-rata bulat, category JSON, draft) + bump skill sekali saat create (+10 bila ≥4, +5 bila =3, cap 100, hanya skill project yang dimiliki) + notif 'eval'; `GET /evaluations/:project/:student` (mahasiswa self / perusahaan pemilik / dosen-kampus) + `PUT` (penilai yang sama; tanpa re-bump `[ASSUMPTION]`); riwayat via audit old/new JSON.
+- ✅ Unit test passed — suite unit Phase 1–3,6–8 tetap hijau.
+- ✅ Integration test passed — `tests/integration/assessments.test.js` (6): TC-CMP-004 (evaluasi tersimpan + bump 70→80 + audit + notif), duplikat/pending/belum-closed, 404/403/422, dosen (+5, cap 100), GET 403 lintas, PUT tanpa re-bump. Total: 15 suite, 125/125 hijau. **Perbaikan setup**: apply harus sebelum close (apply ke closed ditolak — perilaku benar, test diperbaiki).
+- ✅ UI tested — N/A (form evaluasi + halaman Project Evaluation ikut Phase 10).
+- ✅ Security checked — RBAC company/dosen; ownership project & evaluator; mahasiswa self-only.
+- ✅ Acceptance criteria passed — semua checklist TASK-090/091/092 + TC-CMP-004/TC-STU-006 terpenuhi.
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.9.0), api.md (v1.9.0: syarat + bump), README (status Phase 9).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 10 (Dashboard).
+
 ---

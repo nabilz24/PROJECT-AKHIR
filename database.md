@@ -1,9 +1,9 @@
 ---
 title: "database.md — Desain Database & Schema"
-version: "1.8.0"
+version: "1.9.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.8.0 — TASK-080: catat migrasi 013 recommendations (+skill_id)"
+changelog: "2026-09-05 v1.9.0 — TASK-090: catat migrasi 014/015 (+evaluator_id, UNIQUE pair+role)"
 ---
 
 # database.md — Desain Database & Schema
@@ -334,5 +334,7 @@ Sketsa tipe di Bagian 1 ditulis untuk PostgreSQL/MySQL. Implementasi SQLite (`be
 **Catatan 2026-09-05 (TASK-070, Phase 7 Skill Gap):** tabel `skill_gaps` dibuat via `server/src/db/migrations/012` sesuai sketsa; `student_skill_id` dan `recommendation_source` nullable (skill belum dimiliki / katalog Phase 8). Persist berupa snapshot: setiap analisis menghapus baris scope (student+project) lalu insert ulang dalam transaksi.
 
 **Catatan 2026-09-05 (TASK-080, Phase 8 Recommendation):** tabel `recommendations` dibuat via `server/src/db/migrations/013`; tambahan dari sketsa: `skill_id INTEGER NULL` (tautan ke skill target untuk generate idempotent per student+skill+type). Generate otomatis setiap analisis gap (Phase 7) + 1 notifikasi 'rec' bila ada rekomendasi baru.
+
+**Catatan 2026-09-05 (TASK-090/092, Phase 9 Assessment):** tabel `assessments` + `project_evaluations` dibuat via `server/src/db/migrations/014–015`. Tambahan dari sketsa: `assessments.evaluator_id` (identitas penilai untuk ownership dosen) + `UNIQUE(project_id, student_id, evaluator_role)` (satu penilaian per peran; update via PUT). Riwayat bump skill memakai kolom `audit_logs.old_value/new_value` (JSON).
 
 ---
