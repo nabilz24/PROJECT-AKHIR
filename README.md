@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 1 (Authentication) — DONE. Auth API (register/login JWT/RBAC/logout/lockout/reset) + 26 test hijau.
+**Status**: Phase 2 (User & Profile) — DONE. Profil per role, upload foto, redirect dashboard + 42 test hijau.

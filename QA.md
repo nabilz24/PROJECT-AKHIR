@@ -178,4 +178,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE), QA.md (bagian ini), database.md (kolom lockout + `revoked_tokens`), api.md (endpoint reset POST).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 2 (User & Profile).
 
+### Phase 2 — User & Profile (2026-09-05): TASK-020, TASK-021 → DONE
+
+- ✅ Requirement implemented — migrasi `004_student_profiles` + `005_companies` (+kolom `logo` di luar sketsa, tercatat di database.md); `GET/PUT /users/profile` (field berbeda per role, partial update, NPM 8 char UNIQUE, verified_status tak bisa diubah sendiri); `POST /users/profile/photo-upload` (multer: JPG/PNG/WebP, maks 5MB, nama acak, static `/uploads`, foto→mahasiswa, logo→perusahaan); auto-create profil saat registrasi; `GET /users/redirect` + `dashboard_url` di respons login/register (mahasiswa→/dashboard/student, perusahaan→/dashboard/company, kampus→/dashboard/campus, dosen→/dashboard/mentor).
+- ✅ Unit test passed — suite unit Phase 1 tetap hijau (rbac, password).
+- ✅ Integration test passed — `tests/integration/users.test.js` (16): TC-STU-001 + NPM duplikat/format + upload valid/tolak-tipe/tolak-ukuran + redirect 4 role. Total: 5 suite, 42/42 hijau, tanpa regresi Phase 0–1.
+- ✅ UI tested — N/A (halaman profil/dashboard EJS diputuskan saat Phase 10; pendekatan frontend default EJS dikonfirmasi ulang di review ini).
+- ✅ Security checked — auth wajib di semua endpoint, tipe/ukuran file divalidasi, nama file acak, verified_status read-only, error UNIQUE ramah.
+- ✅ Acceptance criteria passed — semua checklist TASK-020 & TASK-021 terpenuhi.
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×2), QA.md (bagian ini), database.md (v1.3.0), api.md (v1.2.0 + redirect), README (status Phase 2).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 3 (Skill System).
+
 ---

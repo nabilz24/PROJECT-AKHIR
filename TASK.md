@@ -32,8 +32,8 @@ Tahapan development dibagi menjadi 13 fase (Phase 0–12). Setiap task memiliki 
 
 | ID     | Title                   | Description                                                                 | Priority | Dependencies | Acceptance Criteria                                                                                                                                     | Status |
 |--------|-------------------------|-----------------------------------------------------------------------------|----------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| TASK-020 | User Profile CRUD       | Create/Read/User Profile per role                                           | High     | TASK-010     | - Mahasiswa bisa lihat/edit profil (bio, foto)\n- Perusahaan bisa lihat/edit profil company\n- Setiap role memiliki field yang berbeda sesuai requirement PRD\n- Validasi field wajib\n- Foto profil upload dengan validasi tipe/ukuran | TODO   |
-| TASK-021 | Role-Based Redirect     | Setelah login, diarahkan ke dashboard sesuai role                           | Medium   | TASK-010     | - Role Mahasiswa → Student Dashboard\n- Role Perusahaan → Company Dashboard\n- Role Kampus → Campus Dashboard\n- Dosen → Dashboard standar dengan opsi bimbingan | TODO   |
+| TASK-020 | User Profile CRUD       | Create/Read/User Profile per role                                           | High     | TASK-010     | - Mahasiswa bisa lihat/edit profil (bio, foto)\n- Perusahaan bisa lihat/edit profil company\n- Setiap role memiliki field yang berbeda sesuai requirement PRD\n- Validasi field wajib\n- Foto profil upload dengan validasi tipe/ukuran | DONE   |
+| TASK-021 | Role-Based Redirect     | Setelah login, diarahkan ke dashboard sesuai role                           | Medium   | TASK-010     | - Role Mahasiswa → Student Dashboard\n- Role Perusahaan → Company Dashboard\n- Role Kampus → Campus Dashboard\n- Dosen → Dashboard standar dengan opsi bimbingan | DONE   |
 
 ---
 

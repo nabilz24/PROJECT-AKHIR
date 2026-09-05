@@ -12,6 +12,9 @@ node_modules/
 *.sqlite3
 data/
 
+# Uploads (local file storage, TASK-020)
+server/uploads/
+
 # Build output
 dist/
 build/

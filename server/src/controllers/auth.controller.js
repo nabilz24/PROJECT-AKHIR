@@ -5,6 +5,7 @@ const { ok, created, fail } = require('../utils/response');
 const { hashPassword, comparePassword } = require('../utils/password');
 const { signAccessToken, signPasswordResetToken, verifyToken } = require('../utils/jwt');
 const { send } = require('../utils/mailer');
+const { getDashboardUrl } = require('../utils/redirect');
 const { logAudit } = require('../middlewares/audit');
 
 function publicUser(row) {
@@ -35,6 +36,13 @@ async function register(req, res, next) {
       .prepare('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)')
       .run(name, email, passwordHash, role);
     const user = db.prepare('SELECT id, name, email, role FROM users WHERE id = ?').get(result.lastInsertRowid);
+    // TASK-020: profil peran otomatis dibuat saat registrasi agar GET /users/profile
+    // langsung tersedia (mahasiswa -> student_profiles, perusahaan -> companies).
+    if (role === 'mahasiswa') {
+      db.prepare('INSERT INTO student_profiles (user_id) VALUES (?)').run(user.id);
+    } else if (role === 'perusahaan') {
+      db.prepare('INSERT INTO companies (user_id, nama_perusahaan) VALUES (?, ?)').run(user.id, name);
+    }
     // [NEEDS DECISION]: verifikasi email disimulasikan hingga provider SMTP diputuskan.
     send({
       to: email,
@@ -44,7 +52,7 @@ async function register(req, res, next) {
     });
     logAudit({ userId: user.id, action: 'register', entityType: 'user', entityId: user.id, req });
     const token = signAccessToken(user);
-    return created(res, { user, token }, 'Daftar berhasil');
+    return created(res, { user, token, dashboard_url: getDashboardUrl(user.role) }, 'Daftar berhasil');
   } catch (err) {
     return next(err);
   }
@@ -85,7 +93,7 @@ async function login(req, res, next) {
     const publicData = publicUser(user);
     logAudit({ userId: user.id, action: 'login', entityType: 'user', entityId: user.id, req });
     const token = signAccessToken(publicData);
-    return ok(res, { user: publicData, token }, 'Login berhasil');
+    return ok(res, { user: publicData, token, dashboard_url: getDashboardUrl(publicData.role) }, 'Login berhasil');
   } catch (err) {
     return next(err);
   }

@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.1.0"
+version: "1.2.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.1.0 — TASK-010: tambah endpoint POST /auth/password-reset/confirm/{token}"
+changelog: "2026-09-05 v1.2.0 — TASK-021: tambah endpoint GET /users/redirect"
 ---
 
 # api.md — Spesifikasi API REST
@@ -50,6 +50,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | GET | `/users/profile` | Bearer token | — | `{ success: true, data: { profile } }` | Ambil profil sesuai role user |
 | PUT | `/users/profile` | Bearer token | `name`, `bio`, `foto_profile` (url) | `{ success: true, data: { profile }, message: "Profile updated" }` | Update profil personal |
 | POST | `/users/profile/photo-upload` | Bearer token | `file` (multipart) | `{ success: true, data: { photo_url }, message: "Foto berhasil diunggah" }` | Upload foto profil (validasi tipe/ukuran) |
+| GET | `/users/redirect` | Bearer token | — | `{ success: true, data: { role, redirect_url } }` | Redirect dashboard sesuai role (tambahan 2026-09-05 TASK-021) |
 
 ---
 

@@ -1,9 +1,9 @@
 ---
 title: "database.md — Desain Database & Schema"
-version: "1.2.0"
+version: "1.3.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.2.0 — TASK-010: catat kolom lockout users + tabel revoked_tokens"
+changelog: "2026-09-05 v1.3.0 — TASK-020: catat kolom logo companies + auto-create profil saat registrasi"
 ---
 
 # database.md — Desain Database & Schema
@@ -306,5 +306,7 @@ Sketsa tipe di Bagian 1 ditulis untuk PostgreSQL/MySQL. Implementasi SQLite (`be
 **Batasan yang diterima untuk MVP:** tanpa tipe ENUM native (diganti CHECK); tanpa `HASH`/`BTREE` index eksplisit (SQLite memakai B-tree untuk semua index); foreign key enforcement via `PRAGMA foreign_keys = ON` di connection. Migrasi ke PostgreSQL tetap dimungkinkan di masa depan tanpa mengubah kontrak API — keputusan migrasi adalah `[NEEDS DECISION]` pasca-MVP.
 
 **Catatan 2026-09-05 (TASK-010, Phase 1 Auth):** implementasi menambah dua kolom di `users` di luar sketsa Bagian 1 — `failed_attempts INTEGER DEFAULT 0` dan `locked_until TEXT NULL` — untuk lockout login (QA TC-AUTH-005). Tabel baru `revoked_tokens (id, jti UNIQUE, user_id FK, expires_at, created_at)` mendukung invalidasi token saat logout (TASK-010). Lihat `server/src/db/migrations/001–003`.
+
+**Catatan 2026-09-05 (TASK-020, Phase 2 Profile):** implementasi menambah kolom `logo TEXT NULL` di `companies` (di luar sketsa Bagian 1) agar upload foto profil perusahaan bisa disimpan, simetris dengan `student_profiles.foto_profile`. Registrasi otomatis membuat baris profil peran (`student_profiles` untuk mahasiswa, `companies` dengan `nama_perusahaan` = nama pendaftar untuk perusahaan). Lihat `server/src/db/migrations/004–005`.
 
 ---
