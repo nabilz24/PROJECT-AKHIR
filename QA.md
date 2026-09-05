@@ -333,4 +333,15 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Live verified — port 3117: `/app` 200 + semua penanda halaman True.
 - ✅ Acceptance criteria passed — checklist TASK-109 terpenuhi.
 
+### TASK-114 — Pages ber-URL + UI/UX overhaul (2026-09-05): DONE
+
+- ✅ Hash routing — `/app#/` … `#/projects|skills|gap|recommendations|my-projects|applications|assess|analytics|notifications|profile`: tiap halaman punya URL, back/forward browser jalan, document.title per halaman, sidebar pakai anchor.
+- ✅ UI system — Toast global (sukses/gagal, auto-hilang), EmptyState di semua list kosong, Skeleton saat loading, ConfirmModal ganti `window.confirm`, PageHead (judul + deskripsi + aksi).
+- ✅ Responsif — sidebar desktop + topbar horizontal sticky di mobile; hover/transition konsisten.
+- ✅ Login UX — quick-fill 4 akun demo di `/app`; `login.ejs` dapat hint akun + tautan landing/app.
+- ✅ Landing — sticky nav blur, hero gradient + badge + 4 stat, 6 kartu fitur, CTA band, footer rapi.
+- ✅ Integration test passed — marker hash/demo di `app.test.js`, `Fitur Unggulan` + `/app` di `spa.test.js`. Total 19 suite, 149/149 hijau; audit 74/74; live `/`, `/login`, `/app` 200.
+- ✅ JSX tervalidasi Babel asli (app 64k + spa 8k char).
+- ✅ Acceptance criteria passed — checklist TASK-114 terpenuhi.
+
 ---

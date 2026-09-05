@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — Campus Industry Talent Hub</title>
-  <!-- TASK-109: semua halaman dashboard di SPA /app (React 18 UMD + Tailwind v4 browser CDN).
-       Halaman: Dashboard, Projects, My Skills, Gap, Recommendations, My Projects,
-       Applications, Assess, Analytics, Notifikasi, Profil. EJS /dashboard/* tetap ada. -->
+  <!-- TASK-114: /app = halaman nyata per URL (hash routing: /app#/projects, …).
+       UI system: Toast, EmptyState, Skeleton, ConfirmModal, responsif mobile,
+       quick-fill akun demo. React 18 UMD + Tailwind v4 browser CDN. -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -19,9 +19,22 @@
     const { useState, useEffect } = React;
     const API = '/api/v1';
     const INP = 'w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
-    const BTN = 'rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-3 py-1.5';
-    const BTN2 = 'rounded-lg border border-slate-600 hover:border-slate-400 text-slate-200 text-sm px-3 py-1.5';
-    const DANGER = 'rounded-lg border border-red-700 hover:bg-red-900 text-red-300 text-sm px-3 py-1.5';
+    const BTN = 'rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-3 py-1.5 transition';
+    const BTN2 = 'rounded-lg border border-slate-600 hover:border-slate-400 text-slate-200 text-sm px-3 py-1.5 transition';
+    const DANGER = 'rounded-lg border border-red-700 hover:bg-red-900 text-red-300 text-sm px-3 py-1.5 transition';
+
+    // ---- Routing: setiap halaman punya URL hash sendiri ----
+    const HASH = {
+      dash: '#/', projects: '#/projects', skills: '#/skills', gap: '#/gap',
+      recs: '#/recommendations', myprojects: '#/my-projects', applications: '#/applications',
+      assess: '#/assess', analytics: '#/analytics', notifs: '#/notifications', profile: '#/profile',
+    };
+    const VIEW_FROM_HASH = {};
+    Object.keys(HASH).forEach((k) => { VIEW_FROM_HASH[HASH[k]] = k; });
+    function viewFromHash() {
+      const h = (window.location.hash || '#/').split('?')[0];
+      return VIEW_FROM_HASH[h] || 'dash';
+    }
 
     async function apiFetch(path, token) {
       const r = await fetch(API + path, { headers: { Authorization: 'Bearer ' + token } });
@@ -54,9 +67,10 @@
       return 'bg-slate-700 text-slate-200';
     }
 
+    // ---- UI system ----
     function StatCard(props) {
       return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition">
           <p className="text-xs uppercase tracking-wide text-slate-500">{props.label}</p>
           <p className="text-3xl font-extrabold text-white mt-1">{props.value}</p>
           {props.sub && <p className="text-xs text-slate-500 mt-1">{props.sub}</p>}
@@ -87,6 +101,71 @@
       if (!props.text) return null;
       return <p className={'text-sm mb-3 ' + (props.err ? 'text-red-400' : 'text-emerald-400')}>{props.text}</p>;
     }
+    function Toasts(props) {
+      return (
+        <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+          {props.items.map((t) => (
+            <div key={t.id} className={'rounded-xl px-4 py-2.5 text-sm shadow-xl border ' + (t.err ? 'bg-red-950 border-red-700 text-red-200' : 'bg-emerald-950 border-emerald-700 text-emerald-200')}>
+              {t.text}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    function EmptyState(props) {
+      return (
+        <div className="text-center py-8">
+          <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-slate-800 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-slate-600"></div>
+          </div>
+          <p className="text-sm font-semibold text-slate-300">{props.title}</p>
+          {props.hint && <p className="text-xs text-slate-500 mt-1">{props.hint}</p>}
+          {props.action}
+        </div>
+      );
+    }
+    function SkeletonList(props) {
+      const rows = [];
+      for (let i = 0; i < (props.n || 4); i++) rows.push(i);
+      return (
+        <div className="animate-pulse">
+          {rows.map((i) => <div key={i} className="h-12 rounded-xl bg-slate-800/70 mb-2"></div>)}
+        </div>
+      );
+    }
+    function ConfirmModal(props) {
+      if (!props.open) return null;
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={props.onCancel}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-bold text-white mb-1">{props.title || 'Yakin?'}</h3>
+            <p className="text-sm text-slate-400 mb-4">{props.text || 'Tindakan ini tidak dapat dibatalkan.'}</p>
+            <div className="flex gap-2 justify-end">
+              <button onClick={props.onCancel} className={BTN2}>Batal</button>
+              <button onClick={props.onConfirm} className="rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-semibold px-3 py-1.5">Ya, lanjutkan</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    function PageHead(props) {
+      return (
+        <div className="flex flex-wrap items-end gap-2 mb-4">
+          <div className="flex-1 min-w-52">
+            <h1 className="text-2xl font-extrabold text-white">{props.title}</h1>
+            {props.desc && <p className="text-sm text-slate-500 mt-0.5">{props.desc}</p>}
+          </div>
+          {props.action}
+        </div>
+      );
+    }
+
+    const DEMO_ACCOUNTS = [
+      { role: 'Mahasiswa', email: 'mhs@test.id' },
+      { role: 'Perusahaan', email: 'perusahaan@test.id' },
+      { role: 'Kampus', email: 'kampus@test.id' },
+      { role: 'Dosen', email: 'dosen@test.id' },
+    ];
 
     function LoginView(props) {
       const [email, setEmail] = useState('');
@@ -106,21 +185,32 @@
         } catch (ex) { setErr('Tidak dapat menghubungi server.'); }
         finally { setLoading(false); }
       }
+      function fillDemo(mail) { setEmail(mail); setPassword('Test123!'); setErr(''); }
       return (
-        <div className="min-h-screen flex items-center justify-center px-4">
-          <form onSubmit={submit} className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-8">
-            <h1 className="font-bold text-white text-lg">Dashboard App</h1>
-            <p className="text-sm text-slate-400 mb-5">Login untuk melihat dashboard sesuai role.</p>
-            <label className="block text-sm text-slate-300 mb-1">Email</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={INP} />
-            <label className="block text-sm text-slate-300 mb-1">Password</label>
-            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={INP} />
-            {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
-            <button disabled={loading} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2">
-              {loading ? 'Memproses…' : 'Login'}
-            </button>
-            <p className="text-xs text-slate-500 mt-3"><a className="underline" href="/">← Kembali ke landing</a></p>
-          </form>
+        <div className="min-h-screen flex items-center justify-center px-4 py-8">
+          <div className="w-full max-w-sm">
+            <form onSubmit={submit} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
+              <h1 className="font-bold text-white text-lg">Dashboard App</h1>
+              <p className="text-sm text-slate-400 mb-5">Login untuk melihat dashboard sesuai role.</p>
+              <label className="block text-sm text-slate-300 mb-1">Email</label>
+              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={INP} />
+              <label className="block text-sm text-slate-300 mb-1">Password</label>
+              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={INP} />
+              {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
+              <button disabled={loading} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2 transition">
+                {loading ? 'Memproses…' : 'Login'}
+              </button>
+              <p className="text-xs text-slate-500 mt-3"><a className="underline" href="/">← Kembali ke landing</a></p>
+            </form>
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 mt-3">
+              <p className="text-xs text-slate-400 mb-2">Akun demo (seed lokal) — klik untuk isi otomatis:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {DEMO_ACCOUNTS.map((d) => (
+                  <button key={d.email} type="button" onClick={() => fillDemo(d.email)} className="text-xs rounded-lg border border-slate-700 hover:border-indigo-500 text-slate-300 px-2 py-1 transition">{d.role}</button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -130,13 +220,13 @@
       return (
         <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard label="Skill" value={d.skills_count} />
+            <StatCard label="Skill" value={d.skills_count} sub="Lihat di My Skills" />
             <StatCard label="Aplikasi Pending" value={d.pending_applications.length} />
-            <StatCard label="Notif Belum Dibaca" value={d.unread_notifications} />
-            <StatCard label="Project Baru" value={d.new_projects.length} />
+            <StatCard label="Notif Belum Dibaca" value={d.unread_notifications} sub="Lihat di Notifikasi" />
+            <StatCard label="Project Baru" value={d.new_projects.length} sub="Lihat di Projects" />
           </div>
           <Section title="Project Baru + Match Score">
-            {d.new_projects.length === 0 && <p className="text-sm text-slate-500">Belum ada project aktif.</p>}
+            {d.new_projects.length === 0 && <EmptyState title="Belum ada project aktif" hint="Cek lagi nanti di halaman Projects." />}
             {d.new_projects.map((p) => (
               <div key={p.id} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
                 <span className="flex-1 text-sm text-slate-200">{p.judul} <span className="text-slate-500">· {p.sektor_industri || ''}</span></span>
@@ -145,6 +235,7 @@
             ))}
           </Section>
           <Section title="Top Rekomendasi">
+            {d.top_recommendations.length === 0 && <EmptyState title="Belum ada rekomendasi" hint="Jalankan Gap Analysis untuk memunculkannya." />}
             {d.top_recommendations.map((r) => (
               <div key={r.id} className="py-2 border-b border-slate-800 last:border-0">
                 <p className="text-sm text-slate-200">{r.title} <span className="text-xs text-indigo-400">[{r.priority}]</span></p>
@@ -153,7 +244,7 @@
             ))}
           </Section>
           <Section title="Aplikasi Pending">
-            {d.pending_applications.length === 0 && <p className="text-sm text-slate-500">Tidak ada aplikasi pending.</p>}
+            {d.pending_applications.length === 0 && <EmptyState title="Tidak ada aplikasi pending" hint="Daftar project di halaman Projects." />}
             {d.pending_applications.map((a) => (
               <div key={a.id} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
                 <span className="flex-1 text-sm text-slate-200">{a.project_judul}</span>
@@ -162,6 +253,7 @@
             ))}
           </Section>
           <Section title="Notifikasi Terbaru">
+            {d.latest_notifications.length === 0 && <EmptyState title="Belum ada notifikasi" />}
             {d.latest_notifications.map((n) => (
               <p key={n.id} className="text-sm text-slate-300 py-1 border-b border-slate-800 last:border-0">
                 <span className="text-indigo-400">[{n.type}]</span> {n.content}
@@ -178,11 +270,12 @@
         <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatCard label="Project Aktif" value={d.active_projects_count} />
-            <StatCard label="Kandidat Menunggu" value={d.waiting_candidates_count} />
-            <StatCard label="Evaluasi Menunggu" value={d.pending_evaluations_count} />
+            <StatCard label="Kandidat Menunggu" value={d.waiting_candidates_count} sub="Lihat di Applications" />
+            <StatCard label="Evaluasi Menunggu" value={d.pending_evaluations_count} sub="Lihat di Assess" />
             <StatCard label="Rata-rata Match" value={d.avg_match_score == null ? '–' : d.avg_match_score} />
           </div>
           <Section title="Project Aktif">
+            {d.active_projects.length === 0 && <EmptyState title="Belum ada project aktif" hint="Buat di halaman My Projects." />}
             {d.active_projects.map((p) => (
               <p key={p.id} className="text-sm text-slate-200 py-1 border-b border-slate-800 last:border-0">
                 {p.judul} <span className="text-slate-500">· deadline {p.deadline || '–'} · {p.difficulty || ''}</span>
@@ -190,7 +283,7 @@
             ))}
           </Section>
           <Section title="Kandidat Menunggu">
-            {d.waiting_candidates.length === 0 && <p className="text-sm text-slate-500">Tidak ada kandidat menunggu.</p>}
+            {d.waiting_candidates.length === 0 && <EmptyState title="Tidak ada kandidat menunggu" />}
             {d.waiting_candidates.map((c) => (
               <div key={c.application_id} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
                 <span className="flex-1 text-sm text-slate-200">{c.student_name} <span className="text-slate-500">· {c.project_judul}</span></span>
@@ -199,7 +292,7 @@
             ))}
           </Section>
           <Section title="Evaluasi Menunggu">
-            {d.pending_evaluations.length === 0 && <p className="text-sm text-slate-500">Tidak ada evaluasi menunggu.</p>}
+            {d.pending_evaluations.length === 0 && <EmptyState title="Tidak ada evaluasi menunggu" hint="Nilai aplikasi accepted setelah project closed." />}
             {d.pending_evaluations.map((e) => (
               <p key={e.application_id} className="text-sm text-slate-200 py-1 border-b border-slate-800 last:border-0">
                 {e.student_name} <span className="text-slate-500">· {e.project_judul}</span>
@@ -220,13 +313,13 @@
             <StatCard label="Perusahaan" value={d.total_companies} />
             <StatCard label="Project Aktif" value={d.total_active_projects} />
             <StatCard label="Aplikasi Pending" value={d.pending_applications} />
-            <StatCard label="Rata-rata Gap" value={d.avg_gap} />
+            <StatCard label="Rata-rata Gap" value={d.avg_gap} sub="Live vs pasar aktif" />
           </div>
           <Section title="Top Skill Dicari Industri">
             {d.top_demanded_skills.map((s) => <Bar key={s.name} label={s.name} value={s.c} max={maxTop} />)}
           </Section>
           <Section title="Skill Baru 30 Hari (Alert)">
-            {d.new_skills_30d.length === 0 && <p className="text-sm text-slate-500">Tidak ada skill baru.</p>}
+            {d.new_skills_30d.length === 0 && <EmptyState title="Tidak ada skill baru 30 hari terakhir" />}
             <div className="flex flex-wrap gap-2">
               {d.new_skills_30d.map((s) => <span key={s} className="text-xs bg-indigo-900 text-indigo-200 px-2 py-1 rounded">{s}</span>)}
             </div>
@@ -264,18 +357,16 @@
           const blob = await r.blob();
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob); a.download = 'gap-export.csv'; a.click();
+          props.notify('CSV terunduh.');
         } catch (ex) { setErr('Gagal mengunduh CSV.'); }
       }
       if (err) return <p className="text-sm text-red-400">{err}</p>;
-      if (!pie || !line || !heat) return <p className="text-sm text-slate-500">Memuat analytics…</p>;
+      if (!pie || !line || !heat) return <SkeletonList n={6} />;
       const maxDist = Math.max.apply(null, [1].concat(pie.distribution.map((s) => s.students)));
       const maxTop = Math.max.apply(null, [1].concat(line.top_skills.map((s) => s.c)));
       return (
         <div>
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">Analytics</h2>
-            <button onClick={downloadCsv} className={BTN}>Export CSV</button>
-          </div>
+          <PageHead title="Analytics" desc="Distribusi skill, tren industri, dan heatmap gap." action={<button onClick={downloadCsv} className={BTN}>Export CSV</button>} />
           <Section title={'Distribusi Skill (' + pie.total_students + ' mahasiswa)'}>
             {pie.distribution.slice(0, 12).map((s) => (
               <Bar key={s.name} label={s.name + ' (' + s.avg_level + ')'} value={s.students} max={maxDist} />
@@ -285,6 +376,8 @@
             {line.top_skills.map((s) => <Bar key={s.skill} label={s.skill} value={s.c} max={maxTop} color="bg-emerald-500" />)}
           </Section>
           <Section title="Heatmap Gap per Prodi">
+            {heat.matrix.length === 0 && <EmptyState title="Belum ada data prodi" hint="Lengkapi profil mahasiswa (program studi)." />}
+            {heat.matrix.length > 0 && (
             <div className="overflow-x-auto">
               <table className="text-xs text-slate-300 border-collapse">
                 <thead><tr><th className="p-1.5 text-left">Prodi</th>
@@ -304,6 +397,7 @@
                 </tbody>
               </table>
             </div>
+            )}
           </Section>
         </div>
       );
@@ -312,6 +406,7 @@
     // ---- Halaman: Projects (mahasiswa) ----
     function ProjectsView(props) {
       const [list, setList] = useState([]);
+      const [loading, setLoading] = useState(true);
       const [sektor, setSektor] = useState('');
       const [diff, setDiff] = useState('');
       const [sort, setSort] = useState('terbaru');
@@ -320,7 +415,7 @@
       const [msg, setMsg] = useState('');
       const [isErr, setIsErr] = useState(false);
       async function browse() {
-        setMsg(''); setIsErr(false);
+        setLoading(true); setMsg(''); setIsErr(false);
         try {
           const q = [];
           if (sektor) q.push('filter[sektor_industri]=' + encodeURIComponent(sektor));
@@ -331,6 +426,7 @@
           setList(j.data.projects || []);
           setDetail(null);
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+        finally { setLoading(false); }
       }
       useEffect(() => { browse(); }, []);
       async function openDetail(id) {
@@ -343,13 +439,13 @@
         setMsg(''); setIsErr(false);
         try {
           await apiSend('/projects/' + id + '/apply', props.token, 'POST', { cover_letter: cover || undefined });
-          setMsg('Aplikasi terkirim.');
+          props.notify('Aplikasi terkirim.');
           browse();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">Projects</h2>
+          <PageHead title="Projects" desc="Jelajahi project aktif industri dan daftar sesuai skill." />
           <div className="flex flex-wrap gap-2 mb-3">
             <input value={sektor} onChange={(e) => setSektor(e.target.value)} placeholder="Sektor…" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
             <select value={diff} onChange={(e) => setDiff(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
@@ -361,14 +457,15 @@
             <button onClick={browse} className={BTN}>Cari</button>
           </div>
           <Msg text={msg} err={isErr} />
-          {list.map((p) => (
-            <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2 flex items-center gap-3">
+          {loading && <SkeletonList />}
+          {!loading && list.length === 0 && <EmptyState title="Tidak ada project cocok" hint="Ubah filter atau cek lagi nanti." />}
+          {!loading && list.map((p) => (
+            <div key={p.id} className="bg-slate-900 border border-slate-800 hover:border-slate-600 transition rounded-2xl p-4 mb-2 flex items-center gap-3">
               <span className="flex-1 text-sm text-slate-200">{p.judul} <span className="text-slate-500">· {p.sektor_industri || '–'} · {p.difficulty || '–'} · {p.deadline || '–'}</span></span>
               {p.match_score != null && <span className={'text-xs font-bold px-2 py-1 rounded ' + matchColor(p.match_score)}>{p.match_score}</span>}
               <button onClick={() => openDetail(p.id)} className={BTN2}>Detail</button>
             </div>
           ))}
-          {list.length === 0 && <p className="text-sm text-slate-500">Tidak ada project.</p>}
           {detail && (
             <Section title={'Detail: ' + detail.judul}>
               <p className="text-sm text-slate-300 mb-2">{detail.deskripsi || '(tanpa deskripsi)'}</p>
@@ -389,49 +486,53 @@
     // ---- Halaman: My Skills (mahasiswa) ----
     function SkillsView(props) {
       const [mine, setMine] = useState([]);
+      const [loading, setLoading] = useState(true);
       const [tax, setTax] = useState([]);
       const [sid, setSid] = useState('');
       const [level, setLevel] = useState(50);
       const [source, setSource] = useState('course');
       const [editId, setEditId] = useState(null);
       const [editLevel, setEditLevel] = useState(50);
+      const [pendingDel, setPendingDel] = useState(null);
       const [msg, setMsg] = useState('');
       const [isErr, setIsErr] = useState(false);
       async function load() {
+        setLoading(true);
         try {
           const a = await apiFetch('/students/skills', props.token);
           setMine(a.data.skills || []);
           const b = await apiFetch('/skills', props.token);
-          setTax(b.data.skills || []);
-          if (!sid && (b.data.skills || []).length > 0) setSid(String(b.data.skills[0].id));
+          const arr = b.data.skills || [];
+          setTax(arr);
+          if (!sid && arr.length > 0) setSid(String(arr[0].id));
         } catch (e) { if (e.code === 401) props.onExpire(); }
+        finally { setLoading(false); }
       }
       useEffect(() => { load(); }, []);
       async function add() {
         setMsg(''); setIsErr(false);
         try {
           await apiSend('/students/skills', props.token, 'POST', { skill_id: Number(sid), proficiency_level: Number(level), source });
-          setMsg('Skill ditambahkan.'); load();
+          props.notify('Skill ditambahkan.'); load();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       async function save(id) {
         setMsg(''); setIsErr(false);
         try {
           await apiSend('/students/skills/' + id, props.token, 'PUT', { proficiency_level: Number(editLevel) });
-          setEditId(null); setMsg('Skill diupdate.'); load();
+          setEditId(null); props.notify('Skill diupdate.'); load();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       async function del(id) {
-        if (!window.confirm('Hapus skill ini?')) return;
-        setMsg(''); setIsErr(false);
+        setPendingDel(null); setMsg(''); setIsErr(false);
         try {
           await apiSend('/students/skills/' + id, props.token, 'DELETE');
-          setMsg('Skill dihapus.'); load();
+          props.notify('Skill dihapus.'); load();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">My Skills</h2>
+          <PageHead title="My Skills" desc="Kelola skill dan level penguasaan." />
           <Msg text={msg} err={isErr} />
           <Section title="Tambah Skill">
             <div className="flex flex-wrap gap-2">
@@ -446,13 +547,15 @@
             </div>
           </Section>
           <Section title={'Skill Saya (' + mine.length + ')'}>
-            {mine.map((s) => (
+            {loading && <SkeletonList n={3} />}
+            {!loading && mine.length === 0 && <EmptyState title="Belum ada skill" hint="Tambahkan skill pertama dari taxonomy di atas." />}
+            {!loading && mine.map((s) => (
               <div key={s.skill_id} className="py-2 border-b border-slate-800 last:border-0">
                 <div className="flex items-center gap-2">
                   <span className="flex-1 text-sm text-slate-200">{s.name} <span className="text-slate-500">[{s.proficiency_category} · {s.source}]</span></span>
                   <span className="text-sm text-slate-300 w-10 text-right">{s.proficiency_level}</span>
                   <button onClick={() => { setEditId(s.skill_id); setEditLevel(s.proficiency_level); }} className={BTN2}>Edit</button>
-                  <button onClick={() => del(s.skill_id)} className={DANGER}>Hapus</button>
+                  <button onClick={() => setPendingDel(s.skill_id)} className={DANGER}>Hapus</button>
                 </div>
                 {editId === s.skill_id && (
                   <div className="flex gap-2 mt-2">
@@ -464,6 +567,7 @@
               </div>
             ))}
           </Section>
+          <ConfirmModal open={pendingDel != null} title="Hapus skill?" text="Skill yang masih dipakai aplikasi aktif tidak bisa dihapus." onCancel={() => setPendingDel(null)} onConfirm={() => del(pendingDel)} />
         </div>
       );
     }
@@ -473,6 +577,7 @@
       const [projects, setProjects] = useState([]);
       const [pid, setPid] = useState('');
       const [result, setResult] = useState(null);
+      const [running, setRunning] = useState(false);
       const [msg, setMsg] = useState('');
       useEffect(() => {
         apiFetch('/projects?filter[status]=active&sort=terbaru', props.token)
@@ -484,23 +589,27 @@
           .catch((e) => { if (e.code === 401) props.onExpire(); });
       }, []);
       async function run() {
-        setMsg('');
+        setMsg(''); setRunning(true);
         try {
           const j = await apiFetch('/gap-analysis/' + props.user.id + '/' + pid, props.token);
           setResult(j.data);
+          props.notify('Analisis selesai — rekomendasi ikut dibuat.');
         } catch (e) { if (e.code === 401) props.onExpire(); else setMsg(e.message); }
+        finally { setRunning(false); }
       }
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">Gap Analysis</h2>
+          <PageHead title="Gap Analysis" desc="Bandingkan skill dengan requirement project." />
           <div className="flex gap-2 mb-3">
             <select value={pid} onChange={(e) => setPid(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
               {projects.map((p) => <option key={p.id} value={p.id}>{p.judul}</option>)}
             </select>
-            <button onClick={run} className={BTN}>Analisis</button>
+            <button onClick={run} disabled={running || !pid} className={BTN + ' disabled:opacity-60'}>{running ? 'Menganalisis…' : 'Analisis'}</button>
           </div>
           {msg && <p className="text-sm text-red-400 mb-3">{msg}</p>}
-          {result && (
+          {running && <SkeletonList n={5} />}
+          {!running && !result && <EmptyState title="Belum ada hasil" hint="Pilih project lalu tekan Analisis." />}
+          {!running && result && (
             <Section title="Hasil Analisis">
               <div className="overflow-x-auto">
                 <table className="text-sm text-slate-200 w-full">
@@ -528,30 +637,35 @@
     // ---- Halaman: Recommendations (mahasiswa) ----
     function RecsView(props) {
       const [list, setList] = useState([]);
+      const [loading, setLoading] = useState(true);
       async function load() {
+        setLoading(true);
         try {
           const j = await apiFetch('/recommendations/student/' + props.user.id, props.token);
           setList(j.data.recommendations || []);
         } catch (e) { if (e.code === 401) props.onExpire(); }
+        finally { setLoading(false); }
       }
       useEffect(() => { load(); }, []);
-      async function act(id, action) {
+      async function act(id, action, label) {
         try {
           await apiSend('/recommendations/' + id + '/action', props.token, 'POST', { action });
+          props.notify(label + ' tersimpan.');
           load();
         } catch (e) { if (e.code === 401) props.onExpire(); }
       }
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">Recommendations</h2>
-          {list.length === 0 && <p className="text-sm text-slate-500">Belum ada rekomendasi. Jalankan Gap Analysis dulu.</p>}
-          {list.map((r) => (
+          <PageHead title="Recommendations" desc="Jalur belajar dari hasil gap analysis." />
+          {loading && <SkeletonList />}
+          {!loading && list.length === 0 && <EmptyState title="Belum ada rekomendasi" hint="Jalankan Gap Analysis dulu." />}
+          {!loading && list.map((r) => (
             <div key={r.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2">
               <p className="text-sm text-slate-200 font-semibold">{r.title} <span className="text-xs text-indigo-400">[{r.priority} · {r.status}]</span></p>
               <p className="text-xs text-slate-500 mb-2">{r.description || ''}</p>
               <div className="flex gap-2">
-                {r.status === 'pending' && <button onClick={() => act(r.id, 'start')} className={BTN}>Mulai</button>}
-                {r.status === 'in-progress' && <button onClick={() => act(r.id, 'completed')} className={BTN}>Selesai</button>}
+                {r.status === 'pending' && <button onClick={() => act(r.id, 'start', 'Mulai')} className={BTN}>Mulai</button>}
+                {r.status === 'in-progress' && <button onClick={() => act(r.id, 'completed', 'Selesai')} className={BTN}>Selesai</button>}
               </div>
             </div>
           ))}
@@ -562,20 +676,24 @@
     // ---- Halaman: My Projects (perusahaan) ----
     function MyProjectsView(props) {
       const [list, setList] = useState([]);
+      const [loading, setLoading] = useState(true);
       const [tax, setTax] = useState([]);
       const [form, setForm] = useState({ judul: '', sektor_industri: '', deadline: '', difficulty: 'medium', status: 'active' });
       const [rows, setRows] = useState([{ skill_id: '', level_required: 50 }]);
       const [editId, setEditId] = useState(null);
       const [edit, setEdit] = useState({ judul: '', deskripsi: '', status: 'active' });
+      const [pendingDel, setPendingDel] = useState(null);
       const [msg, setMsg] = useState('');
       const [isErr, setIsErr] = useState(false);
       async function load() {
+        setLoading(true);
         try {
           const j = await apiFetch('/companies/projects', props.token);
           setList(j.data.projects || []);
           const t = await apiFetch('/skills', props.token).catch(() => ({ data: { skills: [] } }));
           setTax(t.data.skills || []);
         } catch (e) { if (e.code === 401) props.onExpire(); }
+        finally { setLoading(false); }
       }
       useEffect(() => { load(); }, []);
       function setF(k, v) { setForm(Object.assign({}, form, { [k]: v })); }
@@ -587,25 +705,26 @@
             deadline: form.deadline || undefined, difficulty: form.difficulty, status: form.status,
             skills: rows.filter((x) => x.skill_id).map((x) => ({ skill_id: Number(x.skill_id), level_required: Number(x.level_required) })),
           });
-          setMsg('Project dibuat.'); setForm({ judul: '', sektor_industri: '', deadline: '', difficulty: 'medium', status: 'active' });
-          setRows([{ skill_id: '', level_required: 50 }]); load();
+          setForm({ judul: '', sektor_industri: '', deadline: '', difficulty: 'medium', status: 'active' });
+          setRows([{ skill_id: '', level_required: 50 }]);
+          props.notify('Project dibuat.'); load();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       async function save(id) {
         setMsg(''); setIsErr(false);
         try {
           await apiSend('/companies/projects/' + id, props.token, 'PUT', { judul: edit.judul || undefined, deskripsi: edit.deskripsi || undefined, status: edit.status });
-          setEditId(null); setMsg('Project diupdate.'); load();
+          setEditId(null); props.notify('Project diupdate.'); load();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       async function del(id) {
-        if (!window.confirm('Hapus project ini?')) return;
-        try { await apiSend('/companies/projects/' + id, props.token, 'DELETE'); setMsg('Project dihapus.'); load(); }
+        setPendingDel(null);
+        try { await apiSend('/companies/projects/' + id, props.token, 'DELETE'); props.notify('Project dihapus.'); load(); }
         catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">My Projects</h2>
+          <PageHead title="My Projects" desc="Buat dan kelola project perusahaan." />
           <Msg text={msg} err={isErr} />
           <Section title="Buat Project">
             <input value={form.judul} onChange={(e) => setF('judul', e.target.value)} placeholder="Judul (min 5 karakter)" className={INP} />
@@ -635,12 +754,14 @@
             </div>
           </Section>
           <Section title={'Project Saya (' + list.length + ')'}>
-            {list.map((p) => (
+            {loading && <SkeletonList n={3} />}
+            {!loading && list.length === 0 && <EmptyState title="Belum ada project" hint="Buat project pertama dari form di atas." />}
+            {!loading && list.map((p) => (
               <div key={p.id} className="py-2 border-b border-slate-800 last:border-0">
                 <div className="flex items-center gap-2">
                   <span className="flex-1 text-sm text-slate-200">{p.judul} <span className="text-slate-500">[{p.status} · {p.difficulty || '–'} · {p.deadline || '–'}]</span></span>
                   <button onClick={() => { setEditId(p.id); setEdit({ judul: p.judul, deskripsi: p.deskripsi || '', status: p.status }); }} className={BTN2}>Edit</button>
-                  <button onClick={() => del(p.id)} className={DANGER}>Hapus</button>
+                  <button onClick={() => setPendingDel(p.id)} className={DANGER}>Hapus</button>
                 </div>
                 {editId === p.id && (
                   <div className="mt-2">
@@ -658,6 +779,7 @@
               </div>
             ))}
           </Section>
+          <ConfirmModal open={pendingDel != null} title="Hapus project?" text="Project terhapus (soft-delete) beserta datanya." onCancel={() => setPendingDel(null)} onConfirm={() => del(pendingDel)} />
         </div>
       );
     }
@@ -667,6 +789,7 @@
       const [projects, setProjects] = useState([]);
       const [pid, setPid] = useState('');
       const [apps, setApps] = useState([]);
+      const [loading, setLoading] = useState(true);
       const [msg, setMsg] = useState('');
       useEffect(() => {
         apiFetch('/companies/projects', props.token)
@@ -674,32 +797,36 @@
             const arr = j.data.projects || [];
             setProjects(arr);
             if (arr.length > 0) { setPid(String(arr[0].id)); loadApps(arr[0].id); }
+            else setLoading(false);
           })
-          .catch((e) => { if (e.code === 401) props.onExpire(); });
+          .catch((e) => { if (e.code === 401) props.onExpire(); else setLoading(false); });
       }, []);
       async function loadApps(id) {
+        setLoading(true);
         try {
           const j = await apiFetch('/companies/projects/' + id + '/applications', props.token);
           setApps(j.data.applications || []);
         } catch (e) { if (e.code === 401) props.onExpire(); }
+        finally { setLoading(false); }
       }
       async function decide(id, status) {
         try {
           await apiSend('/companies/applications/' + id, props.token, 'PATCH', { status });
-          setMsg('Aplikasi ' + status + '.'); loadApps(pid);
+          props.notify('Aplikasi ' + status + '.'); loadApps(pid);
         } catch (e) { if (e.code === 401) props.onExpire(); else setMsg(e.message); }
       }
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">Applications</h2>
-          {msg && <p className="text-sm text-slate-300 mb-3">{msg}</p>}
+          <PageHead title="Applications" desc="Kelola pelamar per project." />
+          {msg && <p className="text-sm text-red-400 mb-3">{msg}</p>}
           <div className="flex gap-2 mb-3">
             <select value={pid} onChange={(e) => { setPid(e.target.value); loadApps(e.target.value); }} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
               {projects.map((p) => <option key={p.id} value={p.id}>{p.judul} [{p.status}]</option>)}
             </select>
           </div>
-          {apps.length === 0 && <p className="text-sm text-slate-500">Belum ada aplikasi.</p>}
-          {apps.map((a) => (
+          {loading && <SkeletonList />}
+          {!loading && apps.length === 0 && <EmptyState title="Belum ada aplikasi" hint="Bagikan project agar mahasiswa mendaftar." />}
+          {!loading && apps.map((a) => (
             <div key={a.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2">
               <p className="text-sm text-slate-200 font-semibold">{a.student_name} <span className="text-xs text-indigo-400">[{a.status}]</span></p>
               <p className="text-xs text-slate-500 mb-2">{a.student_email || ''} {a.match_score != null && <span>· match {a.match_score}</span>}</p>
@@ -730,14 +857,14 @@
         setMsg(''); setIsErr(false);
         try {
           await apiSend('/assessments', props.token, 'POST', Object.assign({ project_id: Number(pid), student_id: Number(sid), comments: comments || undefined }, ratings));
-          setMsg('Penilaian tersimpan (skill mahasiswa ikut terupdate).');
+          props.notify('Penilaian tersimpan (skill mahasiswa ikut terupdate).');
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">Assess</h2>
+          <PageHead title="Assess" desc="Nilai mahasiswa — syarat: aplikasi accepted + project closed." />
           <Msg text={msg} err={isErr} />
-          <Section title="Form Penilaian (project harus closed + aplikasi accepted)">
+          <Section title="Form Penilaian">
             <div className="flex gap-2 mb-2">
               <input value={pid} onChange={(e) => setPid(e.target.value)} placeholder="project_id" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm w-32" />
               <input value={sid} onChange={(e) => setSid(e.target.value)} placeholder="student_id" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm w-32" />
@@ -761,16 +888,19 @@
     // ---- Halaman: Assess list (dosen) ----
     function MentorView(props) {
       const [list, setList] = useState([]);
+      const [loading, setLoading] = useState(true);
       useEffect(() => {
         apiFetch('/mentor/awaiting', props.token)
           .then((j) => setList(j.data.awaiting || []))
-          .catch((e) => { if (e.code === 401) props.onExpire(); });
+          .catch((e) => { if (e.code === 401) props.onExpire(); })
+          .finally(() => setLoading(false));
       }, []);
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">Assess — Antrian Dosen</h2>
-          {list.length === 0 && <p className="text-sm text-slate-500">Tidak ada aplikasi accepted.</p>}
-          {list.map((a, i) => (
+          <PageHead title="Antrian Penilaian" desc="Aplikasi accepted yang bisa dinilai." />
+          {loading && <SkeletonList n={3} />}
+          {!loading && list.length === 0 && <EmptyState title="Tidak ada aplikasi accepted" />}
+          {!loading && list.map((a, i) => (
             <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2 flex items-center gap-3">
               <span className="flex-1 text-sm text-slate-200">{a.student_name} <span className="text-slate-500">· {a.project_judul} {a.assessed ? '[sudah dinilai]' : '[belum dinilai]'}</span></span>
               <button onClick={() => props.onAssess({ project_id: a.project_id, student_id: a.student_id })} className={BTN2}>Nilai</button>
@@ -783,12 +913,15 @@
     // ---- Halaman: Notifikasi (semua role) ----
     function NotifsView(props) {
       const [list, setList] = useState([]);
+      const [loading, setLoading] = useState(true);
       const [unreadOnly, setUnreadOnly] = useState(false);
       async function load(uo) {
+        setLoading(true);
         try {
           const j = await apiFetch('/notifications' + (uo ? '?is_read=0' : ''), props.token);
           setList(j.data.notifications || []);
         } catch (e) { if (e.code === 401) props.onExpire(); }
+        finally { setLoading(false); }
       }
       useEffect(() => { load(unreadOnly); }, [unreadOnly]);
       async function mark(id) {
@@ -799,12 +932,12 @@
       }
       return (
         <div>
-          <div className="flex items-center gap-3 mb-3">
-            <h2 className="text-xl font-bold text-white flex-1">Notifikasi</h2>
-            <label className="text-xs text-slate-400"><input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} /> Belum dibaca saja</label>
-          </div>
-          {list.length === 0 && <p className="text-sm text-slate-500">Tidak ada notifikasi.</p>}
-          {list.map((n) => (
+          <PageHead title="Notifikasi" desc="Semua pemberitahuan akun." action={
+            <label className="text-xs text-slate-400"><input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.value)} /> Belum dibaca saja</label>
+          } />
+          {loading && <SkeletonList />}
+          {!loading && list.length === 0 && <EmptyState title="Tidak ada notifikasi" />}
+          {!loading && list.map((n) => (
             <div key={n.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-3 mb-2 flex items-center gap-3">
               <p className="flex-1 text-sm text-slate-300"><span className="text-indigo-400">[{n.type}]</span> {n.content}</p>
               {!n.is_read && <button onClick={() => mark(n.id)} className={BTN2}>Tandai dibaca</button>}
@@ -832,16 +965,16 @@
         setMsg(''); setIsErr(false);
         try {
           await apiSend('/users/profile', props.token, 'PUT', f);
-          setMsg('Profil diupdate.'); load();
+          props.notify('Profil diupdate.'); load();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
-      if (!data) return <p className="text-sm text-slate-500">Memuat profil…</p>;
+      if (!data) return <SkeletonList n={4} />;
       const role = data.user.role;
       return (
         <div>
-          <h2 className="text-xl font-bold text-white mb-3">Profil</h2>
+          <PageHead title="Profil" desc={data.user.email + ' · ' + role} />
           <Msg text={msg} err={isErr} />
-          <Section title={data.user.name + ' · ' + role + ' · ' + data.user.email}>
+          <Section title={data.user.name}>
             <label className="block text-xs text-slate-400 mb-1">Nama</label>
             <input value={f.name || ''} onChange={(e) => set('name', e.target.value)} className={INP} />
             {role === 'mahasiswa' && (
@@ -883,20 +1016,43 @@
       recs: 'Recommendations', myprojects: 'My Projects', applications: 'Applications', assess: 'Assess',
       notifs: 'Notifikasi', profile: 'Profil',
     };
+    const ROLE_TITLES = { mahasiswa: 'Dashboard Mahasiswa', perusahaan: 'Dashboard Perusahaan', kampus: 'Dashboard Kampus', dosen: 'Dashboard Kampus (Dosen)' };
 
     function App() {
       const [token, setToken] = useState(localStorage.getItem('token') || '');
       const [user, setUser] = useState(null);
       const [data, setData] = useState(null);
-      const [view, setView] = useState('dash');
+      const [view, setView] = useState(viewFromHash());
       const [assessTarget, setAssessTarget] = useState({});
       const [err, setErr] = useState('');
       const [loading, setLoading] = useState(false);
+      const [toasts, setToasts] = useState([]);
+
+      function notify(text, isErr) {
+        const id = Date.now() + Math.random();
+        setToasts((t) => t.concat([{ id, text, err: !!isErr }]));
+        setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3500);
+      }
+      function navigate(v) {
+        setView(v);
+        try {
+          if (viewFromHash() !== v) window.location.hash = HASH[v] || '#/';
+        } catch (ex) { /* abaikan */ }
+      }
+      useEffect(() => {
+        function onHash() { setView(viewFromHash()); }
+        window.addEventListener('hashchange', onHash);
+        return () => window.removeEventListener('hashchange', onHash);
+      }, []);
+      useEffect(() => {
+        document.title = ((view === 'dash' && user ? (ROLE_TITLES[user.role] || 'Dashboard') : (TITLES[view] || view)) + ' — Talent Hub');
+      }, [view, user]);
 
       function logout(expireMsg) {
         if (token) { fetch(API + '/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + token } }).catch(() => {}); }
         localStorage.removeItem('token');
         setToken(''); setUser(null); setData(null); setView('dash');
+        try { window.location.hash = '#/'; } catch (ex) { /* abaikan */ }
         if (expireMsg) setErr(expireMsg);
       }
       function endpointFor(role) {
@@ -920,48 +1076,59 @@
       useEffect(() => { if (token) load(token); }, []);
       function onLogin(tk, usr) {
         localStorage.setItem('token', tk);
-        setToken(tk); setUser(usr); setView('dash');
+        setToken(tk); setUser(usr); navigate('dash');
         load(tk);
       }
-      function goAssess(t) { setAssessTarget(t || {}); setView('assess'); }
+      function goAssess(t) { setAssessTarget(t || {}); navigate('assess'); }
 
-      if (!token || !user) return <LoginView onLogin={onLogin} />;
+      if (!token || !user) return (<div><LoginView onLogin={onLogin} /><Toasts items={toasts} /></div>);
       const nav = NAV[user.role] || NAV.mahasiswa;
-      const titles = { mahasiswa: 'Dashboard Mahasiswa', perusahaan: 'Dashboard Perusahaan', kampus: 'Dashboard Kampus', dosen: 'Dashboard Kampus (Dosen)' };
       const canAnalytics = user.role === 'kampus' || user.role === 'dosen';
+      const expire = () => logout('Sesi berakhir, silakan login ulang.');
       return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 flex">
-          <aside className="w-52 shrink-0 bg-slate-900 border-r border-slate-800 p-4 flex flex-col">
+        <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col md:flex-row">
+          <aside className="hidden md:flex w-52 shrink-0 bg-slate-900 border-r border-slate-800 p-4 flex-col">
             <p className="font-bold text-white text-sm mb-1">Talent Hub App</p>
             <p className="text-xs text-slate-500 mb-4">{user.name} · {user.role}</p>
             {nav.map((n) => (
-              <button key={n[0]} onClick={() => setView(n[0])}
-                className={'text-left text-sm rounded-lg px-3 py-2 mb-1 ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>{n[1]}</button>
+              <a key={n[0]} href={HASH[n[0]]} onClick={(e) => { e.preventDefault(); navigate(n[0]); }}
+                className={'text-left text-sm rounded-lg px-3 py-2 mb-1 transition ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>{n[1]}</a>
             ))}
             <div className="flex-1"></div>
             <a href="/" className="text-xs text-slate-500 hover:text-slate-300 px-3 py-1">← Landing</a>
             <button onClick={() => logout()} className="text-left text-sm text-red-400 hover:text-red-300 px-3 py-2">Keluar</button>
           </aside>
-          <main className="flex-1 p-5 max-w-5xl">
-            <h1 className="text-2xl font-extrabold text-white mb-4">{view === 'dash' ? (titles[user.role] || 'Dashboard') : (TITLES[view] || view)}</h1>
+          <div className="md:hidden sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+            <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto">
+              <span className="text-xs font-bold text-white whitespace-nowrap">Talent Hub</span>
+              {nav.map((n) => (
+                <a key={n[0]} href={HASH[n[0]]} onClick={(e) => { e.preventDefault(); navigate(n[0]); }}
+                  className={'text-xs whitespace-nowrap rounded-lg px-2.5 py-1.5 ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'text-slate-300')}>{n[1]}</a>
+              ))}
+              <button onClick={() => logout()} className="text-xs text-red-400 whitespace-nowrap px-2">Keluar</button>
+            </div>
+          </div>
+          <main className="flex-1 p-4 md:p-5 max-w-5xl w-full mx-auto">
+            <h1 className="text-2xl font-extrabold text-white mb-4">{view === 'dash' ? (ROLE_TITLES[user.role] || 'Dashboard') : (TITLES[view] || view)}</h1>
             {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
-            {loading && view === 'dash' && <p className="text-sm text-slate-500">Memuat data…</p>}
+            {loading && view === 'dash' && <SkeletonList n={5} />}
             {!loading && data && view === 'dash' && user.role === 'mahasiswa' && <StudentDash data={data} />}
             {!loading && data && view === 'dash' && user.role === 'perusahaan' && <CompanyDash data={data} />}
             {!loading && data && view === 'dash' && (user.role === 'kampus' || user.role === 'dosen') && <CampusDash data={data} />}
-            {view === 'analytics' && canAnalytics && <AnalyticsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'projects' && <ProjectsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'skills' && <SkillsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'gap' && <GapView token={token} user={user} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'recs' && <RecsView token={token} user={user} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'myprojects' && <MyProjectsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'applications' && <ApplicationsView token={token} onAssess={goAssess} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'assess' && user.role === 'dosen' && <MentorView token={token} onAssess={goAssess} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'assess' && user.role === 'perusahaan' && <AssessView token={token} target={assessTarget} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {(assessTarget.project_id && view === 'assess' && user.role === 'dosen') && <AssessView token={token} target={assessTarget} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'notifs' && <NotifsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
-            {view === 'profile' && <ProfileView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'analytics' && canAnalytics && <AnalyticsView token={token} notify={notify} onExpire={expire} />}
+            {view === 'projects' && <ProjectsView token={token} notify={notify} onExpire={expire} />}
+            {view === 'skills' && <SkillsView token={token} notify={notify} onExpire={expire} />}
+            {view === 'gap' && <GapView token={token} user={user} notify={notify} onExpire={expire} />}
+            {view === 'recs' && <RecsView token={token} user={user} notify={notify} onExpire={expire} />}
+            {view === 'myprojects' && <MyProjectsView token={token} notify={notify} onExpire={expire} />}
+            {view === 'applications' && <ApplicationsView token={token} notify={notify} onAssess={goAssess} onExpire={expire} />}
+            {view === 'assess' && user.role === 'dosen' && <MentorView token={token} notify={notify} onAssess={goAssess} onExpire={expire} />}
+            {view === 'assess' && user.role === 'perusahaan' && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} />}
+            {(assessTarget.project_id && view === 'assess' && user.role === 'dosen') && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} />}
+            {view === 'notifs' && <NotifsView token={token} notify={notify} onExpire={expire} />}
+            {view === 'profile' && <ProfileView token={token} notify={notify} onExpire={expire} />}
           </main>
+          <Toasts items={toasts} />
         </div>
       );
     }

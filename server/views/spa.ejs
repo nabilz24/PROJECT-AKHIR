@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campus Industry Talent Hub</title>
-  <!-- TASK-107: Tailwind CSS v4 browser CDN (butuh internet).
-       "/" landing only; login di "/login"; dashboard di "/dashboard/*" dan "/app". -->
+  <!-- TASK-114: landing dipoles — sticky nav, hero gradient, fitur, langkah,
+       peran, CTA. "/" landing only; masuk via "/app" (SPA) atau "/login" (EJS). -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -22,10 +22,10 @@
   </noscript>
   <script type="text/babel" data-presets="react">
     const ROLES = [
-      { name: 'Mahasiswa', desc: 'Isi skill, daftar project, lihat gap & rekomendasi kursus.', dash: '/dashboard/student' },
-      { name: 'Perusahaan', desc: 'Buat project, lihat kandidat terurut match score, beri evaluasi.', dash: '/dashboard/company' },
-      { name: 'Kampus', desc: 'Pantau total mahasiswa, tren skill industri, dan heatmap gap.', dash: '/dashboard/campus' },
-      { name: 'Dosen', desc: 'Bimbing mahasiswa, isi evaluasi, lihat analytics.', dash: '/dashboard/mentor' },
+      { name: 'Mahasiswa', desc: 'Isi skill, daftar project, lihat gap & rekomendasi kursus.' },
+      { name: 'Perusahaan', desc: 'Buat project, lihat kandidat terurut match score, beri evaluasi.' },
+      { name: 'Kampus', desc: 'Pantau total mahasiswa, tren skill industri, dan heatmap gap.' },
+      { name: 'Dosen', desc: 'Lihat antrian penilaian, isi evaluasi, pantau analytics.' },
     ];
 
     const STEPS = [
@@ -34,32 +34,63 @@
       { n: '3', t: 'Matching otomatis', d: 'Skor rule-based 50/20/10/10/10, kandidat terurut, gap & rekomendasi kursus muncul otomatis.' },
     ];
 
+    const FEATURES = [
+      { t: 'Project Marketplace', d: 'Cari, filter, dan daftar project industri langsung dari dashboard.' },
+      { t: 'Talent Matching Transparan', d: 'Skor 0–100 dengan breakdown per skill: kuat, close, lemah.' },
+      { t: 'Skill Gap Analysis', d: 'Selisih requirement vs level per skill + klasifikasi small–critical.' },
+      { t: 'Rekomendasi Belajar', d: 'Course, workshop, sertifikasi, dan mentor — plus progress tracking.' },
+      { t: 'Assessment 360°', d: 'Evaluasi skill, komunikasi, ketepatan; level skill ikut terupdate.' },
+      { t: 'Analytics Kampus', d: 'Distribusi skill, tren industri, heatmap gap, export CSV.' },
+    ];
+
     function App() {
       return (
         <div className="min-h-screen bg-slate-950 text-slate-200">
-          <nav className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-            <span className="font-bold text-white">Campus Industry Talent Hub</span>
-            <a href="/login" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">Masuk</a>
+          <nav className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800">
+            <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3.5">
+              <a href="/" className="font-bold text-white">Campus Industry Talent Hub</a>
+              <div className="flex items-center gap-2">
+                <a href="#fitur" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Fitur</a>
+                <a href="#cara-kerja" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Cara Kerja</a>
+                <a href="/login" className="text-sm text-slate-300 hover:text-white px-3 py-2">Masuk</a>
+                <a href="/app" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-4 py-2">Buka Aplikasi</a>
+              </div>
+            </div>
           </nav>
 
-          <header className="max-w-6xl mx-auto px-6 pt-10 pb-14 text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
+          <header className="max-w-6xl mx-auto px-6 pt-16 pb-14 text-center bg-gradient-to-b from-indigo-950/60 via-slate-950 to-slate-950 rounded-b-3xl">
+            <span className="inline-block text-xs font-semibold text-indigo-300 bg-indigo-950 border border-indigo-800 rounded-full px-3 py-1 mb-4">MVP · Kampus × Industri</span>
+            <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
               Jembatan Kampus <span className="text-indigo-400">&amp;</span> Industri
             </h1>
             <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
               Marketplace project, talent matching rule-based yang transparan, analisis skill gap,
               dan rekomendasi pembelajaran — dalam satu platform.
             </p>
-            <div className="mt-6 flex gap-3 justify-center">
-              <a href="/login" className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5">Mulai Masuk</a>
-              <a href="#cara-kerja" className="rounded-lg border border-slate-700 hover:border-slate-500 text-slate-200 px-5 py-2.5">Cara Kerja</a>
+            <div className="mt-7 flex flex-wrap gap-3 justify-center">
+              <a href="/app" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-6 py-3">Buka Aplikasi</a>
+              <a href="#cara-kerja" className="rounded-xl border border-slate-700 hover:border-slate-500 transition text-slate-200 px-6 py-3">Cara Kerja</a>
             </div>
-            <div className="mt-8 flex gap-6 justify-center text-sm text-slate-400">
-              <span><b className="text-white">31</b> skill taxonomy</span>
-              <span><b className="text-white">4</b> role</span>
-              <span><b className="text-white">50/20/10/10/10</b> formula match</span>
+            <div className="mt-9 flex flex-wrap gap-x-8 gap-y-2 justify-center text-sm text-slate-400">
+              <span><b className="text-white text-lg">31</b> skill taxonomy</span>
+              <span><b className="text-white text-lg">4</b> role</span>
+              <span><b className="text-white text-lg">50/20/10/10/10</b> formula match</span>
+              <span><b className="text-white text-lg">74</b> endpoint teraudit</span>
             </div>
           </header>
+
+          <section id="fitur" className="max-w-6xl mx-auto px-6 py-14">
+            <h2 className="text-2xl font-bold text-white mb-1">Fitur Unggulan</h2>
+            <p className="text-sm text-slate-500 mb-6">Semua modul sudah hidup dan bisa dicoba lewat aplikasi.</p>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {FEATURES.map((f) => (
+                <div key={f.t} className="bg-slate-900 border border-slate-800 hover:border-indigo-700 transition rounded-2xl p-6">
+                  <h3 className="font-semibold text-white mb-1">{f.t}</h3>
+                  <p className="text-sm text-slate-400">{f.d}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           <section id="cara-kerja" className="max-w-6xl mx-auto px-6 pb-14">
             <h2 className="text-2xl font-bold text-white mb-6">Cara Kerja</h2>
@@ -76,19 +107,37 @@
 
           <section className="max-w-6xl mx-auto px-6 pb-14">
             <h2 className="text-2xl font-bold text-white mb-6">Untuk Setiap Peran</h2>
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
               {ROLES.map((r) => (
-                <div key={r.name} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col">
+                <div key={r.name} className="bg-slate-900 border border-slate-800 hover:border-slate-600 transition rounded-2xl p-6 flex flex-col">
                   <h3 className="font-semibold text-white mb-1">{r.name}</h3>
                   <p className="text-sm text-slate-400 flex-1">{r.desc}</p>
-                  <p className="text-xs text-slate-500 mt-3">Dashboard: <span className="font-mono">{r.dash}</span> (setelah login)</p>
+                  <a href="/app" className="text-sm text-indigo-400 hover:text-indigo-300 mt-3">Masuk sebagai {r.name} →</a>
                 </div>
               ))}
             </div>
           </section>
 
-          <footer className="border-t border-slate-800 text-center text-xs text-slate-500 py-6">
-            Campus Industry Talent Hub · <a className="underline" href="/login">Masuk</a> · API <a className="underline" href="/api/v1/health">/api/v1/health</a>
+          <section className="max-w-6xl mx-auto px-6 pb-16">
+            <div className="bg-gradient-to-r from-indigo-900 to-slate-900 border border-indigo-800 rounded-3xl p-8 md:p-12 text-center">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white">Siap menghubungkan kampus dan industri?</h2>
+              <p className="text-slate-400 mt-2 mb-6">Login dengan akun demo dan jelajahi semua halaman dashboard.</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <a href="/app" className="rounded-xl bg-white text-slate-900 font-semibold px-6 py-3 hover:bg-slate-200 transition">Buka Aplikasi</a>
+                <a href="/login" className="rounded-xl border border-slate-600 text-slate-200 px-6 py-3 hover:border-slate-400 transition">Halaman Login</a>
+              </div>
+            </div>
+          </section>
+
+          <footer className="border-t border-slate-800">
+            <div className="max-w-6xl mx-auto px-6 py-6 flex flex-wrap gap-2 items-center justify-between text-xs text-slate-500">
+              <span>Campus Industry Talent Hub</span>
+              <span className="flex gap-4">
+                <a className="hover:text-slate-300" href="/app">Aplikasi</a>
+                <a className="hover:text-slate-300" href="/login">Masuk</a>
+                <a className="hover:text-slate-300" href="/api/v1/health">API Health</a>
+              </span>
+            </div>
           </footer>
         </div>
       );

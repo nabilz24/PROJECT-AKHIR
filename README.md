@@ -88,6 +88,8 @@ Buka `http://localhost:3000/app`, login dengan salah satu akun di atas.
 
 Dashboard, Projects, My Skills, Gap Analysis, Recommendations, My Projects, Applications, Assess, Analytics, Notifikasi, Profil (menu menyesuaikan role). Versi server-render tetap ada di `/dashboard/*`.
 
+Tiap halaman punya URL: `/app#/projects`, `/app#/skills`, `/app#/gap`, `/app#/recommendations`, `/app#/my-projects`, `/app#/applications`, `/app#/assess`, `/app#/analytics`, `/app#/notifications`, `/app#/profile`.
+
 ## Audit API
 
 ```bash
@@ -148,4 +150,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 10 — DONE + TASK-104..109 (SPA landing `/`, login `/login`, dashboard SPA `/app` 10 halaman, audit 74/74). 149 test hijau.
+**Status**: Phase 10 — DONE + TASK-104..114 (SPA landing `/`, login `/login`, dashboard SPA `/app` 10 halaman ber-URL, audit 74/74). 149 test hijau.

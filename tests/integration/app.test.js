@@ -30,6 +30,10 @@ describe('SPA dashboard (TASK-106)', () => {
     expect(res.text).toMatch(/\/students\/skills/);
     expect(res.text).toMatch(/\/companies\/projects/);
     expect(res.text).toMatch(/\/assessments/);
+    expect(res.text).toMatch(/#\/projects/);
+    expect(res.text).toMatch(/#\/notifications/);
+    expect(res.text).toMatch(/Akun demo/);
+    expect(res.text).toMatch(/Talent Hub App/);
   });
 
   test('GET / tetap landing (tidak berubah oleh /app)', async () => {
