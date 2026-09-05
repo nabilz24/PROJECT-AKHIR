@@ -316,4 +316,11 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Live verified — port 3114: `/` dan `/app` 200 + penanda v4 True + sisa v3 False.
 - ✅ Acceptance criteria passed — checklist TASK-107 terpenuhi.
 
+### TASK-108 — Akun testing siap pakai (2026-09-05): DONE
+
+- ✅ Requirement implemented — `seedTestAccounts()` idempotent di `seed.js` + script `npm run db:seed:test`: 4 akun (`mhs/perusahaan/kampus/dosen@test.id`, password `Test123!`, dev lokal saja), profil mahasiswa + perusahaan terverifikasi, skill React 40 + JavaScript 60, 1 project demo aktif + 1 aplikasi pending.
+- ✅ Live verified — login keempat akun berhasil (role + dashboard_url benar); dashboard mahasiswa (2 skill, 1 pending, match 43) & perusahaan (1 aktif, 1 kandidat) berisi data.
+- ✅ Bonus fix — path script `db:migrate`/`db:seed` di package.json menunjuk `server/db/...` yang tidak ada; dibetulkan ke `server/src/db/...`.
+- ✅ Acceptance criteria passed — checklist TASK-108 terpenuhi.
+
 ---

@@ -66,7 +66,23 @@ npm run db:migrate
 
 # Seed skill taxonomy awal (30 skill)
 npm run db:seed
+
+# Seed akun testing (4 role + profil + project demo + aplikasi pending)
+npm run db:seed:test
 ```
+
+## Akun Testing (development lokal saja)
+
+Password semua akun: `Test123!`
+
+| Email | Role | Keterangan |
+|-------|------|------------|
+| `mhs@test.id` | Mahasiswa | Punya skill React 40 + JavaScript 60, 1 aplikasi pending |
+| `perusahaan@test.id` | Perusahaan | Terverifikasi; 1 project demo aktif + 1 kandidat menunggu |
+| `kampus@test.id` | Kampus | Lihat dashboard kampus + analytics |
+| `dosen@test.id` | Dosen | Lihat dashboard kampus + analytics |
+
+Buka `http://localhost:3000/app`, login dengan salah satu akun di atas.
 
 ### Development Server
 ```bash

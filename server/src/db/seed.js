@@ -5,6 +5,7 @@
 // saat tabel skills tersedia, taxonomy otomatis di-seed secara idempotent.
 const { getDb, closeDb } = require('./connection');
 const { runMigrations } = require('./migrate');
+const { hashPassword } = require('../utils/password');
 
 function tableExists(db, name) {
   const row = db
@@ -73,9 +74,69 @@ function runSeeds() {
   return summary;
 }
 
-if (require.main === module) {
-  console.log(runSeeds());
-  closeDb();
+// Akun testing siap pakai (TASK-108). Idempotent (aman dijalankan ulang).
+// Password semua akun: Test123! — HANYA untuk development lokal, jangan
+// dipakai di staging/production. Jalankan: npm run db:seed:test
+const TEST_PASSWORD = 'Test123!';
+const TEST_ACCOUNTS = [
+  { name: 'Mahasiswa Test', email: 'mhs@test.id', role: 'mahasiswa' },
+  { name: 'PT Teknologi Test', email: 'perusahaan@test.id', role: 'perusahaan' },
+  { name: 'Admin Kampus', email: 'kampus@test.id', role: 'kampus' },
+  { name: 'Dosen Test', email: 'dosen@test.id', role: 'dosen' },
+];
+
+async function seedTestAccounts(db) {
+  const need = ['users', 'student_profiles', 'companies', 'skills', 'student_skills', 'projects', 'project_skills', 'applications'];
+  for (const t of need) {
+    if (!tableExists(db, t)) return { testAccounts: `skipped (tabel ${t} belum ada)` };
+  }
+  const passwordHash = await hashPassword(TEST_PASSWORD);
+  const insertUser = db.prepare('INSERT OR IGNORE INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)');
+  const byEmail = (email) => db.prepare('SELECT id, role FROM users WHERE email = ?').get(email);
+  const tx = db.transaction(() => {
+    for (const a of TEST_ACCOUNTS) insertUser.run(a.name, a.email, passwordHash, a.role);
+  });
+  tx();
+
+  const mhs = byEmail('mhs@test.id');
+  const comp = byEmail('perusahaan@test.id');
+  db.prepare('INSERT OR IGNORE INTO student_profiles (user_id, npm, program_studi, angkatan, bio) VALUES (?, ?, ?, ?, ?)')
+    .run(mhs.id, '20230001', 'Informatika', 2023, 'Akun testing mahasiswa.');
+  db.prepare("INSERT OR IGNORE INTO companies (user_id, nama_perusahaan, industri, size, deskripsi, verified_status) VALUES (?, ?, ?, ?, ?, ?)")
+    .run(comp.id, 'PT Teknologi Test', 'Teknologi', 'medium', 'Akun testing perusahaan (terverifikasi).', 1);
+
+  const skillId = (name) => db.prepare('SELECT id FROM skills WHERE name = ?').get(name).id;
+  const insertSkill = db.prepare('INSERT OR IGNORE INTO student_skills (student_id, skill_id, proficiency_level, source) VALUES (?, ?, ?, ?)');
+  insertSkill.run(mhs.id, skillId('React'), 40, 'course');
+  insertSkill.run(mhs.id, skillId('JavaScript'), 60, 'experience');
+
+  // Project demo aktif + aplikasi pending agar dashboard perusahaan/mahasiswa hidup.
+  const companyId = db.prepare('SELECT id FROM companies WHERE user_id = ?').get(comp.id).id;
+  const existing = db.prepare('SELECT id FROM projects WHERE company_id = ? AND judul = ? AND deleted_at IS NULL').get(companyId, 'Website Company Profile');
+  let projectId = existing ? existing.id : null;
+  if (!projectId) {
+    const deadline = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    const r = db.prepare("INSERT INTO projects (company_id, judul, deskripsi, sektor_industri, deadline, status, difficulty) VALUES (?, ?, ?, ?, ?, 'active', 'medium')")
+      .run(companyId, 'Website Company Profile', 'Project demo untuk testing.', 'Teknologi', deadline);
+    projectId = Number(r.lastInsertRowid);
+    db.prepare('INSERT OR IGNORE INTO project_skills (project_id, skill_id, level_required) VALUES (?, ?, ?)').run(projectId, skillId('React'), 60);
+  }
+  const appExists = db.prepare("SELECT id FROM applications WHERE student_id = ? AND project_id = ? AND status IN ('pending', 'accepted')").get(mhs.id, projectId);
+  if (!appExists) {
+    db.prepare('INSERT INTO applications (student_id, project_id, status, cover_letter) VALUES (?, ?, ?, ?)').run(mhs.id, projectId, 'pending', 'Halo, saya tertarik (akun testing).');
+  }
+  return { testAccounts: TEST_ACCOUNTS.map((a) => a.email) };
 }
 
-module.exports = { runSeeds };
+if (require.main === module) {
+  (async () => {
+    console.log(runSeeds());
+    if (process.argv.includes('--test-accounts')) {
+      console.log(await seedTestAccounts(getDb()));
+      console.log(`Password semua akun testing: ${TEST_PASSWORD} (development lokal saja)`);
+    }
+    closeDb();
+  })();
+}
+
+module.exports = { runSeeds, seedTestAccounts, TEST_ACCOUNTS, TEST_PASSWORD };
