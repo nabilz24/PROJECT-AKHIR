@@ -14,28 +14,42 @@ function tableExists(db, name) {
 }
 
 function seedSkills(db) {
-  // database.md Bagian 4: 20 entry awal (akan dilengkapi 10 soft skill di TASK-030).
+  // database.md Bagian 4 / TASK-030: 20 technical + 10 soft-skill (+1 certification bonus).
   const skills = [
+    // --- Technical (20) ---
     ['React', 'technical', null, 100],
     ['JavaScript', 'technical', null, 100],
+    ['TypeScript', 'technical', null, 100],
     ['Node.js', 'technical', null, 100],
     ['HTML/CSS', 'technical', null, 100],
     ['Python', 'technical', null, 100],
-    ['TypeScript', 'technical', null, 100],
+    ['Java', 'technical', null, 100],
+    ['PHP', 'technical', null, 100],
     ['SQL', 'technical', null, 100],
     ['Git', 'technical', null, 100],
     ['Docker', 'technical', null, 100],
+    ['CI/CD', 'technical', null, 100],
+    ['API Development', 'technical', null, 100],
+    ['Software Testing', 'technical', null, 100],
+    ['Data Analysis', 'technical', null, 100],
+    ['Machine Learning', 'technical', null, 100],
+    ['Cybersecurity Basics', 'technical', null, 100],
+    ['UI/UX Design', 'technical', null, 100],
     ['Figma', 'technical', null, 100],
+    ['Mobile Development', 'technical', null, 100],
+    // --- Soft-skill (10) ---
     ['Communication', 'soft-skill', null, 100],
     ['Teamwork', 'soft-skill', null, 100],
     ['Problem Solving', 'soft-skill', null, 100],
     ['Time Management', 'soft-skill', null, 100],
     ['Project Management', 'soft-skill', null, 100],
     ['Design Thinking', 'soft-skill', null, 100],
+    ['Leadership', 'soft-skill', null, 100],
+    ['Critical Thinking', 'soft-skill', null, 100],
+    ['Creativity', 'soft-skill', null, 100],
+    ['Adaptability', 'soft-skill', null, 100],
+    // --- Bonus ---
     ['Certification Management', 'certification', null, 100],
-    ['API Development', 'technical', null, 100],
-    ['Data Analysis', 'technical', null, 100],
-    ['UI/UX Design', 'technical', null, 100],
   ];
   const insert = db.prepare(
     'INSERT OR IGNORE INTO skills (name, category, description, level_scale_default) VALUES (?, ?, ?, ?)'

@@ -1,9 +1,9 @@
 ---
 title: "database.md — Desain Database & Schema"
-version: "1.3.0"
+version: "1.4.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.3.0 — TASK-020: catat kolom logo companies + auto-create profil saat registrasi"
+changelog: "2026-09-05 v1.4.0 — TASK-030: seed list 20 teknis + 10 soft skill; catat migrasi 006/007"
 ---
 
 # database.md — Desain Database & Schema
@@ -228,36 +228,52 @@ Indeks dibuat untuk field yang sering difilter/search dalam fitur kunci:
 
 Daftar skill dasar yang di-impor saat `npm run db:seed` atau `php artisan db:seed`. Daftar ini bisa diperbarui admin kampus melalui admin panel.
 
-**Teknis Skill (minimal 20 entry):**
+**Technical Skill (20 entry, TASK-030):**
 
 | ID | Nama Skill | Kategori | Level Scale Default |
 |---|------------|----------|---|
 | 1 | React | technical | 100 |
 | 2 | JavaScript | technical | 100 |
-| 3 | Node.js | technical | 100 |
-| 4 | HTML/CSS | technical | 100 |
-| 5 | Python | technical | 100 |
-| 6 | TypeScript | technical | 100 |
-| 7 | SQL | technical | 100 |
-| 8 | Git | technical | 100 |
-| 9 | Docker | technical | 100 |
-| 10 | Figma | technical | 100 |
-| 11 | Communication | soft-skill | 100 |
-| 12 | Teamwork | soft-skill | 100 |
-| 13 | Problem Solving | soft-skill | 100 |
-| 14 | Time Management | soft-skill | 100 |
-| 15 | Project Management | soft-skill | 100 |
-| 16 | Design Thinking | soft-skill | 100 |
-| 17 | Certification Management | certification | 100 |
-| 18 | API Development | technical | 100 |
-| 19 | Data Analysis | technical | 100 |
-| 20 | UI/UX Design | technical | 100 |
+| 3 | TypeScript | technical | 100 |
+| 4 | Node.js | technical | 100 |
+| 5 | HTML/CSS | technical | 100 |
+| 6 | Python | technical | 100 |
+| 7 | Java | technical | 100 |
+| 8 | PHP | technical | 100 |
+| 9 | SQL | technical | 100 |
+| 10 | Git | technical | 100 |
+| 11 | Docker | technical | 100 |
+| 12 | CI/CD | technical | 100 |
+| 13 | API Development | technical | 100 |
+| 14 | Software Testing | technical | 100 |
+| 15 | Data Analysis | technical | 100 |
+| 16 | Machine Learning | technical | 100 |
+| 17 | Cybersecurity Basics | technical | 100 |
+| 18 | UI/UX Design | technical | 100 |
+| 19 | Figma | technical | 100 |
+| 20 | Mobile Development | technical | 100 |
 
-**Soft-skill tambahan (opsional):**
-- Leadership, Critical Thinking, Creativity, Adaptability, Negotiation
+**Soft-skill (10 entry, TASK-030):**
+
+| ID | Nama Skill | Kategori | Level Scale Default |
+|---|------------|----------|---|
+| 21 | Communication | soft-skill | 100 |
+| 22 | Teamwork | soft-skill | 100 |
+| 23 | Problem Solving | soft-skill | 100 |
+| 24 | Time Management | soft-skill | 100 |
+| 25 | Project Management | soft-skill | 100 |
+| 26 | Design Thinking | soft-skill | 100 |
+| 27 | Leadership | soft-skill | 100 |
+| 28 | Critical Thinking | soft-skill | 100 |
+| 29 | Creativity | soft-skill | 100 |
+| 30 | Adaptability | soft-skill | 100 |
+
+**Bonus:** Certification Management (`certification`, 100).
+
+> **Catatan 2026-09-05 (TASK-030):** daftar di atas menggantikan daftar 20 entry campuran sebelumnya agar memenuhi acceptance criteria (minimal 20 teknis & 10 soft skill). Implementasi: `server/src/db/seed.js` (`INSERT OR IGNORE`, idempotent).
 
 **Data seed cara kerja:**
-- `php artisan db:seed` atau `npm run db:seed` akan INSERT INTO skills atas 20 entry.
+- `npm run db:seed` akan INSERT INTO skills atas 31 entry (idempotent via `INSERT OR IGNORE`).
 - Setiap skill memiliki `level_scale_default = 100` (batas maksimal proficience).
 - Admin dapat menambah skill melalui UI admin panel jika butuh skill khusus industri.
 
@@ -308,5 +324,7 @@ Sketsa tipe di Bagian 1 ditulis untuk PostgreSQL/MySQL. Implementasi SQLite (`be
 **Catatan 2026-09-05 (TASK-010, Phase 1 Auth):** implementasi menambah dua kolom di `users` di luar sketsa Bagian 1 — `failed_attempts INTEGER DEFAULT 0` dan `locked_until TEXT NULL` — untuk lockout login (QA TC-AUTH-005). Tabel baru `revoked_tokens (id, jti UNIQUE, user_id FK, expires_at, created_at)` mendukung invalidasi token saat logout (TASK-010). Lihat `server/src/db/migrations/001–003`.
 
 **Catatan 2026-09-05 (TASK-020, Phase 2 Profile):** implementasi menambah kolom `logo TEXT NULL` di `companies` (di luar sketsa Bagian 1) agar upload foto profil perusahaan bisa disimpan, simetris dengan `student_profiles.foto_profile`. Registrasi otomatis membuat baris profil peran (`student_profiles` untuk mahasiswa, `companies` dengan `nama_perusahaan` = nama pendaftar untuk perusahaan). Lihat `server/src/db/migrations/004–005`.
+
+**Catatan 2026-09-05 (TASK-030/031, Phase 3 Skill):** tabel `skills` + `student_skills` dibuat via `server/src/db/migrations/006–007` sesuai sketsa Bagian 1 (UNIQUE student+skill, CHECK level 0–100, CHECK source). Input level mendukung kategori (`beginner/intermediate/advanced` → 25/55/85, `[ASSUMPTION]` di `server/src/utils/proficiency.js`).
 
 ---

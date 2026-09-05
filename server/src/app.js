@@ -4,6 +4,8 @@ const cors = require('cors');
 const path = require('path');
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
+const studentsRoutes = require('./routes/students.routes');
+const skillsRoutes = require('./routes/skills.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 const { ok } = require('./utils/response');
 
@@ -15,6 +17,8 @@ function createApp() {
   app.get('/api/v1/health', (req, res) => ok(res, { status: 'up' }, 'OK'));
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/users', usersRoutes);
+  app.use('/api/v1/students', studentsRoutes);
+  app.use('/api/v1/skills', skillsRoutes);
   // Static file serving untuk foto profil (TASK-020, local storage MVP).
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 

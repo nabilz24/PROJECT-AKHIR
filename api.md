@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.2.0"
+version: "1.3.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.2.0 — TASK-021: tambah endpoint GET /users/redirect"
+changelog: "2026-09-05 v1.3.0 — TASK-030: tambah endpoint GET /skills (taxonomy)"
 ---
 
 # api.md — Spesifikasi API REST
@@ -65,6 +65,14 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | GET | `/students/gaps` | Bearer token | — | `{ success: true, data: { gaps } }` | Hitung skill gap vs project yang minggulkan |
 | GET | `/students/recommendations` | Bearer token | — | `{ success: true, data: { recommendations } }` | Ambil rekomendasi kursus/workshop berdasarkan gap |
 | GET | `/students/dashboard` | Bearer token | — | `{ success: true, data: { dashboard } }` | Ringkasan dashboard: project baru, notifikasi, rekomendasi |
+
+---
+
+## 4a. Skills Taxonomy API (tambahan 2026-09-05 TASK-030)
+
+| Method | Endpoint | Auth | Request | Respons | Keterangan |
+|--------|----------|------|---------|---------|------------|
+| GET | `/skills` | Bearer token | `?category=technical` `?search=react` | `{ success: true, data: { skills, total } }` | Daftar taxonomy skill (dropdown frontend, filter kategori/search) |
 
 ---
 
@@ -158,6 +166,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | POST /auth/register | Auth Service | Fitur 1: Authentication | Login/register semua user |
 | GET /students/skills | Skill Management | Fitur 3: Skill Profile | Lihat/edit skill mahasiswa |
 | POST /students/skills | Skill Management | Fitur 3: Skill Profile | Tambah skill + level |
+| GET /skills | Skill Management | Fitur 3: Skill Profile | Dropdown taxonomy + filter |
 | GET /students/gaps | Skill Gap Engine | Fitur 10: Skill Gap Analysis | Hitung gap required vs current |
 | GET /students/recommendations | Recommendation Engine | Fitur 11: Recommendation System | Rekomendasi berdasarkan gap |
 | POST /companies/projects | Project Marketplace | Fitur 5: Project Management | Buat project perusahaan |

@@ -190,4 +190,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×2), QA.md (bagian ini), database.md (v1.3.0), api.md (v1.2.0 + redirect), README (status Phase 2).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 3 (Skill System).
 
+### Phase 3 — Skill System (2026-09-05): TASK-030, TASK-031, TASK-032 → DONE
+
+- ✅ Requirement implemented — migrasi `006_skills` + `007_student_skills` (UNIQUE student+skill, CHECK 0–100/source); seed 20 teknis + 10 soft + 1 bonus (`INSERT OR IGNORE`); `GET /skills` (?category/?search); CRUD `/students/skills` khusus role mahasiswa (level 0–100 ATAU kategori→25/55/85 `[ASSUMPTION]`, source course/certification/experience, respons sertakan kategori turunan); guard hapus: 400 bila skill dipakai aplikasi pending/accepted ("digunakan project" = aplikasi aktif ke project yang mensyaratkan skill, `[ASSUMPTION]`; tabel Phase 4–5 dicek via sqlite_master).
+- ✅ Unit test passed — suite unit Phase 1–2 tetap hijau.
+- ✅ Integration test passed — `tests/integration/skills.test.js` (12): seed 20+10, filter, TC-STU-002, kategori, duplikat/404/422, RBAC 403, update, hapus, guard 400 (stub tabel Phase 4 di test, dibersihkan setelahnya). Total: 6 suite, 54/54 hijau, tanpa regresi.
+- ✅ UI tested — N/A (dropdown/filter frontend ikut halaman Phase 10).
+- ✅ Security checked — auth + RBAC mahasiswa di semua endpoint skill; skill_id divalidasi ke taxonomy (404); UNIQUE ditangkap ramah (400).
+- ✅ Acceptance criteria passed — semua checklist TASK-030/031/032 terpenuhi.
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.4.0: seed list + migrasi), api.md (v1.3.0: GET /skills + traceability), README (status Phase 3).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 4 (Project Marketplace).
+
 ---
