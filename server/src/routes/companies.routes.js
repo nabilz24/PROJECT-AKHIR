@@ -1,6 +1,7 @@
 // Company routes (TASK-040, api.md Bagian 5). Base: /api/v1/companies
 const express = require('express');
 const controller = require('../controllers/companies.controller');
+const matchingController = require('../controllers/matching.controller');
 const { authenticateToken } = require('../middlewares/auth');
 const { requireRole } = require('../middlewares/rbac');
 const { handleValidationErrors } = require('../middlewares/validate');
@@ -15,6 +16,7 @@ const {
   applicationStatusRules,
   projectApplicationsQueryRules,
 } = require('../validators/applications.validators');
+const { candidatesRules } = require('../validators/matching.validators');
 
 const router = express.Router();
 const onlyCompany = requireRole('perusahaan');
@@ -26,5 +28,6 @@ router.put('/projects/:id', authLimiter, authenticateToken, onlyCompany, project
 router.delete('/projects/:id', authLimiter, authenticateToken, onlyCompany, projectIdRules, handleValidationErrors, controller.deleteMyProject);
 router.get('/projects/:projectId/applications', authLimiter, authenticateToken, onlyCompany, projectApplicationsQueryRules, handleValidationErrors, controller.listProjectApplications);
 router.patch('/applications/:id', authLimiter, authenticateToken, onlyCompany, applicationStatusRules, handleValidationErrors, controller.updateApplicationStatus);
+router.get('/candidates', authLimiter, authenticateToken, onlyCompany, candidatesRules, handleValidationErrors, matchingController.candidates);
 
 module.exports = router;

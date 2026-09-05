@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.5.0"
+version: "1.6.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.5.0 — TASK-050: tambah PATCH /companies/applications/{id} + GET project applications"
+changelog: "2026-09-05 v1.6.0 — TASK-060: formula otoritatif, mode DB calculate, breakdown kuat/close/lemah"
 ---
 
 # api.md — Spesifikasi API REST
@@ -108,7 +108,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 
 | Method | Endpoint | Auth | Request | Respons | Keterangan |
 |--------|----------|------|---------|---------|------------|
-| POST | `/matching/calculate` | Bearer token | `student_skill_ids[]`, `project_skill_ids[]` (atau ambil dari DB) | `{ success: true, data: { match_score, per_skill_breakdown } }` | Kalkulasi formula 50/20/10/10/10 (proposal MVP) |
+| POST | `/matching/calculate` | Bearer token | `student_id`, `project_id` (mode DB; mahasiswa hanya diri sendiri) | `{ success: true, data: { score, components, breakdown, weights } }` | Kalkulasi formula otoritatif 50/20/10/10/10 (2026-09-05 TASK-060; bobot `[NEEDS DECISION]`, respons sertakan weights). Menggantikan mode array usulan awal |
 | GET | `/matching/ranking` | Bearer token | `project_id`, `min_score` (opsional) | `{ success: true, data: { candidates ranked } }` | Ranking kandidat untuk project tertentu |
 
 ---

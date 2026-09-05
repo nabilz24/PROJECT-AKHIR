@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 5 (Application) — DONE. Workflow accept/reject, notifikasi in-app + email simulasi, 74 test hijau.
+**Status**: Phase 6 (Talent Matching) — DONE. Formula 50/20/10/10/10, ranking + threshold, breakdown per-skill, 90 test hijau.

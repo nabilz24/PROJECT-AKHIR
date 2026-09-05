@@ -1,7 +1,9 @@
 // Project Marketplace controller (TASK-041, TASK-042, api.md Bagian 6).
 const { getDb } = require('../db/connection');
 const { ok, created, fail } = require('../utils/response');
-const { fetchProjectFull, overlapScore } = require('../utils/project');
+const { fetchProjectFull } = require('../utils/project');
+const { calculateMatchScore } = require('../services/matchScore');
+const { buildInputs } = require('./matching.controller');
 const { pushNotification, notifyEmail } = require('../utils/notify');
 const { logAudit } = require('../middlewares/audit');
 
@@ -41,11 +43,9 @@ function browse(req, res, next) {
 
     let items = ids.map((id) => fetchProjectFull(db, id)).filter(Boolean);
     if (sort === 'match_score' && asStudent) {
-      // PRELIMINARY (TASK-041): urut berdasarkan overlap skill; digantikan formula
-      // otoritatif Phase 6 (TASK-060). Lihat utils/project.js.
-      const owned = studentSkillIds(db, asStudent.id);
+      // Formula otoritatif Phase 6 (TASK-060) menggantikan preliminary overlap.
       items = items
-        .map((p) => ({ ...p, match_score: overlapScore(p.skills.map((s) => s.skill_id), owned) }))
+        .map((p) => ({ ...p, match_score: calculateMatchScore(buildInputs(db, asStudent.id, p.id)).score }))
         .sort((a, b) => b.match_score - a.match_score || b.id - a.id);
     } else if (sort === 'deadline') {
       items.sort((a, b) => (a.deadline || 'zzzz').localeCompare(b.deadline || 'zzzz'));
@@ -70,8 +70,7 @@ function detail(req, res, next) {
       return fail(res, 'Project tidak ditemukan', [], 404);
     }
     if (req.user && req.user.role === 'mahasiswa') {
-      const owned = studentSkillIds(db, req.user.id);
-      full.match_score = overlapScore(full.skills.map((s) => s.skill_id), owned);
+      full.match_score = calculateMatchScore(buildInputs(db, req.user.id, full.id)).score;
     }
     return ok(res, { project: full }, 'OK');
   } catch (err) {

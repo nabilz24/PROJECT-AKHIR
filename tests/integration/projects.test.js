@@ -215,7 +215,8 @@ describe('Marketplace browse & filter (TASK-041)', () => {
       .set('Authorization', `Bearer ${mhs}`);
     expect(byMatch.status).toBe(200);
     const scores = byMatch.body.data.projects.map((p) => p.match_score);
-    expect(scores[0]).toBe(100); // punya React
+    // Formula otoritatif Phase 6 (TASK-060): skill 100→50 + avail 100→10 = 60.
+    expect(scores[0]).toBe(60);
     const sorted = [...scores].sort((a, b) => b - a);
     expect(scores).toEqual(sorted);
 

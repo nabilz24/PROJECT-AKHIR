@@ -226,4 +226,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×2), QA.md (bagian ini), database.md (v1.6.0), api.md (v1.5.0: 2 endpoint + traceability), README (status Phase 5).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 6 (Talent Matching).
 
+### Phase 6 — Talent Matching (2026-09-05): TASK-060, TASK-061, TASK-062 → DONE
+
+- ✅ Requirement implemented — `services/matchScore.js` murni: formula 50/20/10/10/10 (`[NEEDS DECISION]` bobot, `weights` disertakan di respons), skill berbobot proficiency (over-qualified di-cap), experience/certification dari source skill, portfolio dari URL apply/tabel portfolios, availability dari beban aplikasi aktif (`[ASSUMPTION]`: ≤2 = 100); breakdown per-skill (required/current/gap/ratio/status kuat≥100%/close≥60%/lemah) + gap 0 bila over-qualified; `POST /matching/calculate` (mode DB; mahasiswa self-only), `GET /matching/ranking` (perusahaan pemilik/kampus/dosen; persist `applications.match_score`; threshold default `match_score_threshold`), `GET /companies/candidates` (+filter skill), `GET /projects/:id/match` (mahasiswa; format api.md `{match_score, breakdown}`); sort marketplace diganti formula otoritatif (preliminary overlap dihapus); respons ranking sertakan note non-diskriminasi keputusan.
+- ✅ Unit test passed — `tests/unit/matchScore.test.js` (8): bobot, availability, kandidat 80 eksak, cap, gap 0, close, kosong, range.
+- ✅ Integration test passed — `tests/integration/matching.test.js` (8): kalkulasi 80 eksak + 403/404, anti-diskriminasi kembaran identik, ranking threshold default (1 lolos) + persist DB, min_score=0 terurut 80>64>19 + breakdown, cross-company 404, candidates filter skill, /match 64. Total: 10 suite, 90/90 hijau. **Perbaikan susulan**: respons `/match` diselaraskan ke `{match_score}` api.md; ekspektasi sort Phase 4 diperbarui 100→60 (formula otoritatif).
+- ✅ UI tested — N/A (tabel kandidat + warna hijau/kuning/merah + tombol Lihat Profil ikut halaman Phase 10; API sediakan status + student id).
+- ✅ Security checked — RBAC per endpoint; mahasiswa self-only; ownership project perusahaan.
+- ✅ Acceptance criteria passed — semua checklist TASK-060/061/062 + 6 poin QA Talent Matching terpenuhi.
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), api.md (v1.6.0: calculate mode DB), README (status Phase 6). Tanpa migrasi baru (kolom match_score sudah ada sejak Phase 4).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 7 (Skill Gap).
+
 ---

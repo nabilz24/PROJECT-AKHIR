@@ -9,6 +9,7 @@ const skillsRoutes = require('./routes/skills.routes');
 const companiesRoutes = require('./routes/companies.routes');
 const projectsRoutes = require('./routes/projects.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
+const matchingRoutes = require('./routes/matching.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 const { ok } = require('./utils/response');
 
@@ -28,6 +29,7 @@ function createApp() {
   app.use('/api/v1/companies', companiesRoutes);
   app.use('/api/v1/projects', projectsRoutes);
   app.use('/api/v1/notifications', notificationsRoutes);
+  app.use('/api/v1/matching', matchingRoutes);
   // Static file serving untuk foto profil (TASK-020, local storage MVP).
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
