@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campus Industry Talent Hub</title>
-  <!-- TASK-104: SPA landing di GET / — React 18 UMD + Tailwind Play CDN (butuh internet).
-       Halaman /login (EJS, tanpa CDN) tetap tersedia sebagai fallback offline. -->
+  <!-- TASK-105: "/" murni landing page (tanpa form login).
+       Login di "/login" (EJS, tanpa CDN, offline-ready); dashboard di "/dashboard/*". -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -21,8 +21,6 @@
     </div>
   </noscript>
   <script type="text/babel" data-presets="react">
-    const { useState } = React;
-
     const ROLES = [
       { name: 'Mahasiswa', desc: 'Isi skill, daftar project, lihat gap & rekomendasi kursus.', dash: '/dashboard/student' },
       { name: 'Perusahaan', desc: 'Buat project, lihat kandidat terurut match score, beri evaluasi.', dash: '/dashboard/company' },
@@ -36,59 +34,12 @@
       { n: '3', t: 'Matching otomatis', d: 'Skor rule-based 50/20/10/10/10, kandidat terurut, gap & rekomendasi kursus muncul otomatis.' },
     ];
 
-    function LoginCard() {
-      const [email, setEmail] = useState('');
-      const [password, setPassword] = useState('');
-      const [err, setErr] = useState('');
-      const [loading, setLoading] = useState(false);
-
-      async function submit(e) {
-        e.preventDefault();
-        setErr('');
-        setLoading(true);
-        try {
-          const r = await fetch('/api/v1/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-          });
-          const j = await r.json();
-          if (!j.success) { setErr(j.message || 'Login gagal'); return; }
-          localStorage.setItem('token', j.data.token);
-          location.href = j.data.dashboard_url + '?token=' + encodeURIComponent(j.data.token);
-        } catch (ex) {
-          setErr('Tidak dapat menghubungi server.');
-        } finally {
-          setLoading(false);
-        }
-      }
-
-      return (
-        <form onSubmit={submit} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
-          <h2 className="text-xl font-bold text-white mb-1">Masuk</h2>
-          <p className="text-sm text-slate-400 mb-5">Otomatis diarahkan ke dashboard sesuai role.</p>
-          <label className="block text-sm text-slate-300 mb-1">Email</label>
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-          <label className="block text-sm text-slate-300 mb-1">Password</label>
-          <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-          {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
-          <button disabled={loading}
-            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2 transition">
-            {loading ? 'Memproses…' : 'Login'}
-          </button>
-          <p className="text-xs text-slate-500 mt-3">Versi tanpa CDN: <a className="underline" href="/login">/login</a></p>
-        </form>
-      );
-    }
-
     function App() {
       return (
         <div className="min-h-screen bg-slate-950 text-slate-200">
           <nav className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
             <span className="font-bold text-white">Campus Industry Talent Hub</span>
-            <a href="#masuk" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">Masuk</a>
+            <a href="/login" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2">Masuk</a>
           </nav>
 
           <header className="max-w-6xl mx-auto px-6 pt-10 pb-14 text-center">
@@ -100,7 +51,7 @@
               dan rekomendasi pembelajaran — dalam satu platform.
             </p>
             <div className="mt-6 flex gap-3 justify-center">
-              <a href="#masuk" className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5">Mulai Masuk</a>
+              <a href="/login" className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5">Mulai Masuk</a>
               <a href="#cara-kerja" className="rounded-lg border border-slate-700 hover:border-slate-500 text-slate-200 px-5 py-2.5">Cara Kerja</a>
             </div>
             <div className="mt-8 flex gap-6 justify-center text-sm text-slate-400">
@@ -136,12 +87,8 @@
             </div>
           </section>
 
-          <section id="masuk" className="max-w-md mx-auto px-6 pb-16">
-            <LoginCard />
-          </section>
-
           <footer className="border-t border-slate-800 text-center text-xs text-slate-500 py-6">
-            Campus Industry Talent Hub · API <a className="underline" href="/api/v1/health">/api/v1/health</a> · Halaman server-render <a className="underline" href="/login">/login</a>
+            Campus Industry Talent Hub · <a className="underline" href="/login">Masuk</a> · API <a className="underline" href="/api/v1/health">/api/v1/health</a>
           </footer>
         </div>
       );

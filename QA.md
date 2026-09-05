@@ -294,4 +294,11 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Acceptance criteria passed — checklist TASK-104 terpenuhi.
 - Catatan: SPA butuh internet untuk CDN (`[ASSUMPTION]` tercatat di `spa.ejs`); `/login` EJS tetap jalan offline.
 
+### TASK-105 — Pisah landing/login/dashboard (2026-09-05): DONE
+
+- ✅ Requirement implemented — `spa.ejs` kini landing murni: `LoginCard` + state login dihapus, CTA "Masuk"/"Mulai Masuk" mengarah ke `/login`. Login hanya di `/login` (EJS). Dashboard `/dashboard/*` tidak berubah.
+- ✅ Integration test passed — `spa.test.js` ditulis ulang (3): `/` tanpa form login & tanpa panggil auth API + CTA ke `/login`; `/login` memuat form; 404 kontrak tetap. Total: 17 suite, 144/144 hijau.
+- ✅ Live verified — port 3112: `GET /` 200, `GET /login` 200, `GET /api/v1/health` 200.
+- ✅ Acceptance criteria passed — checklist TASK-105 terpenuhi.
+
 ---

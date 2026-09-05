@@ -1,11 +1,11 @@
-// Integration tests — SPA landing di GET / (TASK-104, opsi 2 tampilan).
+// Integration tests — pemisahan landing / login / dashboard (TASK-105).
 const request = require('supertest');
 const { createApp } = require('../../server/src/app');
 
 const app = createApp();
 
-describe('SPA landing (TASK-104)', () => {
-  test('GET / → 200 HTML berisi React root + CDN + form login', async () => {
+describe('Pemisahan halaman (TASK-105)', () => {
+  test('GET / → landing only: React root + CDN + CTA ke /login, tanpa form login', async () => {
     const res = await request(app).get('/');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/html/);
@@ -13,15 +13,17 @@ describe('SPA landing (TASK-104)', () => {
     expect(res.text).toMatch(/id="root"/);
     expect(res.text).toMatch(/react\.production\.min\.js/);
     expect(res.text).toMatch(/cdn\.tailwindcss\.com/);
-    expect(res.text).toMatch(/text\/babel/);
-    expect(res.text).toMatch(/\/api\/v1\/auth\/login/);
-    expect(res.text).toMatch(/dashboard_url/);
+    expect(res.text).toMatch(/href="\/login"/);
+    expect(res.text).not.toMatch(/\/api\/v1\/auth\/login/);
+    expect(res.text).not.toMatch(/type="password"/);
   });
 
-  test('GET /login tetap 200 (fallback offline tanpa CDN)', async () => {
+  test('GET /login → halaman login khusus (form email+password)', async () => {
     const res = await request(app).get('/login');
     expect(res.status).toBe(200);
     expect(res.text).toMatch(/Campus Industry Talent Hub/);
+    expect(res.text).toMatch(/type="password"/);
+    expect(res.text).toMatch(/\/api\/v1\/auth\/login/);
   });
 
   test('route tak dikenal tetap 404 JSON (kontrak notFound)', async () => {
