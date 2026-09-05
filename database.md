@@ -1,9 +1,9 @@
 ---
 title: "database.md — Desain Database & Schema"
-version: "1.4.0"
+version: "1.5.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.4.0 — TASK-030: seed list 20 teknis + 10 soft skill; catat migrasi 006/007"
+changelog: "2026-09-05 v1.5.0 — TASK-040/042: catat migrasi 008/009/010 + kolom difficulty/deleted_at, applications minimal"
 ---
 
 # database.md — Desain Database & Schema
@@ -326,5 +326,7 @@ Sketsa tipe di Bagian 1 ditulis untuk PostgreSQL/MySQL. Implementasi SQLite (`be
 **Catatan 2026-09-05 (TASK-020, Phase 2 Profile):** implementasi menambah kolom `logo TEXT NULL` di `companies` (di luar sketsa Bagian 1) agar upload foto profil perusahaan bisa disimpan, simetris dengan `student_profiles.foto_profile`. Registrasi otomatis membuat baris profil peran (`student_profiles` untuk mahasiswa, `companies` dengan `nama_perusahaan` = nama pendaftar untuk perusahaan). Lihat `server/src/db/migrations/004–005`.
 
 **Catatan 2026-09-05 (TASK-030/031, Phase 3 Skill):** tabel `skills` + `student_skills` dibuat via `server/src/db/migrations/006–007` sesuai sketsa Bagian 1 (UNIQUE student+skill, CHECK level 0–100, CHECK source). Input level mendukung kategori (`beginner/intermediate/advanced` → 25/55/85, `[ASSUMPTION]` di `server/src/utils/proficiency.js`).
+
+**Catatan 2026-09-05 (TASK-040/042, Phase 4 Marketplace):** tabel `projects` + `project_skills` + `applications` (minimal) dibuat via `server/src/db/migrations/008–010`. Tambahan dari sketsa: `projects.difficulty` (CHECK easy/medium/hard, NULL; untuk filter TASK-041) dan `projects.deleted_at` (soft-delete sesuai aturan Bagian 5). `applications` Phase 4 berisi kolom inti (status default pending, match_score NULL, cover_letter, portfolio_url); workflow ubah status + notifikasi menyusul Phase 5. Duplikat apply dicegah di application layer (blokir bila ada pending/accepted; re-apply setelah rejected diizinkan) — tanpa UNIQUE constraint.
 
 ---

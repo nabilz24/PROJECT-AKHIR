@@ -36,4 +36,36 @@ function authenticateToken(req, res, next) {
   return next();
 }
 
-module.exports = { authenticateToken };
+// Optional auth untuk endpoint publik-yang-diperkaya (marketplace TASK-041):
+// bila Bearer valid terpasang user, bila tidak tetap lanjut sebagai publik.
+function optionalAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const [scheme, token] = header.split(' ');
+  if (scheme !== 'Bearer' || !token) {
+    return next();
+  }
+  let payload;
+  try {
+    payload = verifyToken(token);
+  } catch (err) {
+    return next();
+  }
+  if (payload.purpose && payload.purpose !== 'access') {
+    return next();
+  }
+  const db = getDb();
+  const revoked = db.prepare('SELECT id FROM revoked_tokens WHERE jti = ?').get(payload.jti);
+  if (revoked) {
+    return next();
+  }
+  const user = db
+    .prepare('SELECT id, name, email, role FROM users WHERE id = ? AND deleted_at IS NULL')
+    .get(payload.sub);
+  if (user) {
+    req.user = user;
+    req.token = { jti: payload.jti, exp: payload.exp };
+  }
+  return next();
+}
+
+module.exports = { authenticateToken, optionalAuth };

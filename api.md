@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.3.0"
+version: "1.4.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.3.0 — TASK-030: tambah endpoint GET /skills (taxonomy)"
+changelog: "2026-09-05 v1.4.0 — TASK-040/041: format skills[] objek, filter difficulty, sort preliminary"
 ---
 
 # api.md — Spesifikasi API REST
@@ -80,7 +80,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 
 | Method | Endpoint | Auth | Request | Respons | Keterangan |
 |--------|----------|------|---------|---------|------------|
-| POST | `/companies/projects` | Bearer token | `judul`, `deskripsi`, `sektor_industri`, `deadline`, `status`, `skill_ids[]`, `level_required[]` | `{ success: true, data: { project }, message: "Project dibuat" }` | Buat project baru (validasi skill ada di taxonomy) |
+| POST | `/companies/projects` | Bearer token (perusahaan terverifikasi) | `judul`, `deskripsi`, `sektor_industri`, `deadline`, `status` (draft/active), `difficulty` (easy/medium/hard), `match_score_threshold`, `skills[]` (`skill_id`, `level_required`) | `{ success: true, data: { project }, message: "Project dibuat" }` | Buat project baru (validasi skill ada di taxonomy). Format `skills[]` objek menggantikan `skill_ids[]`+`level_required[]` paralel (2026-09-05 TASK-040) |
 | GET | `/companies/projects` | Bearer token | `?filter[status]=active`, `?filter[skill_name]=React`, `?sort[created_at]=desc` | `{ success: true, data: { projects, pagination } }` | Ambil project dengan filter/sort |
 | GET | `/companies/projects/{id}` | Bearer token | — | `{ success: true, data: { project } }` | Detail project beserta skill requirement |
 | PUT | `/companies/projects/{id}` | Bearer token | same as POST | `{ success: true, data: { project }, message: "Project diupdate" }` | Edit project (hanya pemilik perusahaan) |
@@ -95,7 +95,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 
 | Method | Endpoint | Auth | Request | Respons | Keterangan |
 |--------|----------|------|---------|---------|------------|
-| GET | `/projects` | Public/Token | `?filter[sector]=tech`, `?filter[skill]=React`, `?sort=match_score` | `{ success: true, data: { projects, pagination } }` | Browse project industry (filter skill/level) |
+| GET | `/projects` | Public/Token | `?filter[sektor_industri]=X`, `?filter[skill]=React`, `?filter[difficulty]=easy`, `?sort=terbaru|deadline|match_score`, `?page`, `?limit` | `{ success: true, data: { projects, pagination } }` | Browse project industry (hanya status active). `sort=match_score` butuh login mahasiswa; perhitungannya preliminary overlap skill hingga formula otoritatif Phase 6 (TASK-060) |
 | GET | `/projects/{id}` | Public/Token | — | `{ success: true, data: { project } }` | Detail project lengkap beserta info perusahaan |
 | POST | `/projects/{id}/apply` | Bearer token | `cover_letter`, `portfolio_url`, `skills_showcase[]` (skill_id yang dipakai) | `{ success: true, data: { application }, message: "Aplikasi terkirim" }` | Mahasiswa mendaftar project |
 | GET | `/projects/{id}/match` | Bearer token | — | `{ success: true, data: { match_score, breakdown } }` | Hitung match score mahasiswa vs project (untuk kandidat) |

@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 3 (Skill System) — DONE. Taxonomy 31 skill, CRUD skill mahasiswa + guard hapus, 54 test hijau.
+**Status**: Phase 4 (Project Marketplace) — DONE. CRUD project terverifikasi, browse/filter/sort, apply dengan gate skill, 66 test hijau.

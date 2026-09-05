@@ -6,11 +6,16 @@ const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
 const studentsRoutes = require('./routes/students.routes');
 const skillsRoutes = require('./routes/skills.routes');
+const companiesRoutes = require('./routes/companies.routes');
+const projectsRoutes = require('./routes/projects.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 const { ok } = require('./utils/response');
 
 function createApp() {
   const app = express();
+  // Konvensi filter api.md ?filter[field]=value butuh parser extended
+  // (default Express 5 adalah simple).
+  app.set('query parser', 'extended');
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
 
@@ -19,6 +24,8 @@ function createApp() {
   app.use('/api/v1/users', usersRoutes);
   app.use('/api/v1/students', studentsRoutes);
   app.use('/api/v1/skills', skillsRoutes);
+  app.use('/api/v1/companies', companiesRoutes);
+  app.use('/api/v1/projects', projectsRoutes);
   // Static file serving untuk foto profil (TASK-020, local storage MVP).
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 

@@ -202,4 +202,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.4.0: seed list + migrasi), api.md (v1.3.0: GET /skills + traceability), README (status Phase 3).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 4 (Project Marketplace).
 
+### Phase 4 — Project Marketplace (2026-09-05): TASK-040, TASK-041, TASK-042 → DONE
+
+- ✅ Requirement implemented — migrasi `008_projects` (+difficulty, +deleted_at), `009_project_skills`, `010_applications` minimal; CRUD `/companies/projects` khusus perusahaan **terverifikasi** (403 bila belum; ter-skup milik sendiri; soft-delete); marketplace `GET /projects` publik (hanya active) + filter sektor/skill/difficulty + sort terbaru/deadline/match_score + pagination + empty state 200/total 0; `POST /projects/:id/apply` (gate: semua skill requirement dimiliki — level ditangani Phase 7 `[ASSUMPTION]`; tolak duplikat pending/accepted, draft/closed, showcase asing; status pending; notifikasi Phase 5).
+- ✅ Unit test passed — suite unit Phase 1–2 tetap hijau.
+- ✅ Integration test passed — `tests/integration/projects.test.js` (12): TC-CMP-001, TC-STU-004, 403 unverified, 404 taxonomy, cross-company 404, filter/sort/empty-state, apply 201/400/403/404. Total: 7 suite, 66/66 hijau. **Temuan regresi antar-fase diperbaiki**: migrasi 009 (tabel project_skills asli) mematahkan stub test guard Phase 3 → test diperbaiki memakai baris FK sungguhan. Pelajaran: perubahan schema lintas fase wajib menjalankan full suite.
+- ✅ UI tested — N/A (filter dropdown/sort/empty-state frontend ikut halaman Phase 10).
+- ✅ Security checked — RBAC perusahaan/mahasiswa, ownership project, verified gate, showcase ownership, query param tervalidasi (extended parser).
+- ✅ Acceptance criteria passed — semua checklist TASK-040/041/042 terpenuhi (sort match_score versi preliminary overlap, digantikan formula otoritatif Phase 6).
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.5.0), api.md (v1.4.0: skills[] objek, difficulty, sort preliminary), README (status Phase 4).
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 5 (Application).
+
 ---

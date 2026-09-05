@@ -203,12 +203,8 @@ describe('Student skills CRUD (TASK-031/032)', () => {
   });
 
   test('TASK-032: hapus skill yang dipakai aplikasi aktif → 400', async () => {
-    // Tabel applications/project_skills resmi dibuat di Phase 4–5; di sini dibuat
-    // stub minimal agar logika guard teruji. Migrasi Phase 4 memakai
-    // CREATE TABLE IF NOT EXISTS sehingga tidak konflik.
+    // Guard memakai baris company/project sungguhan agar lolos FK; dibersihkan di akhir test.
     const db = getDb();
-    db.exec(`CREATE TABLE IF NOT EXISTS project_skills (project_id INTEGER NOT NULL, skill_id INTEGER NOT NULL);
-             CREATE TABLE IF NOT EXISTS applications (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL, project_id INTEGER NOT NULL, status TEXT NOT NULL);`);
     const token = await registerAndLogin('Skill Used', 'skillused@kampus.ac.id', 'mahasiswa');
     const me = db.prepare('SELECT id FROM users WHERE email = ?').get('skillused@kampus.ac.id');
     const nodeId = await skillIdByName(token, 'Node.js');
@@ -217,8 +213,12 @@ describe('Student skills CRUD (TASK-031/032)', () => {
       proficiency_level: 60,
       source: 'experience',
     });
-    db.prepare('INSERT INTO project_skills (project_id, skill_id) VALUES (1, ?)').run(nodeId);
-    db.prepare("INSERT INTO applications (student_id, project_id, status) VALUES (?, 1, 'pending')").run(me.id);
+    db.prepare('INSERT INTO companies (user_id, nama_perusahaan) VALUES (?, ?)').run(me.id, 'Stub Co');
+    const coId = db.prepare('SELECT id FROM companies WHERE user_id = ?').get(me.id).id;
+    db.prepare("INSERT INTO projects (company_id, judul, status) VALUES (?, 'Stub Project', 'active')").run(coId);
+    const projId = db.prepare("SELECT id FROM projects WHERE judul = 'Stub Project'").get().id;
+    db.prepare('INSERT INTO project_skills (project_id, skill_id, level_required) VALUES (?, ?, 60)').run(projId, nodeId);
+    db.prepare("INSERT INTO applications (student_id, project_id, status) VALUES (?, ?, 'pending')").run(me.id, projId);
 
     const blocked = await request(app).delete(`/api/v1/students/skills/${nodeId}`).set('Authorization', `Bearer ${token}`);
     expect(blocked.status).toBe(400);
@@ -227,6 +227,8 @@ describe('Student skills CRUD (TASK-031/032)', () => {
     db.prepare('DELETE FROM applications WHERE student_id = ?').run(me.id);
     const allowed = await request(app).delete(`/api/v1/students/skills/${nodeId}`).set('Authorization', `Bearer ${token}`);
     expect(allowed.status).toBe(200);
-    db.exec('DROP TABLE applications; DROP TABLE project_skills;');
+    db.prepare('DELETE FROM project_skills WHERE project_id = ?').run(projId);
+    db.prepare('DELETE FROM projects WHERE id = ?').run(projId);
+    db.prepare('DELETE FROM companies WHERE id = ?').run(coId);
   });
 });
