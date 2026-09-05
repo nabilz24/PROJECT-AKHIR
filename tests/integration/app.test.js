@@ -12,7 +12,7 @@ describe('SPA dashboard (TASK-106)', () => {
     expect(res.text).toMatch(/Dashboard/);
     expect(res.text).toMatch(/id="app"/);
     expect(res.text).toMatch(/react\.production\.min\.js/);
-    expect(res.text).toMatch(/cdn\.tailwindcss\.com/);
+    expect(res.text).toMatch(/tailwindcss\/browser/);
     expect(res.text).toMatch(/\/students\/dashboard/);
     expect(res.text).toMatch(/\/companies\/dashboard/);
     expect(res.text).toMatch(/\/campus\/dashboard/);

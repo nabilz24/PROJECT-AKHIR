@@ -12,7 +12,7 @@ describe('Pemisahan halaman (TASK-105)', () => {
     expect(res.text).toMatch(/Campus Industry Talent Hub/);
     expect(res.text).toMatch(/id="root"/);
     expect(res.text).toMatch(/react\.production\.min\.js/);
-    expect(res.text).toMatch(/cdn\.tailwindcss\.com/);
+    expect(res.text).toMatch(/tailwindcss\/browser/);
     expect(res.text).toMatch(/href="\/login"/);
     expect(res.text).not.toMatch(/\/api\/v1\/auth\/login/);
     expect(res.text).not.toMatch(/type="password"/);

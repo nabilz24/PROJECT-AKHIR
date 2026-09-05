@@ -309,4 +309,11 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Acceptance criteria passed — checklist TASK-106 terpenuhi.
 - Catatan: butuh internet untuk CDN; EJS `/dashboard/*` tidak berubah.
 
+### TASK-107 — Tailwind v4 browser CDN (2026-09-05): DONE
+
+- ✅ Requirement implemented — `<script src="https://cdn.tailwindcss.com">` (Play CDN v3) diganti `<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4">` di `spa.ejs` (`/`) dan `app.ejs` (`/app`). Semua kelas utilitas yang dipakai (slate/indigo/emerald, grid, ring, disabled:, last:, md:) kompatibel v4 tanpa config kustom; v4 browser mengompilasi class dinamis React via MutationObserver.
+- ✅ Integration test passed — assertion CDN di `spa.test.js` + `app.test.js` diupdate. Total: 18 suite, 146/146 hijau.
+- ✅ Live verified — port 3114: `/` dan `/app` 200 + penanda v4 True + sisa v3 False.
+- ✅ Acceptance criteria passed — checklist TASK-107 terpenuhi.
+
 ---
