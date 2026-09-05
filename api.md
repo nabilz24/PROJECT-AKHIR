@@ -1,9 +1,9 @@
 ---
 title: "api.md — Spesifikasi API REST"
-version: "1.9.0"
+version: "1.10.0"
 date: "2026-09-05"
 status: "Approved"
-changelog: "2026-09-05 v1.9.0 — TASK-090/092: syarat closed, auto-evaluasi, aturan bump skill"
+changelog: "2026-09-05 v1.10.0 — TASK-100..103: dashboard kampus, analytics final, halaman EJS"
 ---
 
 # api.md — Spesifikasi API REST
@@ -154,10 +154,13 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 
 | Method | Endpoint | Auth | Request | Respons | Keterangan |
 |--------|----------|------|---------|---------|------------|
-| GET | `/analytics/skill-distribution` | Bearer token | `?period=last_6_months`, `?program_studi=X` | `{ success: true, data: { pie_chart_data } }` | Distribusi skill mahasiswa |
-| GET | `/analytics/industry-demand` | Bearer token | `?period=last_6_months` | `{ success: true, data: { line_chart_data } }` | Tren skill yang dicari perusahaan |
-| GET | `/analytics/gap-heatmap` | Bearer token | `?period=last_6_months`, `?program_studi=X` | `{ success: true, data: { heatmap_matrix } }` | Heatmap skill gap per program studi |
-| GET | `/analytics/export` | Bearer token | `?format=csv&period=last_6_months` | `{ success: true, data: { download_url } }` | Export data ke CSV/Excel |
+| GET | `/analytics/skill-distribution` | Bearer token (kampus/dosen) | `?program_studi=X` | `{ success: true, data: { total_students, distribution } }` | Distribusi skill mahasiswa (pie-data) |
+| GET | `/analytics/industry-demand` | Bearer token (kampus/dosen) | `?period=last_6_months|last_30_days|all` | `{ success: true, data: { period, trend, top_skills } }` | Tren skill yang dicari perusahaan (line-data) |
+| GET | `/analytics/gap-heatmap` | Bearer token (kampus/dosen) | `?program_studi=X` | `{ success: true, data: { skills, matrix } }` | Heatmap skill gap per program studi (maks 12 skill) |
+| GET | `/analytics/export` | Bearer token (kampus/dosen) | `?format=csv` | File CSV `gap-export.csv` | Export gap per mahasiswa (PNG/PDF via cetak browser) |
+| GET | `/campus/dashboard` | Bearer token (kampus/dosen) | — | `{ success: true, data: { total_*, avg_gap, top_demanded_skills, ... } }` | Ringkasan strategis kampus (tambahan 2026-09-05 TASK-102) |
+
+> **Catatan 2026-09-05 (TASK-100..103):** halaman EJS (`/login`, `/dashboard/student|company|campus|mentor|analytics`) memakai data endpoint di atas; autentikasi halaman via header Bearer atau `?token=` (`[NEEDS DECISION]` cookie session untuk produksi).
 
 ---
 

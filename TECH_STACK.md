@@ -3,7 +3,7 @@ title: "TECH_STACK.md — Technical Stack MVP Campus Industry Talent Hub"
 version: "2.0.0"
 date: "2026-09-05"
 status: "Superseded (keputusan final: Node.js + Express + SQLite, lihat Bagian 17)"
-changelog: "2026-09-05 v2.0.0 — TASK-002: keputusan stack final Node/Express/SQLite; rekomendasi Laravel ditandai superseded"
+changelog: "2026-09-05 v2.1.0 — TASK-100: frontend EJS decided; 2026-09-05 v2.0.0 — TASK-002: keputusan stack final Node/Express/SQLite"
 ---
 
 # TECH_STACK.md — Technical Stack MVP Campus Industry Talent Hub
@@ -479,6 +479,6 @@ Setelah [NEEDS DECISION] ini dikonfirmasi, stack teknologi siap digunakan untuk 
 | Testing | Jest (`npm test`, pola `tests/**/*.test.js`) |
 | CI | GitHub Actions (`.github/workflows/ci.yml`): setup-node 24 → `npm ci` → `npm test` |
 | File upload | Local storage development (S3 `[NEEDS DECISION]` saat deploy) |
-| Frontend | `[NEEDS DECISION]` — default yang diusulkan: EJS server-rendered dalam codebase Express; dikonfirmasi ulang saat mulai Phase 2 |
+| Frontend | EJS 6 server-rendered dalam codebase Express (diputuskan Phase 10, 2026-09-05; halaman `/login`, `/dashboard/*`; grafik = data JSON + visual CSS/tabel) |
 
 **Adaptasi database (SQLite vs skema PostgreSQL di database.md):** ENUM → TEXT + CHECK constraint; JSON → TEXT (JSON string); BIGINT UNSIGNED → INTEGER; YEAR → INTEGER; TIMESTAMP → TEXT (ISO 8601) dengan DEFAULT `(datetime('now'))`. Relasi, unique constraint, dan index tetap sama. Tercatat sebagai `[ASSUMPTION]` di database.md Bagian 6.

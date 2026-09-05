@@ -1,0 +1,35 @@
+<% const cards = `
+<div class="cards">
+  <div class="card"><div class="num">${data.new_projects.length}</div><div class="lbl">Project Baru</div></div>
+  <div class="card"><div class="num">${data.pending_applications.length}</div><div class="lbl">Aplikasi Pending</div></div>
+  <div class="card"><div class="num">${data.unread_notifications}</div><div class="lbl">Notifikasi Belum Dibaca</div></div>
+  <div class="card"><div class="num">${data.skills_count}</div><div class="lbl">Skill Dimiliki</div></div>
+</div>`; %>
+<% const body = cards + `
+<section class="panel">
+  <h3>Project Baru (+ match score)</h3>
+  <table><tr><th>Judul</th><th>Sektor</th><th>Deadline</th><th>Match</th></tr>
+  ${data.new_projects.map(p => `<tr><td>${p.judul}</td><td>${p.sektor_industri || '-'}</td><td>${p.deadline || '-'}</td><td>${p.match_score}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Belum ada project aktif.</td></tr>'}
+  </table>
+</section>
+<section class="panel">
+  <h3>Rekomendasi Skill Top 3</h3>
+  <table><tr><th>Judul</th><th>Tipe</th><th>Prioritas</th><th>Status</th></tr>
+  ${data.top_recommendations.map(r => `<tr><td>${r.title}</td><td>${r.type}</td><td><span class="pill ${r.priority}">${r.priority}</span></td><td>${r.status}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Belum ada rekomendasi. Lihat analisis gap untuk generate.</td></tr>'}
+  </table>
+</section>
+<section class="panel">
+  <h3>Aplikasi Pending</h3>
+  <table><tr><th>Project</th><th>Match</th><th>Tanggal</th></tr>
+  ${data.pending_applications.map(a => `<tr><td>${a.project_judul}</td><td>${a.match_score === null ? '-' : a.match_score}</td><td>${a.applied_at}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Belum ada aplikasi pending.</td></tr>'}
+  </table>
+</section>
+<section class="panel">
+  <h3>Notifikasi Terbaru</h3>
+  <table><tr><th>Tipe</th><th>Isi</th><th>Waktu</th></tr>
+  ${data.latest_notifications.map(n => `<tr><td>${n.type}</td><td>${n.content}</td><td>${n.created_at}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Tidak ada notifikasi.</td></tr>'}
+  </table>
+</section>
+<p class="muted">Data refresh otomatis tiap 5 menit. Navigasi: Projects · My Skills · Skill Gap · Recommendations · Portfolio · Profile.</p>
+`; %>
+<%- include('../layout', { title: title, user: user, token: (typeof token !== 'undefined' ? token : ''), refresh: true, body: body }) %>

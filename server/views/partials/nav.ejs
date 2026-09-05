@@ -1,0 +1,19 @@
+<% const q = token ? ('?token=' + token) : ''; %>
+<% if (user.role === 'mahasiswa') { %>
+  <a href="/dashboard/student<%= q %>" class="<%= title.includes('Mahasiswa') ? 'active' : '' %>">Dashboard</a>
+  <a href="/api/v1/projects?limit=15<%= token ? ('&token=' + token) : '' %>">Projects (API)</a>
+  <a href="/api/v1/students/skills<%= q %>">My Skills (API)</a>
+  <a href="/api/v1/notifications<%= q %>">Notifikasi (API)</a>
+<% } else if (user.role === 'perusahaan') { %>
+  <a href="/dashboard/company<%= q %>" class="<%= title.includes('Perusahaan') ? 'active' : '' %>">Dashboard</a>
+  <a href="/api/v1/companies/projects<%= q %>">Projects (API)</a>
+  <a href="/api/v1/notifications<%= q %>">Notifikasi (API)</a>
+<% } else if (user.role === 'kampus') { %>
+  <a href="/dashboard/campus<%= q %>" class="<%= title.includes('Kampus') ? 'active' : '' %>">Dashboard</a>
+  <a href="/dashboard/analytics<%= q %>" class="<%= title.includes('Analytics') ? 'active' : '' %>">Analytics</a>
+  <a href="/api/v1/skills<%= q %>">Skills (API)</a>
+<% } else if (user.role === 'dosen') { %>
+  <a href="/dashboard/mentor<%= q %>" class="<%= title.includes('Mentor') ? 'active' : '' %>">Dashboard</a>
+  <a href="/dashboard/analytics<%= q %>" class="<%= title.includes('Analytics') ? 'active' : '' %>">Analytics</a>
+<% } %>
+<a href="/login">Keluar (login ulang)</a>

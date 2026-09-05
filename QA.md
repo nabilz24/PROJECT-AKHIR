@@ -274,4 +274,16 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×3), QA.md (bagian ini), database.md (v1.9.0), api.md (v1.9.0: syarat + bump), README (status Phase 9).
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 10 (Dashboard).
 
+### Phase 10 — Dashboard & Analytics (2026-09-05): TASK-100, TASK-101, TASK-102, TASK-103 → DONE
+
+- ✅ Requirement implemented — endpoint data: `GET /students/dashboard` (project baru+match, top-3 rekomendasi, pending, unread), `GET /companies/dashboard` (aktif, kandidat, evaluasi menunggu, avg match), `GET /campus/dashboard` (total + avg gap live + top skill + alert 30 hari), `GET /analytics/*` (pie-data, line-data per bulan, heatmap prodi×skill ≤12, export CSV) + halaman EJS (`/login` + 4 dashboard + analytics; nav per role DESIGN.md; meta refresh 5 menit; tombol aksi; cetak/PDF via browser). Keputusan frontend: **EJS** (ditanya & diputuskan fase ini).
+- ✅ Unit test passed — suite unit Phase 1–3,6–8 tetap hijau.
+- ✅ Integration test passed — `tests/integration/dashboard.test.js` (16): TC-CMP-005/006/007, RBAC halaman+API, CSV header/isi, halaman 200/401/403. Total: 16 suite, 141/141 hijau, tanpa regresi.
+- ✅ UI tested — halaman EJS ter-render + smoke test status/konten (uji visual manual/Cypress menyusul Phase 11 bila dibutuhkan).
+- ✅ Security checked — RBAC halaman & API; halaman butuh token (header/`?token=` `[NEEDS DECISION]` cookie produksi).
+- ✅ Acceptance criteria passed — checklist TASK-100..103 terpenuhi dengan interpretasi tercatat: export PNG/PDF = CSV + tombol cetak browser (render PNG server-side di luar MVP API).
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (DONE ×4), QA.md (bagian ini), api.md (v1.10.0: dashboard kampus + analytics final + halaman), TECH_STACK.md (frontend EJS decided), README (status Phase 10). Tanpa migrasi baru.
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 11 (QA).
+
 ---

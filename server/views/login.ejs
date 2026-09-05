@@ -1,0 +1,28 @@
+<% const body = `
+<form class="login" id="f">
+  <h2 style="margin-top:0">Campus Industry Talent Hub</h2>
+  <p class="muted">Login untuk masuk dashboard sesuai role.</p>
+  <label>Email</label>
+  <input type="email" id="email" required>
+  <label>Password</label>
+  <input type="password" id="password" required>
+  <div class="err" id="err"></div>
+  <button class="btn" type="submit" style="width:100%">Login</button>
+</form>
+<script>
+document.getElementById('f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const r = await fetch('/api/v1/auth/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const j = await r.json();
+  if (!j.success) { document.getElementById('err').textContent = j.message; return; }
+  localStorage.setItem('token', j.data.token);
+  location.href = j.data.dashboard_url + '?token=' + encodeURIComponent(j.data.token);
+});
+</script>
+`; %>
+<%- include('layout', { title: title, body: body }) %>

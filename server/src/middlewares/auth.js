@@ -7,8 +7,17 @@ const { getDb } = require('../db/connection');
 
 function authenticateToken(req, res, next) {
   const header = req.headers.authorization || '';
-  const [scheme, token] = header.split(' ');
-  if (scheme !== 'Bearer' || !token) {
+  let token = null;
+  const [scheme, headerToken] = header.split(' ');
+  if (scheme === 'Bearer' && headerToken) {
+    token = headerToken;
+  } else if (req.query && req.query.token) {
+    // [NEEDS DECISION]: fallback query-token agar navigasi browser ke halaman
+    // EJS bisa terautentikasi (browser tak bisa kirim Bearer). Opsi produksi:
+    // httpOnly cookie session. Jangan log URL bertoken.
+    token = req.query.token;
+  }
+  if (!token) {
     return fail(res, 'Unauthorized: token hilang atau format salah', [], 401);
   }
   let payload;

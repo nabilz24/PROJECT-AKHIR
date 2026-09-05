@@ -1,0 +1,24 @@
+<% const body = `
+<div class="cards">
+  <div class="card"><div class="num">${data.total_students}</div><div class="lbl">Total Mahasiswa</div></div>
+  <div class="card"><div class="num">${data.total_companies}</div><div class="lbl">Total Perusahaan</div></div>
+  <div class="card"><div class="num">${data.total_active_projects}</div><div class="lbl">Total Project Aktif</div></div>
+  <div class="card"><div class="num">${data.avg_gap}</div><div class="lbl">Rata-rata Gap Skill</div></div>
+</div>
+<section class="panel">
+  <h3>Skill Paling Dicari Industri</h3>
+  <table><tr><th>Skill</th><th>Project Membutuhkan</th></tr>
+  ${data.top_demanded_skills.map(s => `<tr><td>${s.name}</td><td>${s.c}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">Belum ada data.</td></tr>'}
+  </table>
+  <p class="muted">Alert: skill baru 30 hari terakhir: ${(data.new_skills_30d.join(', ') || '-')}</p>
+</section>
+<section class="panel">
+  <h3>Aplikasi Terbaru (pending: ${data.pending_applications})</h3>
+  <table><tr><th>Mahasiswa</th><th>Project</th><th>Status</th><th>Waktu</th></tr>
+  ${data.recent_applications.map(a => `<tr><td>${a.student_name}</td><td>${a.project_judul}</td><td>${a.status}</td><td>${a.applied_at}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Belum ada aplikasi.</td></tr>'}
+  </table>
+</section>
+<p><a class="btn noprint" href="/dashboard/analytics${(typeof token !== 'undefined' && token) ? '?token=' + token : ''}">Buka Analytics</a></p>
+<p class="muted">Data refresh otomatis tiap 5 menit. Navigasi: Students · Companies · Projects · Skills · Skill Gap · Industry Demand · Analytics.</p>
+`; %>
+<%- include('../layout', { title: title, user: user, token: (typeof token !== 'undefined' ? token : ''), refresh: true, body: body }) %>

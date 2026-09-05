@@ -13,6 +13,9 @@ const matchingRoutes = require('./routes/matching.routes');
 const gapRoutes = require('./routes/gap.routes');
 const recommendationsRoutes = require('./routes/recommendations.routes');
 const assessmentsRoutes = require('./routes/assessments.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
+const analyticsRoutes = require('./routes/analytics.routes');
+const pagesRoutes = require('./routes/pages.routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 const { ok } = require('./utils/response');
 
@@ -21,6 +24,9 @@ function createApp() {
   // Konvensi filter api.md ?filter[field]=value butuh parser extended
   // (default Express 5 adalah simple).
   app.set('query parser', 'extended');
+  // EJS server-rendered (keputusan frontend Phase 10, TASK-100..103).
+  app.set('view engine', 'ejs');
+  app.set('views', path.join(__dirname, '..', 'views'));
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
 
@@ -36,6 +42,10 @@ function createApp() {
   app.use('/api/v1/gap-analysis', gapRoutes);
   app.use('/api/v1/recommendations', recommendationsRoutes);
   app.use('/api/v1', assessmentsRoutes);
+  app.use('/api/v1', dashboardRoutes);
+  app.use('/api/v1/analytics', analyticsRoutes);
+  // Halaman EJS (TASK-100..103, keputusan frontend Phase 10).
+  app.use('/', pagesRoutes);
   // Static file serving untuk foto profil (TASK-020, local storage MVP).
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 

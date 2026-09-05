@@ -1,0 +1,20 @@
+<% const body = `
+<div class="cards">
+  <div class="card"><div class="num">${data.my_evaluations_count}</div><div class="lbl">Evaluasi Saya</div></div>
+  <div class="card"><div class="num">${data.awaiting_evaluation.length}</div><div class="lbl">Menunggu Bimbingan/Evaluasi</div></div>
+</div>
+<section class="panel">
+  <h3>Evaluasi yang Saya Berikan</h3>
+  <table><tr><th>Mahasiswa</th><th>Project</th><th>Rating</th><th>Waktu</th></tr>
+  ${data.my_evaluations.map(e => `<tr><td>${e.student_name}</td><td>${e.project_judul}</td><td>${e.rating_overall}/5</td><td>${e.assessed_at}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Belum ada evaluasi.</td></tr>'}
+  </table>
+</section>
+<section class="panel">
+  <h3>Opsi Bimbingan: Aplikasi Accepted yang Bisa Dinilai</h3>
+  <table><tr><th>Mahasiswa</th><th>Project</th></tr>
+  ${data.awaiting_evaluation.map(a => `<tr><td>${a.student_name}</td><td>${a.project_judul}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">Tidak ada yang menunggu.</td></tr>'}
+  </table>
+</section>
+<p class="muted">Data refresh otomatis tiap 5 menit.</p>
+`; %>
+<%- include('../layout', { title: title, user: user, token: (typeof token !== 'undefined' ? token : ''), refresh: true, body: body }) %>

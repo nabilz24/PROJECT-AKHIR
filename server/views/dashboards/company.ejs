@@ -1,0 +1,30 @@
+<% const body = `
+<div class="cards">
+  <div class="card"><div class="num">${data.active_projects_count}</div><div class="lbl">Project Aktif</div></div>
+  <div class="card"><div class="num">${data.waiting_candidates_count}</div><div class="lbl">Kandidat Menunggu</div></div>
+  <div class="card"><div class="num">${data.pending_evaluations_count}</div><div class="lbl">Evaluasi Menunggu</div></div>
+  <div class="card"><div class="num">${data.avg_match_score === null ? '-' : data.avg_match_score}</div><div class="lbl">Rata-rata Match Score</div></div>
+</div>
+<section class="panel">
+  <h3>Project Aktif</h3>
+  <table><tr><th>Judul</th><th>Deadline</th><th>Difficulty</th></tr>
+  ${data.active_projects.map(p => `<tr><td>${p.judul}</td><td>${p.deadline || '-'}</td><td>${p.difficulty || '-'}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Belum ada project aktif.</td></tr>'}
+  </table>
+  <p><a class="btn noprint" href="/api/v1/companies/projects${(typeof token !== 'undefined' && token) ? '?token=' + token : ''}">Buat Project (API)</a></p>
+</section>
+<section class="panel">
+  <h3>Kandidat Menunggu</h3>
+  <table><tr><th>Mahasiswa</th><th>Project</th><th>Match</th><th>Tanggal</th></tr>
+  ${data.waiting_candidates.map(c => `<tr><td>${c.student_name}</td><td>${c.project_judul}</td><td>${c.match_score === null ? '-' : c.match_score}</td><td>${c.applied_at}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Tidak ada kandidat menunggu.</td></tr>'}
+  </table>
+  <p><a class="btn secondary noprint" href="/api/v1/companies/candidates${(typeof token !== 'undefined' && token) ? '?token=' + token : ''}">Lihat Kandidat (API)</a></p>
+</section>
+<section class="panel">
+  <h3>Evaluasi Menunggu</h3>
+  <table><tr><th>Mahasiswa</th><th>Project</th></tr>
+  ${data.pending_evaluations.map(e => `<tr><td>${e.student_name}</td><td>${e.project_judul}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">Tidak ada evaluasi menunggu.</td></tr>'}
+  </table>
+</section>
+<p class="muted">Data refresh otomatis tiap 5 menit. Navigasi: Projects · Candidates · Talent Matching · Project Management · Profile.</p>
+`; %>
+<%- include('../layout', { title: title, user: user, token: (typeof token !== 'undefined' ? token : ''), refresh: true, body: body }) %>
