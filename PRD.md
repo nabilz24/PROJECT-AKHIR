@@ -1,3 +1,10 @@
+---
+title: "PRD.md — Campus Industry Talent Hub"
+version: "1.0.0"
+date: "2026-09-05"
+status: "Approved"
+---
+
 # PRD.md — Campus Industry Talent Hub
 
 ## Product Overview

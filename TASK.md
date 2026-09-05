@@ -1,3 +1,10 @@
+---
+title: "TASK.md — Roadmap Development"
+version: "1.0.0"
+date: "2026-09-05"
+status: "Active"
+---
+
 # TASK.md — Roadmap Development
 
 Tahapan development dibagi menjadi 13 fase (Phase 0–12). Setiap task memiliki field: ID, Title, Description, Priority, Dependencies, Acceptance Criteria, Status. Semua task harus **traceable** kembali ke requirement di PRD.md.
@@ -8,8 +15,8 @@ Tahapan development dibagi menjadi 13 fase (Phase 0–12). Setiap task memiliki 
 
 | ID     | Title                              | Description                                                                      | Priority | Dependencies | Acceptance Criteria                                                                                                                                     | Status |
 |--------|------------------------------------|----------------------------------------------------------------------------------|----------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| TASK-001 | Setup Project Repository           | Inisialisasi repo, branch structure, CI/CD pipeline dasar                        | High     | None         | - Repo ter-host (git lokal atau remote)\n- Branch main + develop terbuat\n- GitHub Actions / basic pipeline aktif (lint, test run minimal)\n- README proyek dibuat dengan struktur yang sesuai dokumentasi                                                                     | TODO   |
-| TASK-002 | Tambah Dokumentasi Dasar ke Repo   | Memastikan 8 file PRD.md, G_DESIGN.md, DESIGN.md, TASK.md, QA.md, AGENTS.md, database.md, api.md tersimpan di repo root | High     | TASK-001     | - Semua 8 file ada di folder root\n- File memiliki frontmatter tanggal/versi\n- Setiap file bisa dibaca tanpa error                                                                                     | TODO   |
+| TASK-001 | Setup Project Repository           | Inisialisasi repo, branch structure, CI/CD pipeline dasar                        | High     | None         | - Repo ter-host (git lokal atau remote)\n- Branch main + develop terbuat\n- GitHub Actions / basic pipeline aktif (lint, test run minimal)\n- README proyek dibuat dengan struktur yang sesuai dokumentasi                                                                     | DONE   |
+| TASK-002 | Tambah Dokumentasi Dasar ke Repo   | Memastikan 8 file PRD.md, G_DESIGN.md, DESIGN.md, TASK.md, QA.md, AGENTS.md, database.md, api.md tersimpan di repo root | High     | TASK-001     | - Semua 8 file ada di folder root\n- File memiliki frontmatter tanggal/versi\n- Setiap file bisa dibaca tanpa error                                                                                     | DONE   |
 
 ---
 

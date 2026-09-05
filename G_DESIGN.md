@@ -1,3 +1,10 @@
+---
+title: "G_DESIGN.md — Global / System Design"
+version: "1.0.0"
+date: "2026-09-05"
+status: "Approved"
+---
+
 # G_DESIGN.md — Global / System Design
 
 ## System Architecture

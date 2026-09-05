@@ -1,3 +1,11 @@
+---
+title: "database.md — Desain Database & Schema"
+version: "1.1.0"
+date: "2026-09-05"
+status: "Approved"
+changelog: "2026-09-05 v1.1.0 — TASK-002: tambah [ASSUMPTION] adaptasi SQLite untuk stack Node/Express"
+---
+
 # database.md — Desain Database & Schema
 
 Lanjutan dari G_DESIGN.md (system architecture). File ini berisi **skema tabel lengkap** + relasi + index + data seed untuk kebutuhan MVP. Semua entiti dirancang agar **traceable** ke requirement di PRD.md dan module di G_DESIGN.md.
@@ -276,5 +284,25 @@ Daftar skill dasar yang di-impor saat `npm run db:seed` atau `php artisan db:see
 3. `php artisan migrate` — apply ke database staging.
 4. `php artisan db:seed` — populate seed data skill taxonomy.
 5. Verifikasi di database dan API endpoint.
+
+> **Catatan 2026-09-05 (TASK-002):** Proyek berjalan di stack Node.js + Express + SQLite. Perintah aktual: `npm run db:migrate` (`node server/db/migrate.js`) dan `npm run db:seed` (`node server/db/seed.js`).
+
+---
+
+## 6. [ASSUMPTION] Adaptasi SQLite (Stack Aktif Node/Express, 2026-09-05)
+
+Sketsa tipe di Bagian 1 ditulis untuk PostgreSQL/MySQL. Implementasi SQLite (`better-sqlite3`) memetakan tipe sebagai berikut — relasi, unique constraint, index, dan semantik tidak berubah:
+
+| Sketsa Dokumen | Implementasi SQLite |
+|----------------|---------------------|
+| `BIGINT UNSIGNED` (PK/FK) | `INTEGER` (PK autoincrement via `INTEGER PRIMARY KEY AUTOINCREMENT`) |
+| `ENUM('a','b')` | `TEXT` + `CHECK (col IN ('a','b'))` |
+| `JSON` | `TEXT` berisi JSON string (parse di application layer) |
+| `YEAR` (angkatan) | `INTEGER` |
+| `TINYINT(1)` boolean | `INTEGER` 0/1 + CHECK |
+| `TIMESTAMP DEFAULT NOW()` | `TEXT DEFAULT (datetime('now'))` (ISO 8601 UTC) |
+| `VARCHAR(n)` / `CHAR(8)` | `TEXT` + validasi panjang di application layer (`express-validator`) |
+
+**Batasan yang diterima untuk MVP:** tanpa tipe ENUM native (diganti CHECK); tanpa `HASH`/`BTREE` index eksplisit (SQLite memakai B-tree untuk semua index); foreign key enforcement via `PRAGMA foreign_keys = ON` di connection. Migrasi ke PostgreSQL tetap dimungkinkan di masa depan tanpa mengubah kontrak API — keputusan migrasi adalah `[NEEDS DECISION]` pasca-MVP.
 
 ---

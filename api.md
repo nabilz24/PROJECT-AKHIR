@@ -1,3 +1,10 @@
+---
+title: "api.md — Spesifikasi API REST"
+version: "1.0.0"
+date: "2026-09-05"
+status: "Approved"
+---
+
 # api.md — Spesifikasi API REST
 
 Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub. Setiap endpoint mencakup: method HTTP, path, role auth yang minimal, request body/params, respons structure, dan traceability ke requirement PRD.md & module G_DESIGN.md.

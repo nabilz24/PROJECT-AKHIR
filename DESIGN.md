@@ -1,3 +1,10 @@
+---
+title: "DESIGN.md — UI/UX Design Specification"
+version: "1.0.0"
+date: "2026-09-05"
+status: "Approved"
+---
+
 # DESIGN.md — UI/UX Design Specification
 
 ## Design Principles

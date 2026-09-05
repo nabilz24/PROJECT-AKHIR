@@ -1,3 +1,11 @@
+---
+title: "AGENTS.md — Konteks & Aturan untuk AI Agent"
+version: "1.1.0"
+date: "2026-09-05"
+status: "Active"
+changelog: "2026-09-05 v1.1.0 — TASK-001/002: isi Instruksi Build & Tooling dengan perintah aktual Node/Express/SQLite"
+---
+
 # AGENTS.md — Konteks & Aturan untuk AI Agent
 
 ## Navigasi Dokumentasi Proyek (Source of Truth)
@@ -18,20 +26,17 @@ Dokumen berikut merupakan **source of truth** utuh untuk pengembangan Campus Ind
 
 ---
 
-## Instruksi Build & Tooling (Placeholder — Stack Netral)
+## Instruksi Build & Tooling (Node.js + Express + SQLite — Aktif sejak 2026-09-05, TASK-002)
 
-Karena stack teknologi saat ini `[NEEDS DECISION]` (belum diputuskan di awal proyek), bagian ini disediakan sebagai placeholder yang akan diisi setelah teknologi divergensi.
+Stack final: **Node.js 24 + Express 5 + better-sqlite3 + JWT + bcrypt + Jest**.
 
-**Setelah stack diputuskan (mis. Next.js + Node/Express/PostgreSQL, atau Laravel + Vue, dsb.), tambahkan ke sini:**
-
-- **Perintah Development:** `npm run dev` / `php artisan serve` — menjalankan server lokal di port default (3000/8000)
-- **Perintah Lint:** `npm run lint` / `php vendor/bin/phpcs` — memastikan code convention
-- **Perintah Test:** `npm test` / `php artisan test` — menjalankan suite unit & integration test
-- **Perintah Type Check:** `npm run typecheck` / `php artisan tinker` — validasi tipe data
-- **Perintah Build Produksi:** `npm run build` / `php artisan optimize` — generate assets untuk deploy
-- **Perintah Deploy:** `npm run deploy` / `php artisan deploy` — deploy ke environment staging/production
-- **Database Migration:** `npm run db:migrate` / `php artisan migrate` — aplikasi schema ke database
-- **Seed Data:** `npm run db:seed` / `php artisan db:seed` — populate data awal (skill taxonomy, user dummy, dsb.)
+- **Perintah Development:** `npm run dev` — menjalankan server lokal (`server/src/server.js`, mode `--watch`) di port 3000
+- **Perintah Start Produksi:** `npm start` — menjalankan server tanpa watch
+- **Perintah Lint:** `npm run lint` — placeholder hingga linter dikonfigurasi di Phase 11 (TASK-110)
+- **Perintah Test:** `npm test` — menjalankan suite Jest (`tests/**/*.test.js`); `npm run test:coverage` untuk coverage
+- **Database Migration:** `npm run db:migrate` — aplikasi schema SQLite ke `server/data/app.db`
+- **Seed Data:** `npm run db:seed` — populate data awal (skill taxonomy 30 skill, user dummy)
+- **Install Dependensi:** `npm install` (runtime) / `npm install -D jest` (dev)
 
 **Konvensi Commit:**
 - `git commit -m "feat: <singkat>"` untuk fitur baru

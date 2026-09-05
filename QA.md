@@ -1,3 +1,10 @@
+---
+title: "QA.md — Quality Assurance Plan"
+version: "1.0.0"
+date: "2026-09-05"
+status: "Approved"
+---
+
 # QA.md — Quality Assurance Plan
 
 ## Testing Strategy
@@ -142,5 +149,21 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 5. **Verify** — QA tester menjalankan ulang test case terkait.
 6. **Done** — Jika test lulus, status bug diubah ke **Closed**.
 7. **Reopen** — Jika QA tester menemukan ulang bug, status dikembalikan ke **Fix**.
+
+---
+
+## Hasil Eksekusi per Phase
+
+### Phase 0 — Foundation (2026-09-05): TASK-001, TASK-002 → DONE
+
+- ✅ Requirement implemented — repo hygiene (`.gitignore`, 6.174 file `node_modules/` dikeluarkan dari tracking), `README.md`, `package.json` scripts resmi (`dev/start/test/db:migrate/db:seed/lint`), Jest terinstal, `tests/smoke.test.js`, CI workflow valid, frontmatter tanggal/versi di 9 dokumen, AGENTS.md tooling terisi, keputusan stack final tercatat (TECH_STACK.md Bag. 17), asumsi SQLite tercatat (database.md Bag. 6), `test_auth.js` eksperimen dihapus (digantikan smoke test).
+- ✅ Unit test passed — `npm test`: 1 suite, 9/9 test lulus.
+- ✅ Integration test passed — N/A (belum ada modul aplikasi; mulai Phase 1).
+- ✅ UI tested — N/A (belum ada halaman; frontend diputuskan di Phase 2).
+- ✅ Security checked — `.gitignore` menutup `.env`/`*.db`; tidak ada secret di repo.
+- ✅ Acceptance criteria passed — semua checklist TASK-001 & TASK-002 terpenuhi (branch main+develop sudah ada sebelumnya; CI aktif via workflow valid + `npm test` hijau).
+- ✅ No critical bug — tidak ada blocker terbuka.
+- ✅ Documentation updated — TASK.md (status DONE), QA.md (bagian ini), AGENTS.md, TECH_STACK.md, database.md.
+- ⏳ Sign-off — menunggu review user sebelum lanjut Phase 1 (Auth).
 
 ---

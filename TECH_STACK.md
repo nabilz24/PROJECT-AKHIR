@@ -1,4 +1,14 @@
+---
+title: "TECH_STACK.md — Technical Stack MVP Campus Industry Talent Hub"
+version: "2.0.0"
+date: "2026-09-05"
+status: "Superseded (keputusan final: Node.js + Express + SQLite, lihat Bagian 17)"
+changelog: "2026-09-05 v2.0.0 — TASK-002: keputusan stack final Node/Express/SQLite; rekomendasi Laravel ditandai superseded"
+---
+
 # TECH_STACK.md — Technical Stack MVP Campus Industry Talent Hub
+
+> **KEPUTUSAN FINAL STACK (2026-09-05, TASK-002):** Proyek ini dibangun dengan **Node.js 24 + Express 5 + SQLite (better-sqlite3) + JWT + bcrypt**. Rekomendasi Laravel/PHP/PostgreSQL di bawah (Bagian 1–16) berstatus **SUPERSEDED** — dipertahankan sebagai arsip analisis alternatif. Lihat **Bagian 17** untuk stack aktif.
 
 **Status:** Recommended for MVP deployment  
 **Last reviewed:** Cross-document review dari PRD.md, G_DESIGN.md, QA.md, database.md, api.md, TASK.md  
@@ -450,3 +460,25 @@ Meskipun stack direkomendasikan, berikut [NEEDS DECISION] yang masih memeriksa k
 5. **Pilihan testing framework:** PestPHP dipakai, atau team memihak PHPUnit?
 
 Setelah [NEEDS DECISION] ini dikonfirmasi, stack teknologi siap digunakan untuk pengembangan MVP Campus Industry Talent Hub.
+
+> **Catatan 2026-09-05 (TASK-002):** Bagian 1–16 di atas BERSTATUS SUPERSEDED. Lihat Bagian 17 untuk stack aktif.
+
+---
+
+## 17. Stack Aktif (Keputusan Final 2026-09-05, TASK-002)
+
+**Alasan keputusan:** PHP/Composer/PostgreSQL tidak tersedia di lingkungan pengembangan; dependensi Node.js (express, jsonwebtoken, bcrypt, better-sqlite3, express-rate-limit, express-validator, passport) sudah terpasang di repo; `api.md` netral-stack dan contoh base URL dev-nya (`http://localhost:3000/api/v1`) cocok dengan Express.
+
+| Lapisan | Teknologi Aktif |
+|---------|-----------------|
+| Runtime / Backend | Node.js 24 + Express 5 |
+| Database | SQLite via `better-sqlite3` (file `server/data/app.db`) |
+| Auth | JWT (`jsonwebtoken`), hash bcrypt (10 rounds), rate limit (`express-rate-limit`) |
+| Validasi | `express-validator` |
+| Session | `express-session` (+ `passport`/`passport-local` tersedia bila dibutuhkan) |
+| Testing | Jest (`npm test`, pola `tests/**/*.test.js`) |
+| CI | GitHub Actions (`.github/workflows/ci.yml`): setup-node 24 → `npm ci` → `npm test` |
+| File upload | Local storage development (S3 `[NEEDS DECISION]` saat deploy) |
+| Frontend | `[NEEDS DECISION]` — default yang diusulkan: EJS server-rendered dalam codebase Express; dikonfirmasi ulang saat mulai Phase 2 |
+
+**Adaptasi database (SQLite vs skema PostgreSQL di database.md):** ENUM → TEXT + CHECK constraint; JSON → TEXT (JSON string); BIGINT UNSIGNED → INTEGER; YEAR → INTEGER; TIMESTAMP → TEXT (ISO 8601) dengan DEFAULT `(datetime('now'))`. Relasi, unique constraint, dan index tetap sama. Tercatat sebagai `[ASSUMPTION]` di database.md Bagian 6.
