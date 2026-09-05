@@ -113,6 +113,7 @@ Tahapan development dibagi menjadi 13 fase (Phase 0–12). Setiap task memiliki 
 | TASK-101 | Company Dashboard UI  | Halaman dashboard perusahaan dengan ringkasan                             | High     | TASK-040,TASK-050,TASK-061 | - Kartu: project aktif, kandidat menunggu, evaluasi menunggu, match score rata-rata\n- Navigasi ke Projects/Candidates/Talent Matching\n- Tombol aksi cepat: "Lihat Kandidat", "Buat Project" | DONE   |
 | TASK-102 | Campus Dashboard UI   | Halaman dashboard admin kampus dengan ringkasan strategis                 | High     | TASK-100,TASK-101,TASK-072,TASK-102 | - Kartu: total mahasiswa, total perusahaan, total project, rata-rata gap skill\n- Alert: sektor skill naik/turun\n- Navigasi ke modul Skills/Analytics/Students/Companies | DONE   |
 | TASK-103 | Analytics Visualization | Grafik distribusi skill, tren industri, heatmap gap                       | Medium   | TASK-102,TASK-070 | - Pie chart: distribusi skill mahasiswa\n- Line chart: tren skill yang dicari perusahaan\n- Heatmap: intensity skill gap per program studi\n- Export ke PNG/PDF | DONE   |
+| TASK-104 | SPA Landing di `/` | Single page application React+Tailwind CDN: landing + login, gantikan 404 root | Medium | TASK-100..103 | - GET / → 200 HTML berisi React root + CDN + form login\n- Login via /api/v1/auth/login lalu redirect dashboard_url + ?token=\n- /login EJS tetap 200 sebagai fallback offline\n- Route tak dikenal tetap 404 JSON | DONE   |
 
 ---
 

@@ -286,4 +286,12 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Documentation updated — TASK.md (DONE ×4), QA.md (bagian ini), api.md (v1.10.0: dashboard kampus + analytics final + halaman), TECH_STACK.md (frontend EJS decided), README (status Phase 10). Tanpa migrasi baru.
 - ⏳ Sign-off — menunggu review user sebelum lanjut Phase 11 (QA).
 
+### TASK-104 — SPA Landing di `/` (2026-09-05): DONE
+
+- ✅ Requirement implemented — `GET /` menyajikan `server/views/spa.ejs`: React 18 UMD + Babel standalone + Tailwind Play CDN (single file, tanpa build step). Isi: nav, hero, statistik, cara kerja 3 langkah, kartu 4 role, form login (POST `/api/v1/auth/login` → localStorage token → redirect `dashboard_url + ?token=`), footer. Fallback: pesan + link `/login` bila CDN gagal dimuat; `<noscript>` tersedia.
+- ✅ Integration test passed — `tests/integration/spa.test.js` (3): GET / 200 + penanda React/CDN/login, /login tetap 200, 404 JSON untuk route tak dikenal. Total: 17 suite, 144/144 hijau.
+- ✅ Live verified — server port 3111 DB fresh (15 migrasi applied): `GET /` 200 `text/html` + semua penanda konten True.
+- ✅ Acceptance criteria passed — checklist TASK-104 terpenuhi.
+- Catatan: SPA butuh internet untuk CDN (`[ASSUMPTION]` tercatat di `spa.ejs`); `/login` EJS tetap jalan offline.
+
 ---

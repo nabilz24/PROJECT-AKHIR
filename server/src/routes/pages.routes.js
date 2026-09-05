@@ -1,4 +1,5 @@
-// Halaman EJS (TASK-100..103, DESIGN.md). Base: /
+// SPA landing + login (TASK-104). Base: /
+// Root "/" menyajikan single page application React (CDN); halaman EJS lain tetap ada.
 // Autentikasi via header Bearer ATAU ?token= (lihat middlewares/auth.js).
 const express = require('express');
 const { getDb } = require('../db/connection');
@@ -24,6 +25,8 @@ function tokenParam(req, res, next) {
   res.locals.token = req.query.token || '';
   return next();
 }
+
+router.get('/', (req, res) => res.render('spa', { title: 'Campus Industry Talent Hub' }));
 
 router.get('/login', (req, res) => res.render('login', { title: 'Login' }));
 

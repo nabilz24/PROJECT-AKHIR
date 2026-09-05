@@ -161,6 +161,8 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | GET | `/campus/dashboard` | Bearer token (kampus/dosen) | — | `{ success: true, data: { total_*, avg_gap, top_demanded_skills, ... } }` | Ringkasan strategis kampus (tambahan 2026-09-05 TASK-102) |
 
 > **Catatan 2026-09-05 (TASK-100..103):** halaman EJS (`/login`, `/dashboard/student|company|campus|mentor|analytics`) memakai data endpoint di atas; autentikasi halaman via header Bearer atau `?token=` (`[NEEDS DECISION]` cookie session untuk produksi).
+>
+> **Catatan 2026-09-05 (TASK-104):** `GET /` menyajikan SPA landing React + Tailwind via CDN (butuh internet) berisi sambutan + form login yang memanggil `POST /auth/login` lalu redirect ke `dashboard_url`. `/login` EJS tetap tersedia sebagai fallback offline.
 
 ---
 

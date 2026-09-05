@@ -122,4 +122,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 10 (Dashboard & Analytics) — DONE. Dashboard 4 role (EJS) + analytics + CSV, 141 test hijau.
+**Status**: Phase 10 (Dashboard & Analytics) — DONE + TASK-104 SPA landing React di `/`. 144 test hijau.
