@@ -10,5 +10,6 @@ const router = express.Router();
 router.get('/students/dashboard', authLimiter, authenticateToken, requireRole('mahasiswa'), controller.studentDashboard);
 router.get('/companies/dashboard', authLimiter, authenticateToken, requireRole('perusahaan'), controller.companyDashboard);
 router.get('/campus/dashboard', authLimiter, authenticateToken, requireRole('kampus', 'dosen'), controller.campusDashboard);
+router.get('/mentor/awaiting', authLimiter, authenticateToken, requireRole('dosen'), controller.mentorAwaiting);
 
 module.exports = router;

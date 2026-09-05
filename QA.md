@@ -323,4 +323,14 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Bonus fix — path script `db:migrate`/`db:seed` di package.json menunjuk `server/db/...` yang tidak ada; dibetulkan ke `server/src/db/...`.
 - ✅ Acceptance criteria passed — checklist TASK-108 terpenuhi.
 
+### TASK-109 — Semua halaman dashboard SPA + audit API (2026-09-05): DONE
+
+- ✅ Audit API — `scripts/audit-endpoints.js` (`npm run audit:api`, DB temp terisolasi): **74/74 lolos** — register/login/me/logout, profile + upload PNG, skills CRUD, projects CRUD + browse/filter/sort + apply (+duplikat 4xx), matching calculate/ranking/candidates, gap + recs + action, applications accept, notifikasi, 3 dashboard, 4 analytics (+CSV, +PDF→422), assessments company+dosen + get/update eval, password-reset + confirm bogus→400, RBAC negatif (401/403), delete flows (+404), 8 halaman. Tanpa bug — tidak ada perbaikan endpoint.
+- ✅ Endpoint baru — `GET /api/v1/mentor/awaiting` (dosen only): aplikasi accepted + ID + flag assessed; `mentor.test.js` (3).
+- ✅ Semua halaman di `/app` — Projects (filter/detail/apply), My Skills (CRUD), Gap (picker + tabel klasifikasi), Recommendations (start/selesai), My Projects (CRUD + tutup), Applications (terima/tolak + tombol Nilai), Assess (form rating + antrian dosen), Notifikasi (filter + tandai dibaca), Profil (edit per role). Sidebar nav per role.
+- ✅ Integration test passed — total 19 suite, 149/149 hijau.
+- ✅ JSX tervalidasi — blok text/babel `app.ejs` + `spa.ejs` dikompilasi Babel asli tanpa error.
+- ✅ Live verified — port 3117: `/app` 200 + semua penanda halaman True.
+- ✅ Acceptance criteria passed — checklist TASK-109 terpenuhi.
+
 ---

@@ -160,7 +160,21 @@ function campusDashboardData(db) {
   };
 }
 
-// Data halaman mentor (dosen): evaluasi miliknya + accepted yang bisa dinilai.
+// Data halaman Assess dosen (TASK-109): aplikasi accepted + flag sudah dinilai.
+// Dibutuhkan SPA /app karena mentorDashboardData tidak membawa ID.
+function awaitingAssessments(db, userId) {
+  return db
+    .prepare(
+      `SELECT a.project_id, a.student_id, u.name AS student_name, p.judul AS project_judul,
+        CASE WHEN EXISTS (SELECT 1 FROM assessments s WHERE s.project_id = a.project_id AND s.student_id = a.student_id AND s.evaluator_role = 'dosen' AND s.evaluator_id = ?) THEN 1 ELSE 0 END AS assessed
+       FROM applications a JOIN users u ON u.id = a.student_id JOIN projects p ON p.id = a.project_id
+       WHERE a.status = 'accepted' AND p.deleted_at IS NULL
+       ORDER BY a.applied_at DESC`
+    )
+    .all(userId);
+}
+
+// Data halaman mentor EJS (dosen): evaluasi miliknya + accepted yang bisa dinilai.
 function mentorDashboardData(db, userId) {
   const myEvals = db
     .prepare(
@@ -208,4 +222,13 @@ function campusDashboard(req, res, next) {
   }
 }
 
-module.exports = { studentDashboardData, companyDashboardData, campusDashboardData, mentorDashboardData, studentDashboard, companyDashboard, campusDashboard };
+// GET /mentor/awaiting — TASK-109 (halaman Assess dosen di SPA /app).
+function mentorAwaiting(req, res, next) {
+  try {
+    return require('../utils/response').ok(res, { awaiting: awaitingAssessments(getDb(), req.user.id) }, 'OK');
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { studentDashboardData, companyDashboardData, campusDashboardData, mentorDashboardData, awaitingAssessments, studentDashboard, companyDashboard, campusDashboard, mentorAwaiting };

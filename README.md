@@ -84,6 +84,16 @@ Password semua akun: `Test123!`
 
 Buka `http://localhost:3000/app`, login dengan salah satu akun di atas.
 
+## Halaman SPA `/app`
+
+Dashboard, Projects, My Skills, Gap Analysis, Recommendations, My Projects, Applications, Assess, Analytics, Notifikasi, Profil (menu menyesuaikan role). Versi server-render tetap ada di `/dashboard/*`.
+
+## Audit API
+
+```bash
+npm run audit:api   # 74 endpoint: status + RBAC + halaman (DB temp, exit 1 bila gagal)
+```
+
 ### Development Server
 ```bash
 # Start server (akan dibuat Phase 1)
@@ -138,4 +148,4 @@ Proyek internal — Campus Industry Talent Hub MVP.
 
 ---
 
-**Status**: Phase 10 — DONE + TASK-104/105/106 (SPA landing `/`, login `/login`, dashboard SPA `/app` React). 146 test hijau.
+**Status**: Phase 10 — DONE + TASK-104..109 (SPA landing `/`, login `/login`, dashboard SPA `/app` 10 halaman, audit 74/74). 149 test hijau.

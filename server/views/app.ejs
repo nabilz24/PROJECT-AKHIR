@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — Campus Industry Talent Hub</title>
-  <!-- TASK-107: Tailwind CSS v4 browser CDN (butuh internet).
-       "/app" SPA dashboard: konsumsi endpoint JSON /api/v1. EJS /dashboard/* tetap ada. -->
+  <!-- TASK-109: semua halaman dashboard di SPA /app (React 18 UMD + Tailwind v4 browser CDN).
+       Halaman: Dashboard, Projects, My Skills, Gap, Recommendations, My Projects,
+       Applications, Assess, Analytics, Notifikasi, Profil. EJS /dashboard/* tetap ada. -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -17,11 +18,26 @@
   <script type="text/babel" data-presets="react">
     const { useState, useEffect } = React;
     const API = '/api/v1';
+    const INP = 'w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
+    const BTN = 'rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-3 py-1.5';
+    const BTN2 = 'rounded-lg border border-slate-600 hover:border-slate-400 text-slate-200 text-sm px-3 py-1.5';
+    const DANGER = 'rounded-lg border border-red-700 hover:bg-red-900 text-red-300 text-sm px-3 py-1.5';
 
-    async function apiFetch(path, token, opts) {
-      const r = await fetch(API + path, Object.assign({ headers: { Authorization: 'Bearer ' + token } }, opts || {}));
+    async function apiFetch(path, token) {
+      const r = await fetch(API + path, { headers: { Authorization: 'Bearer ' + token } });
       if (r.status === 401) { const e = new Error('Sesi berakhir, silakan login ulang.'); e.code = 401; throw e; }
       return r.json();
+    }
+    async function apiSend(path, token, method, body) {
+      const r = await fetch(API + path, {
+        method, headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {}),
+      });
+      if (r.status === 401) { const e = new Error('Sesi berakhir, silakan login ulang.'); e.code = 401; throw e; }
+      let j = {};
+      try { j = await r.json(); } catch (ex) { j = { success: false, message: 'Respons tak terduga (' + r.status + ')' }; }
+      if (!j.success) { const e = new Error(j.message || ('Gagal (' + r.status + ')')); e.code = r.status; throw e; }
+      return j;
     }
 
     function matchColor(s) {
@@ -29,6 +45,13 @@
       if (s >= 70) return 'bg-green-600 text-white';
       if (s >= 40) return 'bg-yellow-500 text-slate-900';
       return 'bg-red-600 text-white';
+    }
+    function gapColor(c) {
+      if (c === 'critical') return 'bg-red-600 text-white';
+      if (c === 'large') return 'bg-orange-500 text-slate-900';
+      if (c === 'medium') return 'bg-yellow-500 text-slate-900';
+      if (c === 'small') return 'bg-emerald-600 text-white';
+      return 'bg-slate-700 text-slate-200';
     }
 
     function StatCard(props) {
@@ -40,7 +63,6 @@
         </div>
       );
     }
-
     function Section(props) {
       return (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mt-4">
@@ -49,7 +71,6 @@
         </div>
       );
     }
-
     function Bar(props) {
       const pct = Math.min(100, Math.max(0, (props.value / (props.max || 100)) * 100));
       return (
@@ -61,6 +82,10 @@
           <span className="w-16 text-right text-sm text-slate-400">{props.value}</span>
         </div>
       );
+    }
+    function Msg(props) {
+      if (!props.text) return null;
+      return <p className={'text-sm mb-3 ' + (props.err ? 'text-red-400' : 'text-emerald-400')}>{props.text}</p>;
     }
 
     function LoginView(props) {
@@ -87,11 +112,9 @@
             <h1 className="font-bold text-white text-lg">Dashboard App</h1>
             <p className="text-sm text-slate-400 mb-5">Login untuk melihat dashboard sesuai role.</p>
             <label className="block text-sm text-slate-300 mb-1">Email</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={INP} />
             <label className="block text-sm text-slate-300 mb-1">Password</label>
-            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={INP} />
             {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
             <button disabled={loading} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2">
               {loading ? 'Memproses…' : 'Login'}
@@ -251,7 +274,7 @@
         <div>
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Analytics</h2>
-            <button onClick={downloadCsv} className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5">Export CSV</button>
+            <button onClick={downloadCsv} className={BTN}>Export CSV</button>
           </div>
           <Section title={'Distribusi Skill (' + pie.total_students + ' mahasiswa)'}>
             {pie.distribution.slice(0, 12).map((s) => (
@@ -286,11 +309,587 @@
       );
     }
 
+    // ---- Halaman: Projects (mahasiswa) ----
+    function ProjectsView(props) {
+      const [list, setList] = useState([]);
+      const [sektor, setSektor] = useState('');
+      const [diff, setDiff] = useState('');
+      const [sort, setSort] = useState('terbaru');
+      const [detail, setDetail] = useState(null);
+      const [cover, setCover] = useState('');
+      const [msg, setMsg] = useState('');
+      const [isErr, setIsErr] = useState(false);
+      async function browse() {
+        setMsg(''); setIsErr(false);
+        try {
+          const q = [];
+          if (sektor) q.push('filter[sektor_industri]=' + encodeURIComponent(sektor));
+          if (diff) q.push('filter[difficulty]=' + diff);
+          q.push('filter[status]=active');
+          q.push('sort=' + sort);
+          const j = await apiFetch('/projects?' + q.join('&'), props.token);
+          setList(j.data.projects || []);
+          setDetail(null);
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      useEffect(() => { browse(); }, []);
+      async function openDetail(id) {
+        try {
+          const j = await apiFetch('/projects/' + id, props.token);
+          setDetail(j.data.project); setCover(''); setMsg(''); setIsErr(false);
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      async function apply(id) {
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/projects/' + id + '/apply', props.token, 'POST', { cover_letter: cover || undefined });
+          setMsg('Aplikasi terkirim.');
+          browse();
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">Projects</h2>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <input value={sektor} onChange={(e) => setSektor(e.target.value)} placeholder="Sektor…" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+            <select value={diff} onChange={(e) => setDiff(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+              <option value="">Semua difficulty</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+            </select>
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+              <option value="terbaru">Terbaru</option><option value="deadline">Deadline</option><option value="match_score">Match score</option>
+            </select>
+            <button onClick={browse} className={BTN}>Cari</button>
+          </div>
+          <Msg text={msg} err={isErr} />
+          {list.map((p) => (
+            <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2 flex items-center gap-3">
+              <span className="flex-1 text-sm text-slate-200">{p.judul} <span className="text-slate-500">· {p.sektor_industri || '–'} · {p.difficulty || '–'} · {p.deadline || '–'}</span></span>
+              {p.match_score != null && <span className={'text-xs font-bold px-2 py-1 rounded ' + matchColor(p.match_score)}>{p.match_score}</span>}
+              <button onClick={() => openDetail(p.id)} className={BTN2}>Detail</button>
+            </div>
+          ))}
+          {list.length === 0 && <p className="text-sm text-slate-500">Tidak ada project.</p>}
+          {detail && (
+            <Section title={'Detail: ' + detail.judul}>
+              <p className="text-sm text-slate-300 mb-2">{detail.deskripsi || '(tanpa deskripsi)'}</p>
+              <p className="text-xs text-slate-500 mb-2">Sektor: {detail.sektor_industri || '–'} · Deadline: {detail.deadline || '–'} · Status: {detail.status}</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {(detail.skills || []).map((s) => (
+                  <span key={s.skill_id || s.id} className="text-xs bg-slate-800 text-slate-200 px-2 py-1 rounded">{s.name || ('Skill #' + (s.skill_id || s.id))} ≥ {s.level_required}</span>
+                ))}
+              </div>
+              <textarea value={cover} onChange={(e) => setCover(e.target.value)} placeholder="Cover letter (opsional)" rows="2" className={INP}></textarea>
+              <button onClick={() => apply(detail.id)} className={BTN}>Daftar Project Ini</button>
+            </Section>
+          )}
+        </div>
+      );
+    }
+
+    // ---- Halaman: My Skills (mahasiswa) ----
+    function SkillsView(props) {
+      const [mine, setMine] = useState([]);
+      const [tax, setTax] = useState([]);
+      const [sid, setSid] = useState('');
+      const [level, setLevel] = useState(50);
+      const [source, setSource] = useState('course');
+      const [editId, setEditId] = useState(null);
+      const [editLevel, setEditLevel] = useState(50);
+      const [msg, setMsg] = useState('');
+      const [isErr, setIsErr] = useState(false);
+      async function load() {
+        try {
+          const a = await apiFetch('/students/skills', props.token);
+          setMine(a.data.skills || []);
+          const b = await apiFetch('/skills', props.token);
+          setTax(b.data.skills || []);
+          if (!sid && (b.data.skills || []).length > 0) setSid(String(b.data.skills[0].id));
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      useEffect(() => { load(); }, []);
+      async function add() {
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/students/skills', props.token, 'POST', { skill_id: Number(sid), proficiency_level: Number(level), source });
+          setMsg('Skill ditambahkan.'); load();
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      async function save(id) {
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/students/skills/' + id, props.token, 'PUT', { proficiency_level: Number(editLevel) });
+          setEditId(null); setMsg('Skill diupdate.'); load();
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      async function del(id) {
+        if (!window.confirm('Hapus skill ini?')) return;
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/students/skills/' + id, props.token, 'DELETE');
+          setMsg('Skill dihapus.'); load();
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">My Skills</h2>
+          <Msg text={msg} err={isErr} />
+          <Section title="Tambah Skill">
+            <div className="flex flex-wrap gap-2">
+              <select value={sid} onChange={(e) => setSid(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+                {tax.map((s) => <option key={s.id} value={s.id}>{s.name} [{s.category}]</option>)}
+              </select>
+              <input type="number" min="0" max="100" value={level} onChange={(e) => setLevel(e.target.value)} className="w-20 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+              <select value={source} onChange={(e) => setSource(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+                <option value="course">course</option><option value="certification">certification</option><option value="experience">experience</option>
+              </select>
+              <button onClick={add} className={BTN}>Tambah</button>
+            </div>
+          </Section>
+          <Section title={'Skill Saya (' + mine.length + ')'}>
+            {mine.map((s) => (
+              <div key={s.skill_id} className="py-2 border-b border-slate-800 last:border-0">
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-sm text-slate-200">{s.name} <span className="text-slate-500">[{s.proficiency_category} · {s.source}]</span></span>
+                  <span className="text-sm text-slate-300 w-10 text-right">{s.proficiency_level}</span>
+                  <button onClick={() => { setEditId(s.skill_id); setEditLevel(s.proficiency_level); }} className={BTN2}>Edit</button>
+                  <button onClick={() => del(s.skill_id)} className={DANGER}>Hapus</button>
+                </div>
+                {editId === s.skill_id && (
+                  <div className="flex gap-2 mt-2">
+                    <input type="number" min="0" max="100" value={editLevel} onChange={(e) => setEditLevel(e.target.value)} className="w-20 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+                    <button onClick={() => save(s.skill_id)} className={BTN}>Simpan</button>
+                    <button onClick={() => setEditId(null)} className={BTN2}>Batal</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </Section>
+        </div>
+      );
+    }
+
+    // ---- Halaman: Gap Analysis (mahasiswa) ----
+    function GapView(props) {
+      const [projects, setProjects] = useState([]);
+      const [pid, setPid] = useState('');
+      const [result, setResult] = useState(null);
+      const [msg, setMsg] = useState('');
+      useEffect(() => {
+        apiFetch('/projects?filter[status]=active&sort=terbaru', props.token)
+          .then((j) => {
+            const arr = j.data.projects || [];
+            setProjects(arr);
+            if (arr.length > 0) setPid(String(arr[0].id));
+          })
+          .catch((e) => { if (e.code === 401) props.onExpire(); });
+      }, []);
+      async function run() {
+        setMsg('');
+        try {
+          const j = await apiFetch('/gap-analysis/' + props.user.id + '/' + pid, props.token);
+          setResult(j.data);
+        } catch (e) { if (e.code === 401) props.onExpire(); else setMsg(e.message); }
+      }
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">Gap Analysis</h2>
+          <div className="flex gap-2 mb-3">
+            <select value={pid} onChange={(e) => setPid(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+              {projects.map((p) => <option key={p.id} value={p.id}>{p.judul}</option>)}
+            </select>
+            <button onClick={run} className={BTN}>Analisis</button>
+          </div>
+          {msg && <p className="text-sm text-red-400 mb-3">{msg}</p>}
+          {result && (
+            <Section title="Hasil Analisis">
+              <div className="overflow-x-auto">
+                <table className="text-sm text-slate-200 w-full">
+                  <thead><tr className="text-left text-slate-500 text-xs">
+                    <th className="py-1">Skill</th><th className="py-1">Butuh</th><th className="py-1">Saya</th><th className="py-1">Gap</th><th className="py-1">Klasifikasi</th>
+                  </tr></thead>
+                  <tbody>
+                    {(result.gaps || []).map((g) => (
+                      <tr key={g.skill_id} className="border-t border-slate-800">
+                        <td className="py-1.5">{g.name}</td><td>{g.required}</td><td>{g.current}</td>
+                        <td className="font-bold">{g.gap_value}</td>
+                        <td><span className={'text-xs font-bold px-2 py-0.5 rounded ' + gapColor(g.classification)}>{g.classification}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {result.summary && <p className="text-xs text-slate-500 mt-2">Ringkasan: {JSON.stringify(result.summary)}</p>}
+            </Section>
+          )}
+        </div>
+      );
+    }
+
+    // ---- Halaman: Recommendations (mahasiswa) ----
+    function RecsView(props) {
+      const [list, setList] = useState([]);
+      async function load() {
+        try {
+          const j = await apiFetch('/recommendations/student/' + props.user.id, props.token);
+          setList(j.data.recommendations || []);
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      useEffect(() => { load(); }, []);
+      async function act(id, action) {
+        try {
+          await apiSend('/recommendations/' + id + '/action', props.token, 'POST', { action });
+          load();
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">Recommendations</h2>
+          {list.length === 0 && <p className="text-sm text-slate-500">Belum ada rekomendasi. Jalankan Gap Analysis dulu.</p>}
+          {list.map((r) => (
+            <div key={r.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2">
+              <p className="text-sm text-slate-200 font-semibold">{r.title} <span className="text-xs text-indigo-400">[{r.priority} · {r.status}]</span></p>
+              <p className="text-xs text-slate-500 mb-2">{r.description || ''}</p>
+              <div className="flex gap-2">
+                {r.status === 'pending' && <button onClick={() => act(r.id, 'start')} className={BTN}>Mulai</button>}
+                {r.status === 'in-progress' && <button onClick={() => act(r.id, 'completed')} className={BTN}>Selesai</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ---- Halaman: My Projects (perusahaan) ----
+    function MyProjectsView(props) {
+      const [list, setList] = useState([]);
+      const [tax, setTax] = useState([]);
+      const [form, setForm] = useState({ judul: '', sektor_industri: '', deadline: '', difficulty: 'medium', status: 'active' });
+      const [rows, setRows] = useState([{ skill_id: '', level_required: 50 }]);
+      const [editId, setEditId] = useState(null);
+      const [edit, setEdit] = useState({ judul: '', deskripsi: '', status: 'active' });
+      const [msg, setMsg] = useState('');
+      const [isErr, setIsErr] = useState(false);
+      async function load() {
+        try {
+          const j = await apiFetch('/companies/projects', props.token);
+          setList(j.data.projects || []);
+          const t = await apiFetch('/skills', props.token).catch(() => ({ data: { skills: [] } }));
+          setTax(t.data.skills || []);
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      useEffect(() => { load(); }, []);
+      function setF(k, v) { setForm(Object.assign({}, form, { [k]: v })); }
+      async function create() {
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/companies/projects', props.token, 'POST', {
+            judul: form.judul, sektor_industri: form.sektor_industri || undefined,
+            deadline: form.deadline || undefined, difficulty: form.difficulty, status: form.status,
+            skills: rows.filter((x) => x.skill_id).map((x) => ({ skill_id: Number(x.skill_id), level_required: Number(x.level_required) })),
+          });
+          setMsg('Project dibuat.'); setForm({ judul: '', sektor_industri: '', deadline: '', difficulty: 'medium', status: 'active' });
+          setRows([{ skill_id: '', level_required: 50 }]); load();
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      async function save(id) {
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/companies/projects/' + id, props.token, 'PUT', { judul: edit.judul || undefined, deskripsi: edit.deskripsi || undefined, status: edit.status });
+          setEditId(null); setMsg('Project diupdate.'); load();
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      async function del(id) {
+        if (!window.confirm('Hapus project ini?')) return;
+        try { await apiSend('/companies/projects/' + id, props.token, 'DELETE'); setMsg('Project dihapus.'); load(); }
+        catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">My Projects</h2>
+          <Msg text={msg} err={isErr} />
+          <Section title="Buat Project">
+            <input value={form.judul} onChange={(e) => setF('judul', e.target.value)} placeholder="Judul (min 5 karakter)" className={INP} />
+            <div className="flex flex-wrap gap-2 mb-2">
+              <input value={form.sektor_industri} onChange={(e) => setF('sektor_industri', e.target.value)} placeholder="Sektor" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+              <input type="date" value={form.deadline} onChange={(e) => setF('deadline', e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+              <select value={form.difficulty} onChange={(e) => setF('difficulty', e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+                <option value="easy">easy</option><option value="medium">medium</option><option value="hard">hard</option>
+              </select>
+              <select value={form.status} onChange={(e) => setF('status', e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+                <option value="active">active</option><option value="draft">draft</option>
+              </select>
+            </div>
+            {rows.map((row, i) => (
+              <div key={i} className="flex gap-2 mb-2">
+                <select value={row.skill_id} onChange={(e) => { const c = rows.slice(); c[i].skill_id = e.target.value; setRows(c); }} className="flex-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+                  <option value="">— pilih skill —</option>
+                  {tax.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+                <input type="number" min="0" max="100" value={row.level_required} onChange={(e) => { const c = rows.slice(); c[i].level_required = e.target.value; setRows(c); }} className="w-20 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+                <button onClick={() => setRows(rows.filter((_, j) => j !== i))} className={BTN2}>×</button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <button onClick={() => setRows(rows.concat([{ skill_id: '', level_required: 50 }]))} className={BTN2}>+ Skill</button>
+              <button onClick={create} className={BTN}>Buat Project</button>
+            </div>
+          </Section>
+          <Section title={'Project Saya (' + list.length + ')'}>
+            {list.map((p) => (
+              <div key={p.id} className="py-2 border-b border-slate-800 last:border-0">
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-sm text-slate-200">{p.judul} <span className="text-slate-500">[{p.status} · {p.difficulty || '–'} · {p.deadline || '–'}]</span></span>
+                  <button onClick={() => { setEditId(p.id); setEdit({ judul: p.judul, deskripsi: p.deskripsi || '', status: p.status }); }} className={BTN2}>Edit</button>
+                  <button onClick={() => del(p.id)} className={DANGER}>Hapus</button>
+                </div>
+                {editId === p.id && (
+                  <div className="mt-2">
+                    <input value={edit.judul} onChange={(e) => setEdit(Object.assign({}, edit, { judul: e.target.value }))} className={INP} />
+                    <input value={edit.deskripsi} onChange={(e) => setEdit(Object.assign({}, edit, { deskripsi: e.target.value }))} placeholder="Deskripsi" className={INP} />
+                    <div className="flex gap-2">
+                      <select value={edit.status} onChange={(e) => setEdit(Object.assign({}, edit, { status: e.target.value }))} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+                        <option value="draft">draft</option><option value="active">active</option><option value="closed">closed</option>
+                      </select>
+                      <button onClick={() => save(p.id)} className={BTN}>Simpan</button>
+                      <button onClick={() => setEditId(null)} className={BTN2}>Batal</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </Section>
+        </div>
+      );
+    }
+
+    // ---- Halaman: Applications (perusahaan) ----
+    function ApplicationsView(props) {
+      const [projects, setProjects] = useState([]);
+      const [pid, setPid] = useState('');
+      const [apps, setApps] = useState([]);
+      const [msg, setMsg] = useState('');
+      useEffect(() => {
+        apiFetch('/companies/projects', props.token)
+          .then((j) => {
+            const arr = j.data.projects || [];
+            setProjects(arr);
+            if (arr.length > 0) { setPid(String(arr[0].id)); loadApps(arr[0].id); }
+          })
+          .catch((e) => { if (e.code === 401) props.onExpire(); });
+      }, []);
+      async function loadApps(id) {
+        try {
+          const j = await apiFetch('/companies/projects/' + id + '/applications', props.token);
+          setApps(j.data.applications || []);
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      async function decide(id, status) {
+        try {
+          await apiSend('/companies/applications/' + id, props.token, 'PATCH', { status });
+          setMsg('Aplikasi ' + status + '.'); loadApps(pid);
+        } catch (e) { if (e.code === 401) props.onExpire(); else setMsg(e.message); }
+      }
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">Applications</h2>
+          {msg && <p className="text-sm text-slate-300 mb-3">{msg}</p>}
+          <div className="flex gap-2 mb-3">
+            <select value={pid} onChange={(e) => { setPid(e.target.value); loadApps(e.target.value); }} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+              {projects.map((p) => <option key={p.id} value={p.id}>{p.judul} [{p.status}]</option>)}
+            </select>
+          </div>
+          {apps.length === 0 && <p className="text-sm text-slate-500">Belum ada aplikasi.</p>}
+          {apps.map((a) => (
+            <div key={a.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2">
+              <p className="text-sm text-slate-200 font-semibold">{a.student_name} <span className="text-xs text-indigo-400">[{a.status}]</span></p>
+              <p className="text-xs text-slate-500 mb-2">{a.student_email || ''} {a.match_score != null && <span>· match {a.match_score}</span>}</p>
+              {a.cover_letter && <p className="text-xs text-slate-400 mb-2">“{a.cover_letter}”</p>}
+              <div className="flex gap-2">
+                {a.status === 'pending' && <button onClick={() => decide(a.id, 'accepted')} className={BTN}>Terima</button>}
+                {a.status === 'pending' && <button onClick={() => decide(a.id, 'rejected')} className={DANGER}>Tolak</button>}
+                {a.status === 'accepted' && <button onClick={() => props.onAssess({ project_id: a.project_id, student_id: a.student_id })} className={BTN2}>Nilai</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ---- Halaman: Assess (perusahaan + dosen) ----
+    function AssessView(props) {
+      const t = props.target || {};
+      const [pid, setPid] = useState(t.project_id || '');
+      const [sid, setSid] = useState(t.student_id || '');
+      const [ratings, setRatings] = useState({ rating_skill: 4, rating_communication: 4, rating_punctuality: 4, rating_overall: 4 });
+      const [comments, setComments] = useState('');
+      const [msg, setMsg] = useState('');
+      const [isErr, setIsErr] = useState(false);
+      useEffect(() => { setPid(t.project_id || ''); setSid(t.student_id || ''); }, [t.project_id, t.student_id]);
+      function setR(k, v) { setRatings(Object.assign({}, ratings, { [k]: Number(v) })); }
+      async function submit() {
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/assessments', props.token, 'POST', Object.assign({ project_id: Number(pid), student_id: Number(sid), comments: comments || undefined }, ratings));
+          setMsg('Penilaian tersimpan (skill mahasiswa ikut terupdate).');
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">Assess</h2>
+          <Msg text={msg} err={isErr} />
+          <Section title="Form Penilaian (project harus closed + aplikasi accepted)">
+            <div className="flex gap-2 mb-2">
+              <input value={pid} onChange={(e) => setPid(e.target.value)} placeholder="project_id" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm w-32" />
+              <input value={sid} onChange={(e) => setSid(e.target.value)} placeholder="student_id" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm w-32" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+              {[['rating_skill', 'Skill'], ['rating_communication', 'Komunikasi'], ['rating_punctuality', 'Ketepatan'], ['rating_overall', 'Overall']].map((f) => (
+                <label key={f[0]} className="text-xs text-slate-400">{f[1]}
+                  <select value={ratings[f[0]]} onChange={(e) => setR(f[0], e.target.value)} className="mt-1 w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-2 py-1.5 text-sm">
+                    {[1, 2, 3, 4, 5].map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </label>
+              ))}
+            </div>
+            <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Komentar (opsional)" rows="2" className={INP}></textarea>
+            <button onClick={submit} className={BTN}>Kirim Penilaian</button>
+          </Section>
+        </div>
+      );
+    }
+
+    // ---- Halaman: Assess list (dosen) ----
+    function MentorView(props) {
+      const [list, setList] = useState([]);
+      useEffect(() => {
+        apiFetch('/mentor/awaiting', props.token)
+          .then((j) => setList(j.data.awaiting || []))
+          .catch((e) => { if (e.code === 401) props.onExpire(); });
+      }, []);
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">Assess — Antrian Dosen</h2>
+          {list.length === 0 && <p className="text-sm text-slate-500">Tidak ada aplikasi accepted.</p>}
+          {list.map((a, i) => (
+            <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2 flex items-center gap-3">
+              <span className="flex-1 text-sm text-slate-200">{a.student_name} <span className="text-slate-500">· {a.project_judul} {a.assessed ? '[sudah dinilai]' : '[belum dinilai]'}</span></span>
+              <button onClick={() => props.onAssess({ project_id: a.project_id, student_id: a.student_id })} className={BTN2}>Nilai</button>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ---- Halaman: Notifikasi (semua role) ----
+    function NotifsView(props) {
+      const [list, setList] = useState([]);
+      const [unreadOnly, setUnreadOnly] = useState(false);
+      async function load(uo) {
+        try {
+          const j = await apiFetch('/notifications' + (uo ? '?is_read=0' : ''), props.token);
+          setList(j.data.notifications || []);
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      useEffect(() => { load(unreadOnly); }, [unreadOnly]);
+      async function mark(id) {
+        try {
+          await apiSend('/notifications/' + id + '/read', props.token, 'PUT');
+          load(unreadOnly);
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      return (
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <h2 className="text-xl font-bold text-white flex-1">Notifikasi</h2>
+            <label className="text-xs text-slate-400"><input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} /> Belum dibaca saja</label>
+          </div>
+          {list.length === 0 && <p className="text-sm text-slate-500">Tidak ada notifikasi.</p>}
+          {list.map((n) => (
+            <div key={n.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-3 mb-2 flex items-center gap-3">
+              <p className="flex-1 text-sm text-slate-300"><span className="text-indigo-400">[{n.type}]</span> {n.content}</p>
+              {!n.is_read && <button onClick={() => mark(n.id)} className={BTN2}>Tandai dibaca</button>}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ---- Halaman: Profil (semua role) ----
+    function ProfileView(props) {
+      const [data, setData] = useState(null);
+      const [f, setF] = useState({});
+      const [msg, setMsg] = useState('');
+      const [isErr, setIsErr] = useState(false);
+      async function load() {
+        try {
+          const j = await apiFetch('/users/profile', props.token);
+          setData(j.data); setF(Object.assign({ name: j.data.user.name }, j.data.profile || {}));
+        } catch (e) { if (e.code === 401) props.onExpire(); }
+      }
+      useEffect(() => { load(); }, []);
+      function set(k, v) { setF(Object.assign({}, f, { [k]: v })); }
+      async function save() {
+        setMsg(''); setIsErr(false);
+        try {
+          await apiSend('/users/profile', props.token, 'PUT', f);
+          setMsg('Profil diupdate.'); load();
+        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+      }
+      if (!data) return <p className="text-sm text-slate-500">Memuat profil…</p>;
+      const role = data.user.role;
+      return (
+        <div>
+          <h2 className="text-xl font-bold text-white mb-3">Profil</h2>
+          <Msg text={msg} err={isErr} />
+          <Section title={data.user.name + ' · ' + role + ' · ' + data.user.email}>
+            <label className="block text-xs text-slate-400 mb-1">Nama</label>
+            <input value={f.name || ''} onChange={(e) => set('name', e.target.value)} className={INP} />
+            {role === 'mahasiswa' && (
+              <div>
+                <div className="flex gap-2">
+                  <input value={f.npm || ''} onChange={(e) => set('npm', e.target.value)} placeholder="NPM (8 karakter)" className={INP} />
+                  <input value={f.angkatan || ''} onChange={(e) => set('angkatan', e.target.value)} placeholder="Angkatan" className={INP} />
+                </div>
+                <input value={f.program_studi || ''} onChange={(e) => set('program_studi', e.target.value)} placeholder="Program studi" className={INP} />
+                <textarea value={f.bio || ''} onChange={(e) => set('bio', e.target.value)} placeholder="Bio" rows="2" className={INP}></textarea>
+              </div>
+            )}
+            {role === 'perusahaan' && (
+              <div>
+                <input value={f.nama_perusahaan || ''} onChange={(e) => set('nama_perusahaan', e.target.value)} placeholder="Nama perusahaan" className={INP} />
+                <div className="flex gap-2">
+                  <input value={f.industri || ''} onChange={(e) => set('industri', e.target.value)} placeholder="Industri" className={INP} />
+                  <select value={f.size || 'medium'} onChange={(e) => set('size', e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-2 text-sm">
+                    <option value="startup">startup</option><option value="medium">medium</option><option value="large">large</option><option value="corporate">corporate</option>
+                  </select>
+                </div>
+                <textarea value={f.deskripsi || ''} onChange={(e) => set('deskripsi', e.target.value)} placeholder="Deskripsi" rows="2" className={INP}></textarea>
+              </div>
+            )}
+            <button onClick={save} className={BTN}>Simpan</button>
+          </Section>
+        </div>
+      );
+    }
+
+    const NAV = {
+      mahasiswa: [['dash', 'Dashboard'], ['projects', 'Projects'], ['skills', 'My Skills'], ['gap', 'Gap Analysis'], ['recs', 'Recommendations'], ['notifs', 'Notifikasi'], ['profile', 'Profil']],
+      perusahaan: [['dash', 'Dashboard'], ['myprojects', 'My Projects'], ['applications', 'Applications'], ['assess', 'Assess'], ['notifs', 'Notifikasi'], ['profile', 'Profil']],
+      kampus: [['dash', 'Dashboard'], ['analytics', 'Analytics'], ['notifs', 'Notifikasi'], ['profile', 'Profil']],
+      dosen: [['dash', 'Dashboard'], ['analytics', 'Analytics'], ['assess', 'Assess'], ['notifs', 'Notifikasi'], ['profile', 'Profil']],
+    };
+    const TITLES = {
+      dash: null, analytics: 'Analytics', projects: 'Projects', skills: 'My Skills', gap: 'Gap Analysis',
+      recs: 'Recommendations', myprojects: 'My Projects', applications: 'Applications', assess: 'Assess',
+      notifs: 'Notifikasi', profile: 'Profil',
+    };
+
     function App() {
       const [token, setToken] = useState(localStorage.getItem('token') || '');
       const [user, setUser] = useState(null);
       const [data, setData] = useState(null);
       const [view, setView] = useState('dash');
+      const [assessTarget, setAssessTarget] = useState({});
       const [err, setErr] = useState('');
       const [loading, setLoading] = useState(false);
 
@@ -300,13 +899,11 @@
         setToken(''); setUser(null); setData(null); setView('dash');
         if (expireMsg) setErr(expireMsg);
       }
-
       function endpointFor(role) {
         if (role === 'mahasiswa') return '/students/dashboard';
         if (role === 'perusahaan') return '/companies/dashboard';
         return '/campus/dashboard'; // kampus + dosen (RBAC route mengizinkan keduanya)
       }
-
       async function load(tk) {
         setLoading(true); setErr('');
         try {
@@ -320,40 +917,50 @@
           else setErr(e.message);
         } finally { setLoading(false); }
       }
-
       useEffect(() => { if (token) load(token); }, []);
       function onLogin(tk, usr) {
         localStorage.setItem('token', tk);
         setToken(tk); setUser(usr); setView('dash');
         load(tk);
       }
+      function goAssess(t) { setAssessTarget(t || {}); setView('assess'); }
 
       if (!token || !user) return <LoginView onLogin={onLogin} />;
-      const canAnalytics = user.role === 'kampus' || user.role === 'dosen';
+      const nav = NAV[user.role] || NAV.mahasiswa;
       const titles = { mahasiswa: 'Dashboard Mahasiswa', perusahaan: 'Dashboard Perusahaan', kampus: 'Dashboard Kampus', dosen: 'Dashboard Kampus (Dosen)' };
+      const canAnalytics = user.role === 'kampus' || user.role === 'dosen';
       return (
         <div className="min-h-screen bg-slate-950 text-slate-200 flex">
           <aside className="w-52 shrink-0 bg-slate-900 border-r border-slate-800 p-4 flex flex-col">
             <p className="font-bold text-white text-sm mb-1">Talent Hub App</p>
             <p className="text-xs text-slate-500 mb-4">{user.name} · {user.role}</p>
-            <button onClick={() => setView('dash')}
-              className={'text-left text-sm rounded-lg px-3 py-2 mb-1 ' + (view === 'dash' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>Dashboard</button>
-            {canAnalytics && (
-              <button onClick={() => setView('analytics')}
-                className={'text-left text-sm rounded-lg px-3 py-2 mb-1 ' + (view === 'analytics' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>Analytics</button>
-            )}
+            {nav.map((n) => (
+              <button key={n[0]} onClick={() => setView(n[0])}
+                className={'text-left text-sm rounded-lg px-3 py-2 mb-1 ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>{n[1]}</button>
+            ))}
             <div className="flex-1"></div>
             <a href="/" className="text-xs text-slate-500 hover:text-slate-300 px-3 py-1">← Landing</a>
             <button onClick={() => logout()} className="text-left text-sm text-red-400 hover:text-red-300 px-3 py-2">Keluar</button>
           </aside>
           <main className="flex-1 p-5 max-w-5xl">
-            <h1 className="text-2xl font-extrabold text-white mb-4">{view === 'analytics' ? 'Analytics' : (titles[user.role] || 'Dashboard')}</h1>
+            <h1 className="text-2xl font-extrabold text-white mb-4">{view === 'dash' ? (titles[user.role] || 'Dashboard') : (TITLES[view] || view)}</h1>
             {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
-            {loading && <p className="text-sm text-slate-500">Memuat data…</p>}
+            {loading && view === 'dash' && <p className="text-sm text-slate-500">Memuat data…</p>}
             {!loading && data && view === 'dash' && user.role === 'mahasiswa' && <StudentDash data={data} />}
             {!loading && data && view === 'dash' && user.role === 'perusahaan' && <CompanyDash data={data} />}
             {!loading && data && view === 'dash' && (user.role === 'kampus' || user.role === 'dosen') && <CampusDash data={data} />}
-            {!loading && view === 'analytics' && canAnalytics && <AnalyticsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'analytics' && canAnalytics && <AnalyticsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'projects' && <ProjectsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'skills' && <SkillsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'gap' && <GapView token={token} user={user} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'recs' && <RecsView token={token} user={user} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'myprojects' && <MyProjectsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'applications' && <ApplicationsView token={token} onAssess={goAssess} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'assess' && user.role === 'dosen' && <MentorView token={token} onAssess={goAssess} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'assess' && user.role === 'perusahaan' && <AssessView token={token} target={assessTarget} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {(assessTarget.project_id && view === 'assess' && user.role === 'dosen') && <AssessView token={token} target={assessTarget} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'notifs' && <NotifsView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
+            {view === 'profile' && <ProfileView token={token} onExpire={() => logout('Sesi berakhir, silakan login ulang.')} />}
           </main>
         </div>
       );

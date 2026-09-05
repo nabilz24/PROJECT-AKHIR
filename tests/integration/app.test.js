@@ -19,6 +19,17 @@ describe('SPA dashboard (TASK-106)', () => {
     expect(res.text).toMatch(/\/analytics\/skill-distribution/);
     expect(res.text).toMatch(/\/auth\/me/);
     expect(res.text).toMatch(/\/auth\/logout/);
+    expect(res.text).toMatch(/My Skills/);
+    expect(res.text).toMatch(/Gap Analysis/);
+    expect(res.text).toMatch(/Recommendations/);
+    expect(res.text).toMatch(/My Projects/);
+    expect(res.text).toMatch(/Applications/);
+    expect(res.text).toMatch(/Notifikasi/);
+    expect(res.text).toMatch(/\/mentor\/awaiting/);
+    expect(res.text).toMatch(/\/users\/profile/);
+    expect(res.text).toMatch(/\/students\/skills/);
+    expect(res.text).toMatch(/\/companies\/projects/);
+    expect(res.text).toMatch(/\/assessments/);
   });
 
   test('GET / tetap landing (tidak berubah oleh /app)', async () => {

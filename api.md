@@ -138,6 +138,7 @@ Spesifikasi endpoint RESTful JSON untuk seluruh modul Campus Industry Talent Hub
 | POST | `/assessments` | Bearer token (company/dosen) | `project_id`, `student_id`, `rating_skill`, `rating_communication`, `rating_punctuality`, `rating_overall`, `comments` | `{ success: true, data: { assessment }, message: "Evaluasi disimpan" }` | Buat evaluasi project. Syarat: aplikasi accepted + project closed + satu penilaian per peran (2026-09-05 TASK-090). Otomatis buat project_evaluations + bump skill (+10 bila rating_skill≥4, +5 bila =3, cap 100, sekali saat create) + notifikasi 'eval' (TASK-092) |
 | GET | `/evaluations/{project_id}/{student_id}` | Bearer token | — | `{ success: true, data: { evaluation } }` | Ambil hasil evaluasi beserta rating |
 | PUT | `/evaluations/{project_id}/{student_id}` | Bearer token | same as POST | `{ success: true, data: { assessment }, message: "Evaluasi diupdate" }` | Perusahaan/dosen update evaluasi |
+| GET | `/mentor/awaiting` | Bearer token (dosen) | — | `{ success: true, data: { awaiting: [{ project_id, student_id, student_name, project_judul, assessed }] } }` | Antrian aplikasi accepted untuk dinilai dosen (tambahan 2026-09-05 TASK-109, dipakai SPA /app) |
 
 ---
 
