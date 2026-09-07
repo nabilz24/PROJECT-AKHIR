@@ -344,4 +344,14 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ JSX tervalidasi Babel asli (app 64k + spa 8k char).
 - ✅ Acceptance criteria passed — checklist TASK-114 terpenuhi.
 
+### Polish — Head dobel fix + UI consistency (2026-09-08): DONE
+
+- ✅ Root cause — `app.ejs:1112` render `<h1>` di `<main>` untuk semua view + setiap sub-view (`Projects`, `Skills`, `Gap`, `Recommendations`, `My Projects`, `Applications`, `Assess`, `Analytics`, `Notifikasi`, `Profil`) render `PageHead` lagi → judul dobel pada 10 halaman. Dashboard home tidak dobel (StudentDash/CompanyDash/CampusDash tanpa `PageHead`).
+- ✅ Fix — `app.ejs:1112` → `{view === 'dash' && <h1>{ROLE_TITLES[user.role]}</h1>}` (hanya dash); sub-view andalkan `PageHead` sendiri. Di-commit `a248cb0` + push `main`.
+- ✅ Bug — `NotifsView:936` `setUnreadOnly(e.target.value)` → `e.target.checked` (filter belum-dibaca kini benar; string `value` sebelumnya selalu truthy).
+- ✅ Polish konsistensi (scoped SPA, mode Operate) — `INP` (`placeholder:text-slate-500` + `focus:border` + `transition`), `BTN/BTN2/DANGER` (`px-3.5 py-2`, `inline-flex`, `focus-visible:ring` + offset, `active`/`disabled`), `Section` (`text-sm font-semibold tracking-tight` + `shadow-sm`), `EmptyState` (border dashed + `bg-slate-800/20` + `max-w-sm` hint + `action` wrap), `PageHead` (`gap-3 mb-5` + `tracking-tight` + `leading-relaxed`), `ConfirmModal` tombol merah konsisten, tombol `×` hapus skill tambah `aria-label`.
+- ✅ Integration test passed — `npm test` 19 suite, 149/149 hijau; `npm run test:coverage` All files 89.61% stmts / 74.92% branch / 94.04% funcs / 90.14% lines; `npm run audit:api` 74/74 lolos; `GET /app` 200 + login 4 role 200.
+- ✅ No regresi — `spa.test.js` & `app.test.js` tidak meng-assert h1 spesifik, aman.
+- ✅ Acceptance criteria passed — QA.md Functional (TC-AUTH/STU/CMP), Talent Matching (6 poin), SKILL-001..004, DoD checklist terpenuhi; siap presentasi.
+
 ---
