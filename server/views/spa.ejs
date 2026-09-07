@@ -120,112 +120,137 @@
 
     function App() {
       return (
-        <div className="min-h-screen bg-slate-950 text-slate-200">
+        <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
           <nav className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800">
-            <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3.5">
-              <a href="/" className="font-bold text-white">Campus Industry Talent Hub</a>
+            <div className="w-full max-w-[1600px] mx-auto flex items-center justify-between px-6 lg:px-10 py-3.5">
+              <a href="/" className="font-bold text-white tracking-tight">Campus Industry Talent Hub</a>
               <div className="flex items-center gap-2">
-                <a href="#fitur" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Fitur</a>
-                <a href="#cara-kerja" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Cara Kerja</a>
-                <a href="#daftar" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Daftar</a>
+                <a href="#fitur" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">Fitur</a>
+                <a href="#cara-kerja" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">Cara Kerja</a>
+                <a href="#daftar" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">Daftar</a>
                 <a href="/login" className="text-sm text-slate-300 hover:text-white px-3 py-2">Masuk</a>
                 <a href="/app" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-4 py-2">Buka Aplikasi</a>
               </div>
             </div>
           </nav>
 
-          <header className="max-w-6xl mx-auto px-6 pt-16 pb-14 text-center bg-gradient-to-b from-indigo-950/60 via-slate-950 to-slate-950 rounded-b-3xl">
-            <span className="inline-block text-xs font-semibold text-indigo-300 bg-indigo-950 border border-indigo-800 rounded-full px-3 py-1 mb-4">MVP · Kampus × Industri</span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
-              Jembatan Kampus <span className="text-indigo-400">&amp;</span> Industri
-            </h1>
-            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-              Marketplace project, talent matching rule-based yang transparan, analisis skill gap,
-              dan rekomendasi pembelajaran — dalam satu platform.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3 justify-center">
-              <a href="/app" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-6 py-3">Buka Aplikasi</a>
-              <a href="#cara-kerja" className="rounded-xl border border-slate-700 hover:border-slate-500 transition text-slate-200 px-6 py-3">Cara Kerja</a>
-            </div>
-            <div className="mt-9 flex flex-wrap gap-x-8 gap-y-2 justify-center text-sm text-slate-400">
-              <span><b className="text-white text-lg">31</b> skill taxonomy</span>
-              <span><b className="text-white text-lg">4</b> role</span>
-              <span><b className="text-white text-lg">50/20/10/10/10</b> formula match</span>
-              <span><b className="text-white text-lg">74</b> endpoint teraudit</span>
+          <header className="flex-1 flex items-center bg-gradient-to-b from-indigo-950/70 via-slate-950 to-slate-950">
+            <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-10 lg:py-16">
+              <div className="grid lg:grid-cols-2 gap-10 items-center">
+                <div className="text-center lg:text-left">
+                  <span className="inline-block text-xs font-semibold tracking-wide text-indigo-300 bg-indigo-950 border border-indigo-800 rounded-full px-3 py-1 mb-4">MVP · Kampus × Industri</span>
+                  <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-[1.05] tracking-tight">
+                    Jembatan Kampus <span className="text-indigo-400">&amp;</span> Industri
+                  </h1>
+                  <p className="mt-4 text-slate-400 max-w-xl mx-auto lg:mx-0 text-base lg:text-lg leading-relaxed">
+                    Marketplace project, talent matching rule-based yang transparan, analisis skill gap,
+                    dan rekomendasi pembelajaran — dalam satu platform.
+                  </p>
+                  <div className="mt-7 flex flex-wrap gap-3 justify-center lg:justify-start">
+                    <a href="/app" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-7 py-3">Buka Aplikasi</a>
+                    <a href="#cara-kerja" className="rounded-xl border border-slate-700 hover:border-slate-500 transition text-slate-200 px-7 py-3">Cara Kerja</a>
+                  </div>
+                  <div className="mt-8 flex flex-wrap gap-6 justify-center lg:justify-start text-sm text-slate-400">
+                    <span><b className="text-white text-lg">31</b> skill</span>
+                    <span><b className="text-white text-lg">4</b> role</span>
+                    <span><b className="text-white text-lg">50/20/10/10/10</b> match</span>
+                    <span><b className="text-white text-lg">74</b> endpoint</span>
+                  </div>
+                </div>
+                <div className="hidden lg:block">
+                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold">CI</div>
+                      <div><div className="text-sm font-bold text-white">Live Preview</div><div className="text-xs text-slate-500">Dashboard mahasiswa · match score</div></div>
+                      <span className="ml-auto text-xs bg-emerald-500 text-white px-2 py-1 rounded-full font-bold">82</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="bg-slate-800 rounded-xl p-3 flex items-center gap-3"><div className="flex-1"><div className="text-sm font-semibold text-white">Website Company Profile</div><div className="text-xs text-slate-500">Teknologi · React ≥ 60</div></div><span className="text-xs font-bold px-2 py-1 rounded bg-emerald-600 text-white">82</span></div>
+                      <div className="bg-slate-800 rounded-xl p-3 flex items-center gap-3"><div className="flex-1"><div className="text-sm font-semibold text-white">Mobile App Prototype</div><div className="text-xs text-slate-500">Mobile · Figma ≥ 50</div></div><span className="text-xs font-bold px-2 py-1 rounded bg-amber-500 text-slate-900">64</span></div>
+                      <div className="bg-slate-800 rounded-xl p-3 flex items-center gap-3"><div className="flex-1"><div className="text-sm font-semibold text-white">Data Analysis Intern</div><div className="text-xs text-slate-500">Data · Python ≥ 70</div></div><span className="text-xs font-bold px-2 py-1 rounded bg-red-600 text-white">38</span></div>
+                    </div>
+                    <div className="mt-4 flex gap-2 text-xs text-slate-500"><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>kuat</span><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500"></span>close</span><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span>lemah</span></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </header>
 
-          <section id="fitur" className="max-w-6xl mx-auto px-6 py-14">
-            <h2 className="text-2xl font-bold text-white mb-1">Fitur Unggulan</h2>
-            <p className="text-sm text-slate-500 mb-6">Semua modul sudah hidup dan bisa dicoba lewat aplikasi.</p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <section id="fitur" className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-12 lg:py-16">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">Fitur Unggulan</h2>
+                <p className="text-sm text-slate-500 mt-1">Semua modul sudah hidup dan bisa dicoba lewat aplikasi.</p>
+              </div>
+              <a href="/app" className="text-sm text-indigo-400 hover:text-indigo-300">Coba di aplikasi →</a>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
               {FEATURES.map((f) => (
                 <div key={f.t} className="bg-slate-900 border border-slate-800 hover:border-indigo-700 transition rounded-2xl p-6">
                   <h3 className="font-semibold text-white mb-1">{f.t}</h3>
-                  <p className="text-sm text-slate-400">{f.d}</p>
+                  <p className="text-sm text-slate-400 leading-relaxed">{f.d}</p>
                 </div>
               ))}
             </div>
           </section>
 
-          <section id="cara-kerja" className="max-w-6xl mx-auto px-6 pb-14">
-            <h2 className="text-2xl font-bold text-white mb-6">Cara Kerja</h2>
-            <div className="grid md:grid-cols-3 gap-4">
+          <section id="cara-kerja" className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-8 lg:py-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6 tracking-tight">Cara Kerja</h2>
+            <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
               {STEPS.map((s) => (
-                <div key={s.n} className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                  <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center mb-3">{s.n}</div>
-                  <h3 className="font-semibold text-white mb-1">{s.t}</h3>
-                  <p className="text-sm text-slate-400">{s.d}</p>
+                <div key={s.n} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">{s.n}</div>
+                  <div><h3 className="font-semibold text-white mb-1">{s.t}</h3><p className="text-sm text-slate-400 leading-relaxed">{s.d}</p></div>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="max-w-6xl mx-auto px-6 pb-14">
-            <h2 className="text-2xl font-bold text-white mb-6">Untuk Setiap Peran</h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <section className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-8 lg:py-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6 tracking-tight">Untuk Setiap Peran</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
               {ROLES.map((r) => (
                 <div key={r.name} className="bg-slate-900 border border-slate-800 hover:border-slate-600 transition rounded-2xl p-6 flex flex-col">
                   <h3 className="font-semibold text-white mb-1">{r.name}</h3>
-                  <p className="text-sm text-slate-400 flex-1">{r.desc}</p>
-                  <a href="/app" className="text-sm text-indigo-400 hover:text-indigo-300 mt-3">Masuk sebagai {r.name} →</a>
+                  <p className="text-sm text-slate-400 flex-1 leading-relaxed">{r.desc}</p>
+                  <a href="/app" className="text-sm text-indigo-400 hover:text-indigo-300 mt-4 inline-flex items-center gap-1">Masuk sebagai {r.name} <span>→</span></a>
                 </div>
               ))}
             </div>
           </section>
 
-          <section id="daftar" className="max-w-6xl mx-auto px-6 pb-14">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8">
-              <div className="grid md:grid-cols-2 gap-8 items-start">
+          <section id="daftar" className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-8 lg:py-14">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-10">
+              <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Daftar Akun Baru</h2>
-                  <p className="text-sm text-slate-400 mt-1">Buat akun Mahasiswa, Perusahaan, atau Kampus — langsung bisa login tanpa akun demo.</p>
-                  <ul className="mt-4 space-y-2 text-sm text-slate-400">
-                    <li>• Mahasiswa: isi skill & daftar project</li>
-                    <li>• Perusahaan: buat project & nilai pelamar</li>
-                    <li>• Kampus: pantau analytics & tren skill</li>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">Daftar Akun Baru</h2>
+                  <p className="text-sm text-slate-400 mt-2 leading-relaxed">Buat akun Mahasiswa, Perusahaan, atau Kampus — langsung bisa login tanpa akun demo.</p>
+                  <ul className="mt-5 space-y-2 text-sm text-slate-400">
+                    <li className="flex gap-2"><span className="text-indigo-400">•</span> Mahasiswa: isi skill & daftar project</li>
+                    <li className="flex gap-2"><span className="text-indigo-400">•</span> Perusahaan: buat project & nilai pelamar</li>
+                    <li className="flex gap-2"><span className="text-indigo-400">•</span> Kampus: pantau analytics & tren skill</li>
                   </ul>
-                  <p className="text-xs text-slate-500 mt-4">Sudah punya akun? <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline">Masuk di sini</a> · atau <a href="/register" className="text-indigo-400 hover:text-indigo-300 underline">halaman daftar terpisah</a></p>
+                  <p className="text-xs text-slate-500 mt-6">Sudah punya akun? <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline">Masuk di sini</a> · atau <a href="/register" className="text-indigo-400 hover:text-indigo-300 underline">halaman daftar terpisah</a></p>
                 </div>
                 <RegisterForm />
               </div>
             </div>
           </section>
 
-          <section className="max-w-6xl mx-auto px-6 pb-16">
-            <div className="bg-gradient-to-r from-indigo-900 to-slate-900 border border-indigo-800 rounded-3xl p-8 md:p-12 text-center">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white">Siap menghubungkan kampus dan industri?</h2>
+          <section className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 pb-12 lg:pb-16">
+            <div className="bg-gradient-to-r from-indigo-900 to-slate-900 border border-indigo-800 rounded-3xl p-8 lg:p-12 text-center">
+              <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">Siap menghubungkan kampus dan industri?</h2>
               <p className="text-slate-400 mt-2 mb-6">Login dengan akun demo atau akun baru Anda dan jelajahi semua halaman dashboard.</p>
               <div className="flex flex-wrap gap-3 justify-center">
-                <a href="/app" className="rounded-xl bg-white text-slate-900 font-semibold px-6 py-3 hover:bg-slate-200 transition">Buka Aplikasi</a>
-                <a href="/login" className="rounded-xl border border-slate-600 text-slate-200 px-6 py-3 hover:border-slate-400 transition">Halaman Login</a>
-                <a href="#daftar" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 transition">Daftar Sekarang</a>
+                <a href="/app" className="rounded-xl bg-white text-slate-900 font-semibold px-7 py-3 hover:bg-slate-200 transition">Buka Aplikasi</a>
+                <a href="/login" className="rounded-xl border border-slate-600 text-slate-200 px-7 py-3 hover:border-slate-400 transition">Halaman Login</a>
+                <a href="#daftar" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-7 py-3 transition">Daftar Sekarang</a>
               </div>
             </div>
           </section>
 
-          <footer className="border-t border-slate-800">
-            <div className="max-w-6xl mx-auto px-6 py-6 flex flex-wrap gap-2 items-center justify-between text-xs text-slate-500">
+          <footer className="border-t border-slate-800 mt-auto">
+            <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-6 flex flex-wrap gap-2 items-center justify-between text-xs text-slate-500">
               <span>Campus Industry Talent Hub</span>
               <span className="flex gap-4">
                 <a className="hover:text-slate-300" href="/register">Daftar</a>
