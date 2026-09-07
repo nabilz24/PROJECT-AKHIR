@@ -466,7 +466,7 @@
             ))}
           </Section>
           <Section title="Evaluasi Menunggu">
-            {d.pending_evaluations.length === 0 && <EmptyState title="Tidak ada evaluasi menunggu" hint="Nilai aplikasi accepted setelah project closed." />}
+            {d.pending_evaluations.length === 0 && <EmptyState title="Tidak ada evaluasi menunggu" hint="Terima kandidat di Applications → Ranking (klik Terima) untuk mengisi antrian. Nilai setelah project closed." />}
             {d.pending_evaluations.map((e) => (
               <p key={e.application_id} className="text-sm text-slate-200 py-1 border-b border-slate-800 last:border-0">
                 {e.student_name} <span className="text-slate-500">· {e.project_judul}</span>
@@ -1022,7 +1022,7 @@
       async function decide(id, status) {
         try {
           await apiSend('/companies/applications/' + id, props.token, 'PATCH', { status });
-          props.notify('Aplikasi ' + status + '.'); loadAll(pid);
+          props.notify('Aplikasi ' + status + '.'); loadAll(pid); if (props.onRefresh) props.onRefresh();
         } catch (e) { if (e.code === 401) props.onExpire(); else setMsg(e.message); }
       }
       async function closeProject() {
@@ -1196,6 +1196,7 @@
         props.notify('Penilaian tersimpan — skill terupdate.');
         setEvalOpen(false);
         load();
+        if (props.onRefresh) props.onRefresh();
       }
       return (
         <div>
@@ -1213,7 +1214,7 @@
           </Section>
           <Section title="Nilai Manual (by ID)">
             <p className="text-xs text-slate-500 mb-2">Jika tidak ada di antrian, isi ID manual di bawah — akan dibuka via modal yang sama.</p>
-            <ManualAssessInline token={props.token} onExpire={props.onExpire} notify={props.notify} onDone={load} />
+            <ManualAssessInline token={props.token} onExpire={props.onExpire} notify={props.notify} onDone={load} onRefresh={props.onRefresh} />
           </Section>
           {evalOpen && <EvaluateModal open={evalOpen} project={evalTarget.project} student={evalTarget.student} onClose={()=> setEvalOpen(false)} onSubmit={submitEval} />}
         </div>
@@ -1235,6 +1236,7 @@
         props.notify('Penilaian manual tersimpan.');
         setOpen(false);
         if(props.onDone) props.onDone();
+        if(props.onRefresh) props.onRefresh();
       }
       return (
         <div>
@@ -1438,7 +1440,15 @@
           else setErr(e.message);
         } finally { setLoading(false); }
       }
+      async function refreshDash(){
+        if (!token || !user) return;
+        try {
+          const dash = await apiFetch(endpointFor(user.role), token);
+          setData(dash.data);
+        } catch (e) { if (e.code === 401) logout(lang==='en' ? 'Session expired, please login again.' : 'Sesi berakhir, silakan login ulang.'); }
+      }
       useEffect(() => { if (token) load(token); }, []);
+      useEffect(() => { if (view === 'dash' && token && user) refreshDash(); }, [view]);
       function onLogin(tk, usr) {
         localStorage.setItem('token', tk);
         setToken(tk); setUser(usr); navigate('dash');
@@ -1495,10 +1505,10 @@
             {view === 'gap' && <GapView token={token} user={user} notify={notify} onExpire={expire} lang={lang} />}
             {view === 'recs' && <RecsView token={token} user={user} notify={notify} onExpire={expire} lang={lang} />}
             {view === 'myprojects' && <MyProjectsView token={token} notify={notify} onExpire={expire} lang={lang} />}
-            {view === 'applications' && <ApplicationsView token={token} notify={notify} onAssess={goAssess} onExpire={expire} lang={lang} />}
+            {view === 'applications' && <ApplicationsView token={token} notify={notify} onAssess={goAssess} onExpire={expire} lang={lang} onRefresh={refreshDash} />}
             {view === 'assess' && user.role === 'dosen' && <MentorView token={token} notify={notify} onAssess={goAssess} onExpire={expire} />}
-            {view === 'assess' && user.role === 'perusahaan' && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} />}
-            {(assessTarget.project_id && view === 'assess' && user.role === 'dosen') && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} />}
+            {view === 'assess' && user.role === 'perusahaan' && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} onRefresh={refreshDash} />}
+            {(assessTarget.project_id && view === 'assess' && user.role === 'dosen') && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} onRefresh={refreshDash} />}
             {view === 'notifs' && <NotifsView token={token} notify={notify} onExpire={expire} />}
             {view === 'profile' && <ProfileView token={token} notify={notify} onExpire={expire} />}
           </main>
