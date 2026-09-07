@@ -1319,8 +1319,11 @@
         <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col md:flex-row">
           <aside className="hidden md:flex w-52 shrink-0 bg-slate-900 border-r border-slate-800 p-4 flex-col">
             <p className="font-bold text-white text-sm mb-1">Talent Hub App</p>
-            <p className="text-xs text-slate-500 mb-3">{user.name} · {user.role}</p>
-            <button onClick={toggleLang} className="mb-3 text-xs rounded-lg border border-slate-700 hover:border-slate-500 text-slate-300 px-2 py-1 self-start">{lang==='id' ? '🇮🇩 ID' : '🇬🇧 EN'} · {lang==='id' ? 'Ganti ke EN' : 'Switch to ID'}</button>
+            <p className="text-xs text-slate-500 mb-2">{user.name} · {user.role}</p>
+            <div className="flex items-center bg-slate-800 border border-slate-700 rounded-full p-1 mb-3 self-start gap-1">
+              <button onClick={()=>{ if(lang!=='id'){setLang('id'); localStorage.setItem('app_lang','id');} }} className={'text-xs font-bold px-2.5 py-1 rounded-full transition ' + (lang==='id' ? 'bg-white text-slate-900 shadow' : 'text-slate-400 hover:text-white')}>ID</button>
+              <button onClick={()=>{ if(lang!=='en'){setLang('en'); localStorage.setItem('app_lang','en');} }} className={'text-xs font-bold px-2.5 py-1 rounded-full transition ' + (lang==='en' ? 'bg-white text-slate-900 shadow' : 'text-slate-400 hover:text-white')}>EN</button>
+            </div>
             {nav.map((n) => (
               <a key={n[0]} href={HASH[n[0]]} onClick={(e) => { e.preventDefault(); navigate(n[0]); }}
                 className={'text-left text-sm rounded-lg px-3 py-2 mb-1 transition ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>{tr(lang, i18nNav[n[0]] || n[0])}</a>
@@ -1336,7 +1339,10 @@
                 <a key={n[0]} href={HASH[n[0]]} onClick={(e) => { e.preventDefault(); navigate(n[0]); }}
                   className={'text-xs whitespace-nowrap rounded-lg px-2.5 py-1.5 ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'text-slate-300')}>{tr(lang, i18nNav[n[0]] || n[0])}</a>
               ))}
-              <button onClick={toggleLang} className="text-xs border border-slate-700 rounded px-2 py-1 text-slate-300">{lang==='id'?'EN':'ID'}</button>
+              <div className="flex items-center bg-slate-800 border border-slate-700 rounded-full p-0.5 ml-1">
+                <button onClick={()=>{ if(lang!=='id'){setLang('id'); localStorage.setItem('app_lang','id');} }} className={'text-xs font-bold px-2 py-0.5 rounded-full ' + (lang==='id' ? 'bg-white text-slate-900' : 'text-slate-400')}>ID</button>
+                <button onClick={()=>{ if(lang!=='en'){setLang('en'); localStorage.setItem('app_lang','en');} }} className={'text-xs font-bold px-2 py-0.5 rounded-full ' + (lang==='en' ? 'bg-white text-slate-900' : 'text-slate-400')}>EN</button>
+              </div>
               <button onClick={() => logout()} className="text-xs text-red-400 whitespace-nowrap px-2">Keluar</button>
             </div>
           </div>

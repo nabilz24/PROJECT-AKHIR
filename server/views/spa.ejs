@@ -43,6 +43,31 @@
       { t: 'Analytics Kampus', d: 'Distribusi skill, tren industri, heatmap gap, export CSV.' },
     ];
 
+    const LANDING_I18N = {
+      id: {
+        nav_fitur: 'Fitur', nav_cara: 'Cara Kerja', nav_daftar: 'Daftar', nav_masuk: 'Masuk', nav_buka: 'Buka Aplikasi',
+        hero_badge: 'MVP · Kampus × Industri', hero_title1: 'Jembatan Kampus', hero_title2: 'Industri',
+        hero_desc: 'Marketplace project, talent matching rule-based yang transparan, analisis skill gap, dan rekomendasi pembelajaran — dalam satu platform.',
+        fitur_title: 'Fitur Unggulan', fitur_sub: 'Semua modul sudah hidup dan bisa dicoba lewat aplikasi.',
+        cara_title: 'Cara Kerja', peran_title: 'Untuk Setiap Peran',
+        daftar_title: 'Daftar Akun Baru', daftar_desc: 'Buat akun Mahasiswa, Perusahaan, atau Kampus — langsung bisa login tanpa akun demo.',
+        cta_title: 'Siap menghubungkan kampus dan industri?', cta_desc: 'Login dengan akun demo atau akun baru Anda dan jelajahi semua halaman dashboard.',
+        cta_app: 'Buka Aplikasi', cta_login: 'Halaman Login', cta_daftar: 'Daftar Sekarang',
+        coba: 'Coba di aplikasi →',
+      },
+      en: {
+        nav_fitur: 'Features', nav_cara: 'How it Works', nav_daftar: 'Sign Up', nav_masuk: 'Sign In', nav_buka: 'Open App',
+        hero_badge: 'MVP · Campus × Industry', hero_title1: 'Bridge Campus', hero_title2: 'Industry',
+        hero_desc: 'Project marketplace, transparent rule-based talent matching, skill gap analysis, and learning recommendations — in one platform.',
+        fitur_title: 'Key Features', fitur_sub: 'All modules are live and tryable in the app.',
+        cara_title: 'How it Works', peran_title: 'For Every Role',
+        daftar_title: 'Create Account', daftar_desc: 'Create Student, Company, or Campus account — login instantly without demo account.',
+        cta_title: 'Ready to bridge campus and industry?', cta_desc: 'Sign in with demo or your new account and explore the dashboard.',
+        cta_app: 'Open App', cta_login: 'Sign In', cta_daftar: 'Sign Up Now',
+        coba: 'Try in app →',
+      }
+    };
+
     function RegisterForm() {
       const [name, setName] = React.useState('');
       const [email, setEmail] = React.useState('');
@@ -119,17 +144,24 @@
     }
 
     function App() {
+      const [lang, setLang] = React.useState(localStorage.getItem('landing_lang') || 'id');
+      const L = LANDING_I18N[lang] || LANDING_I18N.id;
+      function toggleLang(){ const n = lang==='id' ? 'en' : 'id'; setLang(n); localStorage.setItem('landing_lang', n); }
       return (
         <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
           <nav className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-slate-800">
             <div className="w-full max-w-[1600px] mx-auto flex items-center justify-between px-6 lg:px-10 py-3.5">
               <a href="/" className="font-bold text-white tracking-tight">Campus Industry Talent Hub</a>
               <div className="flex items-center gap-2">
-                <a href="#fitur" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">Fitur</a>
-                <a href="#cara-kerja" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">Cara Kerja</a>
-                <a href="#daftar" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">Daftar</a>
-                <a href="/login" className="text-sm text-slate-300 hover:text-white px-3 py-2">Masuk</a>
-                <a href="/app" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-4 py-2">Buka Aplikasi</a>
+                <a href="#fitur" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">{L.nav_fitur}</a>
+                <a href="#cara-kerja" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">{L.nav_cara}</a>
+                <a href="#daftar" className="hidden lg:inline text-sm text-slate-400 hover:text-white px-3 py-2">{L.nav_daftar}</a>
+                <div className="flex items-center bg-slate-900 border border-slate-800 rounded-full p-1 ml-1">
+                  <button onClick={()=>{ if(lang!=='id'){ setLang('id'); localStorage.setItem('landing_lang','id'); } }} className={'text-xs font-bold px-2.5 py-1 rounded-full transition ' + (lang==='id' ? 'bg-white text-slate-900 shadow' : 'text-slate-400 hover:text-white')}>ID</button>
+                  <button onClick={()=>{ if(lang!=='en'){ setLang('en'); localStorage.setItem('landing_lang','en'); } }} className={'text-xs font-bold px-2.5 py-1 rounded-full transition ' + (lang==='en' ? 'bg-white text-slate-900 shadow' : 'text-slate-400 hover:text-white')}>EN</button>
+                </div>
+                <a href="/login" className="text-sm text-slate-300 hover:text-white px-3 py-2">{L.nav_masuk}</a>
+                <a href="/app" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-4 py-2">{L.nav_buka}</a>
               </div>
             </div>
           </nav>
@@ -138,17 +170,16 @@
             <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-10 lg:py-16">
               <div className="grid lg:grid-cols-2 gap-10 items-center">
                 <div className="text-center lg:text-left">
-                  <span className="inline-block text-xs font-semibold tracking-wide text-indigo-300 bg-indigo-950 border border-indigo-800 rounded-full px-3 py-1 mb-4">MVP · Kampus × Industri</span>
+                  <span className="inline-block text-xs font-semibold tracking-wide text-indigo-300 bg-indigo-950 border border-indigo-800 rounded-full px-3 py-1 mb-4">{L.hero_badge}</span>
                   <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-[1.05] tracking-tight">
-                    Jembatan Kampus <span className="text-indigo-400">&amp;</span> Industri
+                    {L.hero_title1} <span className="text-indigo-400">&amp;</span> {L.hero_title2}
                   </h1>
                   <p className="mt-4 text-slate-400 max-w-xl mx-auto lg:mx-0 text-base lg:text-lg leading-relaxed">
-                    Marketplace project, talent matching rule-based yang transparan, analisis skill gap,
-                    dan rekomendasi pembelajaran — dalam satu platform.
+                    {L.hero_desc}
                   </p>
                   <div className="mt-7 flex flex-wrap gap-3 justify-center lg:justify-start">
-                    <a href="/app" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-7 py-3">Buka Aplikasi</a>
-                    <a href="#cara-kerja" className="rounded-xl border border-slate-700 hover:border-slate-500 transition text-slate-200 px-7 py-3">Cara Kerja</a>
+                    <a href="/app" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-7 py-3">{L.nav_buka}</a>
+                    <a href="#cara-kerja" className="rounded-xl border border-slate-700 hover:border-slate-500 transition text-slate-200 px-7 py-3">{L.nav_cara}</a>
                   </div>
                   <div className="mt-8 flex flex-wrap gap-6 justify-center lg:justify-start text-sm text-slate-400">
                     <span><b className="text-white text-lg">31</b> skill</span>
@@ -179,14 +210,15 @@
           <section id="fitur" className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-12 lg:py-16">
             <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">Fitur Unggulan</h2>
-                <p className="text-sm text-slate-500 mt-1">Semua modul sudah hidup dan bisa dicoba lewat aplikasi.</p>
+                <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">{L.fitur_title}</h2>
+                <p className="text-sm text-slate-500 mt-1">{L.fitur_sub}</p>
               </div>
-              <a href="/app" className="text-sm text-indigo-400 hover:text-indigo-300">Coba di aplikasi →</a>
+              <a href="/app" className="text-sm text-indigo-400 hover:text-indigo-300">{L.coba}</a>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-              {FEATURES.map((f) => (
-                <div key={f.t} className="bg-slate-900 border border-slate-800 hover:border-indigo-700 transition rounded-2xl p-6">
+              {FEATURES.map((f, i) => (
+                <div key={f.t} className="bg-slate-900 border border-slate-800 hover:border-indigo-600/50 hover:shadow-lg hover:shadow-indigo-900/10 hover:-translate-y-0.5 transition-all rounded-2xl p-6 group">
+                  <div className="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-indigo-600 flex items-center justify-center text-sm font-bold text-slate-400 group-hover:text-white transition mb-3">{['⌖','◈','◎','⬢','⬣','▦'][i] || '•'}</div>
                   <h3 className="font-semibold text-white mb-1">{f.t}</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">{f.d}</p>
                 </div>
@@ -195,7 +227,7 @@
           </section>
 
           <section id="cara-kerja" className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-8 lg:py-12">
-            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6 tracking-tight">Cara Kerja</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6 tracking-tight">{L.cara_title}</h2>
             <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
               {STEPS.map((s) => (
                 <div key={s.n} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex gap-4">
@@ -207,7 +239,7 @@
           </section>
 
           <section className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 py-8 lg:py-12">
-            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6 tracking-tight">Untuk Setiap Peran</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6 tracking-tight">{L.peran_title}</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
               {ROLES.map((r) => (
                 <div key={r.name} className="bg-slate-900 border border-slate-800 hover:border-slate-600 transition rounded-2xl p-6 flex flex-col">
@@ -223,8 +255,8 @@
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-10">
               <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
                 <div>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">Daftar Akun Baru</h2>
-                  <p className="text-sm text-slate-400 mt-2 leading-relaxed">Buat akun Mahasiswa, Perusahaan, atau Kampus — langsung bisa login tanpa akun demo.</p>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">{L.daftar_title}</h2>
+                  <p className="text-sm text-slate-400 mt-2 leading-relaxed">{L.daftar_desc}</p>
                   <ul className="mt-5 space-y-2 text-sm text-slate-400">
                     <li className="flex gap-2"><span className="text-indigo-400">•</span> Mahasiswa: isi skill & daftar project</li>
                     <li className="flex gap-2"><span className="text-indigo-400">•</span> Perusahaan: buat project & nilai pelamar</li>
@@ -239,12 +271,12 @@
 
           <section className="w-full max-w-[1600px] mx-auto px-6 lg:px-10 pb-12 lg:pb-16">
             <div className="bg-gradient-to-r from-indigo-900 to-slate-900 border border-indigo-800 rounded-3xl p-8 lg:p-12 text-center">
-              <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">Siap menghubungkan kampus dan industri?</h2>
-              <p className="text-slate-400 mt-2 mb-6">Login dengan akun demo atau akun baru Anda dan jelajahi semua halaman dashboard.</p>
+              <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">{L.cta_title}</h2>
+              <p className="text-slate-400 mt-2 mb-6">{L.cta_desc}</p>
               <div className="flex flex-wrap gap-3 justify-center">
-                <a href="/app" className="rounded-xl bg-white text-slate-900 font-semibold px-7 py-3 hover:bg-slate-200 transition">Buka Aplikasi</a>
-                <a href="/login" className="rounded-xl border border-slate-600 text-slate-200 px-7 py-3 hover:border-slate-400 transition">Halaman Login</a>
-                <a href="#daftar" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-7 py-3 transition">Daftar Sekarang</a>
+                <a href="/app" className="rounded-xl bg-white text-slate-900 font-semibold px-7 py-3 hover:bg-slate-200 transition">{L.cta_app}</a>
+                <a href="/login" className="rounded-xl border border-slate-600 text-slate-200 px-7 py-3 hover:border-slate-400 transition">{L.cta_login}</a>
+                <a href="#daftar" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-7 py-3 transition">{L.cta_daftar}</a>
               </div>
             </div>
           </section>
