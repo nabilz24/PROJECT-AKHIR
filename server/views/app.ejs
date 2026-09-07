@@ -18,10 +18,10 @@
   <script type="text/babel" data-presets="react">
     const { useState, useEffect } = React;
     const API = '/api/v1';
-    const INP = 'w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500';
-    const BTN = 'rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-3 py-1.5 transition';
-    const BTN2 = 'rounded-lg border border-slate-600 hover:border-slate-400 text-slate-200 text-sm px-3 py-1.5 transition';
-    const DANGER = 'rounded-lg border border-red-700 hover:bg-red-900 text-red-300 text-sm px-3 py-1.5 transition';
+    const INP = 'w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 mb-2 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition';
+    const BTN = 'inline-flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-sm font-semibold px-3.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-50 disabled:pointer-events-none';
+    const BTN2 = 'inline-flex items-center justify-center rounded-lg border border-slate-600 hover:border-slate-400 hover:bg-slate-800 text-slate-200 text-sm font-medium px-3.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-50 disabled:pointer-events-none';
+    const DANGER = 'inline-flex items-center justify-center rounded-lg border border-red-700 hover:bg-red-900/60 hover:border-red-600 text-red-300 text-sm font-medium px-3.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
 
     // ---- Routing: setiap halaman punya URL hash sendiri ----
     const HASH = {
@@ -79,8 +79,8 @@
     }
     function Section(props) {
       return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mt-4">
-          <h3 className="font-bold text-white mb-3">{props.title}</h3>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mt-4 shadow-sm">
+          <h3 className="text-sm font-semibold tracking-tight text-white mb-3">{props.title}</h3>
           {props.children}
         </div>
       );
@@ -114,13 +114,13 @@
     }
     function EmptyState(props) {
       return (
-        <div className="text-center py-8">
-          <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-slate-800 flex items-center justify-center">
-            <div className="w-3 h-3 rounded-full bg-slate-600"></div>
+        <div className="text-center py-8 px-4 border border-dashed border-slate-700/60 rounded-xl bg-slate-800/20">
+          <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+            <div className="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
           </div>
           <p className="text-sm font-semibold text-slate-300">{props.title}</p>
-          {props.hint && <p className="text-xs text-slate-500 mt-1">{props.hint}</p>}
-          {props.action}
+          {props.hint && <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">{props.hint}</p>}
+          {props.action && <div className="mt-3">{props.action}</div>}
         </div>
       );
     }
@@ -142,7 +142,7 @@
             <p className="text-sm text-slate-400 mb-4">{props.text || 'Tindakan ini tidak dapat dibatalkan.'}</p>
             <div className="flex gap-2 justify-end">
               <button onClick={props.onCancel} className={BTN2}>Batal</button>
-              <button onClick={props.onConfirm} className="rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-semibold px-3 py-1.5">Ya, lanjutkan</button>
+              <button onClick={props.onConfirm} className="inline-flex items-center justify-center rounded-lg bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-sm font-semibold px-3.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900">Ya, lanjutkan</button>
             </div>
           </div>
         </div>
@@ -150,10 +150,10 @@
     }
     function PageHead(props) {
       return (
-        <div className="flex flex-wrap items-end gap-2 mb-4">
+        <div className="flex flex-wrap items-end gap-3 mb-5">
           <div className="flex-1 min-w-52">
-            <h1 className="text-2xl font-extrabold text-white">{props.title}</h1>
-            {props.desc && <p className="text-sm text-slate-500 mt-0.5">{props.desc}</p>}
+            <h1 className="text-2xl font-extrabold tracking-tight text-white">{props.title}</h1>
+            {props.desc && <p className="text-sm text-slate-500 mt-1 leading-relaxed">{props.desc}</p>}
           </div>
           {props.action}
         </div>
@@ -745,7 +745,7 @@
                   {tax.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
                 <input type="number" min="0" max="100" value={row.level_required} onChange={(e) => { const c = rows.slice(); c[i].level_required = e.target.value; setRows(c); }} className="w-20 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
-                <button onClick={() => setRows(rows.filter((_, j) => j !== i))} className={BTN2}>×</button>
+                <button onClick={() => setRows(rows.filter((_, j) => j !== i))} aria-label="Hapus baris skill" className={BTN2}>×</button>
               </div>
             ))}
             <div className="flex gap-2">
@@ -933,7 +933,7 @@
       return (
         <div>
           <PageHead title="Notifikasi" desc="Semua pemberitahuan akun." action={
-            <label className="text-xs text-slate-400"><input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.value)} /> Belum dibaca saja</label>
+            <label className="inline-flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer"><input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} className="rounded border-slate-600 bg-slate-800" /> Belum dibaca saja</label>
           } />
           {loading && <SkeletonList />}
           {!loading && list.length === 0 && <EmptyState title="Tidak ada notifikasi" />}
@@ -1109,7 +1109,7 @@
             </div>
           </div>
           <main className="flex-1 p-4 md:p-5 max-w-5xl w-full mx-auto">
-            <h1 className="text-2xl font-extrabold text-white mb-4">{view === 'dash' ? (ROLE_TITLES[user.role] || 'Dashboard') : (TITLES[view] || view)}</h1>
+            {view === 'dash' && <h1 className="text-2xl font-extrabold text-white tracking-tight mb-4">{ROLE_TITLES[user.role] || 'Dashboard'}</h1>}
             {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
             {loading && view === 'dash' && <SkeletonList n={5} />}
             {!loading && data && view === 'dash' && user.role === 'mahasiswa' && <StudentDash data={data} />}
