@@ -354,4 +354,31 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ No regresi — `spa.test.js` & `app.test.js` tidak meng-assert h1 spesifik, aman.
 - ✅ Acceptance criteria passed — QA.md Functional (TC-AUTH/STU/CMP), Talent Matching (6 poin), SKILL-001..004, DoD checklist terpenuhi; siap presentasi.
 
+### Polish — Register + Auth UI, Landing full-screen, Doks (2026-09-08): DONE
+
+- ✅ Requirement implemented — `/register` (role mahasiswa/perusahaan/kampus + validasi + auto-login → `dashboard_url`), `LoginView` tabs, `layout.ejs` auth polish, `spa.ejs` hero 2-kolom + `max-w-[1600px]` full-screen laptop, MD → `Doks/` (10 file + root `README` stub + `opencode.json` → `Doks/AGENTS.md`). Commit `818b143`, `45ed938`, `3d72589`, `dbc8092`.
+- ✅ Integration test passed — `smoke.test.js` path Doks diupdate, 19 suite 149/149 hijau.
+
+### Polish — Talent Matching ranking + Evaluasi + Search + i18n (2026-09-08): DONE
+
+- ✅ Requirement implemented — `dashboard.controller` live `match_score` + sort, `projects.controller`/`seed` hitung `match_score` saat apply/seed, `ApplicationsView` Talent Matching ranking (badge `matchColor`, breakdown, medal 🥇🥈🥉), search debounce 300ms (Projects/Skills/Applications), `I18N` ID/EN + pill toggle `app_lang`, `EvaluateModal` preview bump. Commit `d486d48`, `c90d2bf`.
+- ✅ Integration test passed — ranking `80` eksak, `GET /companies/candidates?project_id=` terurut, 19 suite 149/149 hijau.
+
+### Fix — Evaluasi modal dedicated + PUT fallback (2026-09-08): DONE
+
+- ✅ Requirement implemented — `EvaluateModal` (4 rating + komentar + bump preview + auto-close), `ApplicationsView`/`Assess` hub/`ManualAssessInline` via `saveAssessment()` probe `GET /evaluations/:pid/:sid` → `PUT` bila sudah ada else `POST` (atasi `400 Penilaian sudah ada — gunakan PUT`, tanpa re-bump per TASK-092). Commit `c4a18af`, `c97cdcc`. Verifikasi: `201 → 400 → probe 200 → PUT 200`, skill `60→70` tetap.
+- ✅ Unit test passed — suite unit tetap hijau.
+- ✅ Integration test passed — `POST /assessments` 201 + `PUT /evaluations/:pid/:sid` 200 + `GET` 200, `npm test` 19/149 hijau.
+
+### Fix — Dashboard antrian evaluasi selalu 0 (2026-09-08): DONE
+
+- ✅ Root cause — `pending_evaluations` = `accepted` tanpa assessment; seed hanya `pending` → 0. Ditambah data dashboard hanya fetch saat login (stale).
+- ✅ Fix — `app.ejs`: `refreshDash()` + `useEffect [view==='dash']` auto re-fetch, `ApplicationsView.decide/submitEval` & `AssessView/ManualAssessInline` panggil `onRefresh(refreshDash)`, hint `CompanyDash` diperjelas. Commit `836d5c7`. Verifikasi API: `waiting 0→1` setelah apply, `pending 0→1` setelah accept, `0` lagi setelah assess; `npm test` 19/149 hijau.
+
+### Feat — Recommendations modul belajar interaktif (2026-09-08): DONE
+
+- ✅ Root cause — `RecsView:839-844` `catch` hanya `401` → error `400/404/422` ditelan; UI hanya ganti `Mulai→Selesai` tanpa modul.
+- ✅ Requirement implemented — `RecsView` baru: `load()`/`act()` `notify(error,true)` + `acting` disabled, progress header (pending/berjalan/selesai + bar `pct`), filter `Semua/Pending/Berjalan/Selesai`, card `type·priority` + `Buka/Tutup Modul` (3 langkah checklist per type + sumber & estimasi), `completed` hijau + `consumed_at`. Tanpa ubah API/DB (mock steps frontend). Commit `fee1fd0`.
+- ✅ Integration test passed — `recommendations.test.js` 7 lulus; full suite 19/149 hijau.
+
 ---
