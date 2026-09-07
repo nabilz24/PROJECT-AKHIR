@@ -43,6 +43,57 @@
       { t: 'Analytics Kampus', d: 'Distribusi skill, tren industri, heatmap gap, export CSV.' },
     ];
 
+    function RegisterForm() {
+      const [name, setName] = React.useState('');
+      const [email, setEmail] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [role, setRole] = React.useState('mahasiswa');
+      const [err, setErr] = React.useState('');
+      const [ok, setOk] = React.useState('');
+      const [loading, setLoading] = React.useState(false);
+      async function submit(e) {
+        e.preventDefault(); setErr(''); setOk('');
+        if (name.trim().length < 3) { setErr('Nama 3-100 karakter'); return; }
+        setLoading(true);
+        try {
+          const r = await fetch('/api/v1/auth/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name.trim(), email: email.trim(), password, role })
+          });
+          const j = await r.json();
+          if (!j.success) {
+            const msg = (j.errors && j.errors.length) ? j.errors.map(x=>x.message).join(', ') : j.message;
+            setErr(msg || 'Pendaftaran gagal');
+            return;
+          }
+          setOk('Pendaftaran berhasil! Mengalihkan ke dashboard...');
+          try { localStorage.setItem('token', j.data.token); } catch (ex) {}
+          setTimeout(() => { window.location.href = j.data.dashboard_url + '?token=' + encodeURIComponent(j.data.token); }, 600);
+        } catch (ex) { setErr('Tidak dapat menghubungi server.'); }
+        finally { setLoading(false); }
+      }
+      return (
+        <form onSubmit={submit} className="bg-slate-950 border border-slate-800 rounded-2xl p-5">
+          <label className="block text-xs font-medium text-slate-300 mb-1">Nama Lengkap</label>
+          <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nama Anda" required minLength={3} maxLength={100} className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-3 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
+          <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nama@email.com" required className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-3 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+          <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Min 8 karakter, huruf+angka+karakter unik" required className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-1 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <p className="text-xs text-slate-500 mb-3">Syarat: minimal 8 karakter, wajib huruf + angka + karakter spesial (contoh: Test123!).</p>
+          <label className="block text-xs font-medium text-slate-300 mb-1">Peran</label>
+          <select value={role} onChange={(e)=>setRole(e.target.value)} className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="mahasiswa">Mahasiswa</option>
+            <option value="perusahaan">Perusahaan</option>
+            <option value="kampus">Kampus</option>
+          </select>
+          {err && <p className="text-sm text-red-400 mb-2">{err}</p>}
+          {ok && <p className="text-sm text-emerald-400 mb-2">{ok}</p>}
+          <button disabled={loading} className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">{loading ? 'Memproses...' : 'Daftar'}</button>
+        </form>
+      );
+    }
+
     function App() {
       return (
         <div className="min-h-screen bg-slate-950 text-slate-200">
@@ -52,6 +103,7 @@
               <div className="flex items-center gap-2">
                 <a href="#fitur" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Fitur</a>
                 <a href="#cara-kerja" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Cara Kerja</a>
+                <a href="#daftar" className="hidden sm:inline text-sm text-slate-400 hover:text-white px-3 py-2">Daftar</a>
                 <a href="/login" className="text-sm text-slate-300 hover:text-white px-3 py-2">Masuk</a>
                 <a href="/app" className="text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold px-4 py-2">Buka Aplikasi</a>
               </div>
@@ -118,13 +170,32 @@
             </div>
           </section>
 
+          <section id="daftar" className="max-w-6xl mx-auto px-6 pb-14">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8">
+              <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Daftar Akun Baru</h2>
+                  <p className="text-sm text-slate-400 mt-1">Buat akun Mahasiswa, Perusahaan, atau Kampus — langsung bisa login tanpa akun demo.</p>
+                  <ul className="mt-4 space-y-2 text-sm text-slate-400">
+                    <li>• Mahasiswa: isi skill & daftar project</li>
+                    <li>• Perusahaan: buat project & nilai pelamar</li>
+                    <li>• Kampus: pantau analytics & tren skill</li>
+                  </ul>
+                  <p className="text-xs text-slate-500 mt-4">Sudah punya akun? <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline">Masuk di sini</a> · atau <a href="/register" className="text-indigo-400 hover:text-indigo-300 underline">halaman daftar terpisah</a></p>
+                </div>
+                <RegisterForm />
+              </div>
+            </div>
+          </section>
+
           <section className="max-w-6xl mx-auto px-6 pb-16">
             <div className="bg-gradient-to-r from-indigo-900 to-slate-900 border border-indigo-800 rounded-3xl p-8 md:p-12 text-center">
               <h2 className="text-2xl md:text-3xl font-extrabold text-white">Siap menghubungkan kampus dan industri?</h2>
-              <p className="text-slate-400 mt-2 mb-6">Login dengan akun demo dan jelajahi semua halaman dashboard.</p>
+              <p className="text-slate-400 mt-2 mb-6">Login dengan akun demo atau akun baru Anda dan jelajahi semua halaman dashboard.</p>
               <div className="flex flex-wrap gap-3 justify-center">
                 <a href="/app" className="rounded-xl bg-white text-slate-900 font-semibold px-6 py-3 hover:bg-slate-200 transition">Buka Aplikasi</a>
                 <a href="/login" className="rounded-xl border border-slate-600 text-slate-200 px-6 py-3 hover:border-slate-400 transition">Halaman Login</a>
+                <a href="#daftar" className="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 transition">Daftar Sekarang</a>
               </div>
             </div>
           </section>
@@ -133,6 +204,7 @@
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-wrap gap-2 items-center justify-between text-xs text-slate-500">
               <span>Campus Industry Talent Hub</span>
               <span className="flex gap-4">
+                <a className="hover:text-slate-300" href="/register">Daftar</a>
                 <a className="hover:text-slate-300" href="/app">Aplikasi</a>
                 <a className="hover:text-slate-300" href="/login">Masuk</a>
                 <a className="hover:text-slate-300" href="/api/v1/health">API Health</a>

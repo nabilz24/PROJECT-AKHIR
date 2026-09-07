@@ -1,0 +1,59 @@
+<% const body = `
+<form class="login" id="f" style="max-width:420px">
+  <h2 style="margin-top:0">Daftar Akun Baru</h2>
+  <p class="muted">Buat akun untuk masuk sebagai Mahasiswa, Perusahaan, atau Kampus.</p>
+  <label>Nama Lengkap</label>
+  <input type="text" id="name" placeholder="Nama Anda" required minlength="3" maxlength="100">
+  <label>Email</label>
+  <input type="email" id="email" placeholder="nama@email.com" required>
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Min 8 karakter, huruf+angka+karakter unik" required>
+  <p class="muted" style="font-size:11px;margin-top:-8px;margin-bottom:12px">Syarat: minimal 8 karakter, wajib huruf + angka + karakter spesial (contoh: Test123!).</p>
+  <label>Peran</label>
+  <select id="role" required style="width:100%;padding:10px;margin:6px 0 12px;border:1px solid #cbd5e1;border-radius:6px">
+    <option value="mahasiswa">Mahasiswa</option>
+    <option value="perusahaan">Perusahaan</option>
+    <option value="kampus">Kampus</option>
+  </select>
+  <div class="err" id="err"></div>
+  <div class="muted" id="ok" style="color:#15803d;font-size:13px;min-height:18px"></div>
+  <button class="btn" type="submit" style="width:100%" id="btnSubmit">Daftar</button>
+  <p class="muted" style="font-size:12px;margin-top:12px">Sudah punya akun? <a href="/login">Masuk di sini</a></p>
+  <p class="muted" style="font-size:12px"><a href="/">← Landing</a> · <a href="/app">Dashboard App</a></p>
+</form>
+<script>
+document.getElementById('f').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btnSubmit');
+  const errEl = document.getElementById('err');
+  const okEl = document.getElementById('ok');
+  errEl.textContent = ''; okEl.textContent = '';
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const role = document.getElementById('role').value;
+  if (name.length < 3) { errEl.textContent = 'Nama 3-100 karakter'; return; }
+  btn.disabled = true; btn.textContent = 'Memproses...';
+  try {
+    const r = await fetch('/api/v1/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, role })
+    });
+    const j = await r.json();
+    if (!j.success) {
+      const msg = (j.errors && j.errors.length) ? j.errors.map(e=>e.message).join(', ') : j.message;
+      errEl.textContent = msg;
+      return;
+    }
+    okEl.textContent = 'Pendaftaran berhasil! Mengalihkan...';
+    localStorage.setItem('token', j.data.token);
+    setTimeout(() => { location.href = j.data.dashboard_url + '?token=' + encodeURIComponent(j.data.token); }, 600);
+  } catch (ex) {
+    errEl.textContent = 'Tidak dapat menghubungi server.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Daftar';
+  }
+});
+</script>
+`; %>
+<%- include('layout', { title: title, body: body }) %>

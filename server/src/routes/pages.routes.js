@@ -33,6 +33,8 @@ router.get('/app', (req, res) => res.render('app', { title: 'Dashboard App' }));
 
 router.get('/login', (req, res) => res.render('login', { title: 'Login' }));
 
+router.get('/register', (req, res) => res.render('register', { title: 'Daftar' }));
+
 router.get(
   '/dashboard/student',
   authLimiter,

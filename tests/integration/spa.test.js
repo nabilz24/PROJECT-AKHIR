@@ -17,7 +17,10 @@ describe('Pemisahan halaman (TASK-105)', () => {
     expect(res.text).toMatch(/Fitur Unggulan/);
     expect(res.text).toMatch(/href="\/app"/);
     expect(res.text).not.toMatch(/\/api\/v1\/auth\/login/);
-    expect(res.text).not.toMatch(/type="password"/);
+    // Landing kini punya form Daftar (register) — bukan form login
+    expect(res.text).toMatch(/\/api\/v1\/auth\/register/);
+    expect(res.text).toMatch(/href="\/register"/);
+    expect(res.text).toMatch(/Daftar Akun Baru/);
   });
 
   test('GET /login → halaman login khusus (form email+password)', async () => {
