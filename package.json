@@ -53,9 +53,22 @@
       "**/tests/**/*.test.js"
     ],
     "collectCoverageFrom": [
-      "server/**/*.js"
+      "server/**/*.js",
+      "!server/src/db/seed.js",
+      "!server/src/db/migrate.js",
+      "!server/src/server.js",
+      "!server/src/db/migrations/**",
+      "!server/src/config/**"
     ],
     "coverageDirectory": "coverage",
-    "verbose": true
+    "verbose": true,
+    "coverageThreshold": {
+      "global": {
+        "branches": 75,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    }
   }
 }

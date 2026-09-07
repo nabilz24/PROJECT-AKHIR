@@ -616,7 +616,7 @@
         try {
           const j = await apiFetch('/projects/' + id, props.token);
           setDetail(j.data.project); setCover(''); setMsg(''); setIsErr(false);
-        } catch (e) { if (e.code === 401) props.onExpire(); }
+        } catch (e) { if (e.code === 401) props.onExpire(); else props.notify(e.message, true); }
       }
       async function apply(id) {
         setMsg(''); setIsErr(false);
@@ -691,7 +691,7 @@
           const arr = b.data.skills || [];
           setTax(arr);
           if (!sid && arr.length > 0) setSid(String(arr[0].id));
-        } catch (e) { if (e.code === 401) props.onExpire(); }
+        } catch (e) { if (e.code === 401) props.onExpire(); else props.notify(e.message, true); }
         finally { setLoading(false); }
       }
       useEffect(() => { load(); }, []);
@@ -1008,7 +1008,7 @@
           setList(j.data.projects || []);
           const t = await apiFetch('/skills', props.token).catch(() => ({ data: { skills: [] } }));
           setTax(t.data.skills || []);
-        } catch (e) { if (e.code === 401) props.onExpire(); }
+        } catch (e) { if (e.code === 401) props.onExpire(); else props.notify(e.message, true); }
         finally { setLoading(false); }
       }
       useEffect(() => { load(); }, []);
@@ -1143,7 +1143,7 @@
           setRanked(pendingRanked);
           const acc = (a.data.applications || []).filter(x=> x.status==='accepted');
           setAccepted(acc);
-        } catch (e) { if (e.code === 401) props.onExpire(); }
+        } catch (e) { if (e.code === 401) props.onExpire(); else props.notify(e.message, true); }
         finally { setLoading(false); }
       }
       async function decide(id, status) {
@@ -1412,7 +1412,7 @@
         try {
           const j = await apiFetch('/notifications' + (uo ? '?is_read=0' : ''), props.token);
           setList(j.data.notifications || []);
-        } catch (e) { if (e.code === 401) props.onExpire(); }
+        } catch (e) { if (e.code === 401) props.onExpire(); else props.notify(e.message, true); }
         finally { setLoading(false); }
       }
       useEffect(() => { load(unreadOnly); }, [unreadOnly]);
@@ -1420,7 +1420,7 @@
         try {
           await apiSend('/notifications/' + id + '/read', props.token, 'PUT');
           load(unreadOnly);
-        } catch (e) { if (e.code === 401) props.onExpire(); }
+        } catch (e) { if (e.code === 401) props.onExpire(); else props.notify(e.message, true); }
       }
       return (
         <div>
@@ -1449,7 +1449,7 @@
         try {
           const j = await apiFetch('/users/profile', props.token);
           setData(j.data); setF(Object.assign({ name: j.data.user.name }, j.data.profile || {}));
-        } catch (e) { if (e.code === 401) props.onExpire(); }
+        } catch (e) { if (e.code === 401) props.onExpire(); else props.notify(e.message, true); }
       }
       useEffect(() => { load(); }, []);
       function set(k, v) { setF(Object.assign({}, f, { [k]: v })); }

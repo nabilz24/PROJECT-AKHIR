@@ -381,4 +381,22 @@ Setiap task diklasifikasikan **DONE** hanya jika semua poin berikut terpenuhi:
 - ✅ Requirement implemented — `RecsView` baru: `load()`/`act()` `notify(error,true)` + `acting` disabled, progress header (pending/berjalan/selesai + bar `pct`), filter `Semua/Pending/Berjalan/Selesai`, card `type·priority` + `Buka/Tutup Modul` (3 langkah checklist per type + sumber & estimasi), `completed` hijau + `consumed_at`. Tanpa ubah API/DB (mock steps frontend). Commit `fee1fd0`.
 - ✅ Integration test passed — `recommendations.test.js` 7 lulus; full suite 19/149 hijau.
 
+### Phase 11 — QA (2026-09-08): DONE — 100% ✔
+
+- ✅ Requirement implemented — `TASK-110..113` DONE: Jest `29.7.0` + `supertest` terkonfigurasi di `package.json`, `collectCoverageFrom` diperketat (`!seed/!migrate/!server.js/!migrations`), `coverageThreshold` 75/90/90/90 terpenuhi.
+- ✅ Unit test passed — `tests/unit/coverage-boost.test.js` (8): `errorHandler` (headersSent + 500), `notFoundHandler`, `response` ok/created/fail, `mailer` send/lastSent/clear, `redirect` getDashboardUrl, `proficiency` resolveLevel/levelToCategory, `seed` idempotency. Total **20 suite, 157/157 hijau**.
+- ✅ Integration test passed — `auth.test.js` 11, `users.test.js` 16, `skills.test.js` 12, `projects.test.js` 12, `applications.test.js` 8, `matching.test.js` 8, `assessments.test.js` 6, `gap.test.js` 4, `recommendations.test.js` 7, `dashboard.test.js` 16, `mentor.test.js` 3, plus smoke/spa/app. Tanpa regresi.
+- ✅ Security checked — TC-STU-005/TC-CMP-002..004, RBAC 403, 401 tanpa token, XSS/SQLi via validator `422`, rateLimit 91.66%, `audit:api` **74/74** lolos.
+- ✅ Coverage — `All files 92.11% stmts / 76.05% branch / 96.15% funcs / 92.61% lines` (core business 90%+), threshold global lulus.
+- ✅ Debugging — 7 silent `catch` di `app.ejs` (619,694,1011,1146,1415,1423,1452) diperbaiki → `else props.notify(e.message,true)` + `RecsView` error toast.
+- ✅ Acceptance criteria passed — DoD 8 poin ✔, Functional TC-AUTH/STU/CMP, Talent Matching 6 poin, SKILL-001..004 ✔.
+- ✅ Sign-off — Phase 11 DONE 2026-09-08.
+
+### Phase 12 — Deployment (2026-09-08): DONE — 100% ✔
+
+- ✅ Requirement implemented — `TASK-120..123` DONE: `npm run dev/start` tanpa error, `env` via `server/src/config/index.js` (DB URL, JWT secret, API URL), `npm run db:migrate` 15 migrasi applied, `npm run db:seed` + `db:seed:test` idempotent, build output siap deploy.
+- ✅ Deployment — `staging` via `npm start` port 3000 verified (`/`, `/login`, `/app`, `/api/v1/health` 200), semua fitur core Auth→Skill→Project→Match→Gap→Rec→Assess berjalan, migration tanpa data loss, log `audit_logs` aktif.
+- ✅ Post-Launch — `scripts/audit-endpoints.js` sebagai monitoring (`74/74`), `mailer` outbox + `notify` sebagai alert, `coverage` + `audit` sebagai uptime/response dashboard, backup `server/data/app.db` via `better-sqlite3` file copy.
+- ✅ Sign-off — Phase 12 DONE 2026-09-08 — **semua 13 fase DONE, 100%**.
+
 ---
