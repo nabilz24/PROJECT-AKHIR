@@ -47,13 +47,25 @@
       const [name, setName] = React.useState('');
       const [email, setEmail] = React.useState('');
       const [password, setPassword] = React.useState('');
+      const [showPw, setShowPw] = React.useState(false);
       const [role, setRole] = React.useState('mahasiswa');
       const [err, setErr] = React.useState('');
       const [ok, setOk] = React.useState('');
       const [loading, setLoading] = React.useState(false);
+      function pwScore(pw){ let s=0; if(pw.length>=8) s++; if(/[A-Za-z]/.test(pw) && /\d/.test(pw)) s++; if(/[^A-Za-z\d]/.test(pw)) s++; if(pw.length>=12 && s===3) s=4; return s; }
+      const score = pwScore(password);
+      const pwPct = [0,25,50,75,100][score];
+      const pwColor = score<=1 ? 'bg-red-500' : score===2 ? 'bg-amber-500' : score===3 ? 'bg-emerald-500' : 'bg-emerald-600';
+      const pwLabel = score===0 ? '' : score===1 ? 'Lemah — tambah angka & simbol' : score===2 ? 'Cukup — tambah simbol' : score===3 ? 'Kuat' : 'Sangat kuat';
+      const ROLES = [
+        { id: 'mahasiswa', icon: '🎓', label: 'Mahasiswa', desc: 'Skill & project' },
+        { id: 'perusahaan', icon: '🏢', label: 'Perusahaan', desc: 'Buat project' },
+        { id: 'kampus', icon: '🏛️', label: 'Kampus', desc: 'Analytics' },
+      ];
       async function submit(e) {
         e.preventDefault(); setErr(''); setOk('');
         if (name.trim().length < 3) { setErr('Nama 3-100 karakter'); return; }
+        if (score < 3) { setErr('Password belum memenuhi syarat (8 karakter, huruf+angka+simbol).'); return; }
         setLoading(true);
         try {
           const r = await fetch('/api/v1/auth/register', {
@@ -66,30 +78,42 @@
             setErr(msg || 'Pendaftaran gagal');
             return;
           }
-          setOk('Pendaftaran berhasil! Mengalihkan ke dashboard...');
+          setOk('Pendaftaran berhasil! Mengalihkan ke aplikasi...');
           try { localStorage.setItem('token', j.data.token); } catch (ex) {}
-          setTimeout(() => { window.location.href = j.data.dashboard_url + '?token=' + encodeURIComponent(j.data.token); }, 600);
+          setTimeout(() => { window.location.href = '/app#/?token=' + encodeURIComponent(j.data.token); }, 600);
         } catch (ex) { setErr('Tidak dapat menghubungi server.'); }
         finally { setLoading(false); }
       }
       return (
         <form onSubmit={submit} className="bg-slate-950 border border-slate-800 rounded-2xl p-5">
+          <label className="block text-xs font-medium text-slate-300 mb-1">Pilih peran</label>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {ROLES.map((rc)=>(
+              <button key={rc.id} type="button" onClick={()=>setRole(rc.id)} className={'rounded-xl border p-3 text-center transition ' + (role===rc.id ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500')}>
+                <div className="text-lg">{rc.icon}</div><div className="text-xs font-bold">{rc.label}</div><div className="text-xs opacity-70">{rc.desc}</div>
+              </button>
+            ))}
+          </div>
           <label className="block text-xs font-medium text-slate-300 mb-1">Nama Lengkap</label>
           <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nama Anda" required minLength={3} maxLength={100} className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-3 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
           <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nama@email.com" required className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-3 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
-          <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Min 8 karakter, huruf+angka+karakter unik" required className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-1 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-          <p className="text-xs text-slate-500 mb-3">Syarat: minimal 8 karakter, wajib huruf + angka + karakter spesial (contoh: Test123!).</p>
-          <label className="block text-xs font-medium text-slate-300 mb-1">Peran</label>
-          <select value={role} onChange={(e)=>setRole(e.target.value)} className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="mahasiswa">Mahasiswa</option>
-            <option value="perusahaan">Perusahaan</option>
-            <option value="kampus">Kampus</option>
-          </select>
-          {err && <p className="text-sm text-red-400 mb-2">{err}</p>}
-          {ok && <p className="text-sm text-emerald-400 mb-2">{ok}</p>}
-          <button disabled={loading} className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">{loading ? 'Memproses...' : 'Daftar'}</button>
+          <div className="relative mb-1">
+            <input type={showPw ? 'text' : 'password'} value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Min 8 karakter, huruf+angka+simbol" required className="w-full rounded-lg bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 pr-16 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <button type="button" onClick={()=>setShowPw(!showPw)} className="absolute right-1.5 top-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 bg-slate-800 border border-slate-700 rounded-md px-2 py-1">{showPw ? 'Sembunyi' : 'Lihat'}</button>
+          </div>
+          {password && (
+            <div className="mb-3">
+              <div className="h-1.5 rounded bg-slate-800 overflow-hidden"><div className={'h-full ' + pwColor} style={{width: pwPct+'%'}}></div></div>
+              <p className={'text-xs mt-1 ' + (score>=3 ? 'text-emerald-400' : 'text-amber-400')}>{pwLabel}</p>
+            </div>
+          )}
+          {!password && <p className="text-xs text-slate-500 mb-3">Syarat: minimal 8 karakter, wajib huruf + angka + karakter spesial (contoh: Test123!).</p>}
+          {err && <p className="text-sm text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-3 py-2 mb-2">{err}</p>}
+          {ok && <p className="text-sm text-emerald-400 bg-emerald-950/40 border border-emerald-800 rounded-lg px-3 py-2 mb-2">{ok}</p>}
+          <button disabled={loading} className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">{loading ? 'Memproses...' : 'Daftar & Masuk'}</button>
+          <p className="text-xs text-slate-500 mt-2 text-center">Sudah punya akun? <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline">Masuk</a> · <a href="/app" className="text-indigo-400 hover:text-indigo-300 underline">Buka Aplikasi</a></p>
         </form>
       );
     }

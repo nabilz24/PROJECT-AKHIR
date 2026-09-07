@@ -1,59 +1,127 @@
 <% const body = `
-<form class="login" id="f" style="max-width:420px">
-  <h2 style="margin-top:0">Daftar Akun Baru</h2>
-  <p class="muted">Buat akun untuk masuk sebagai Mahasiswa, Perusahaan, atau Kampus.</p>
-  <label>Nama Lengkap</label>
-  <input type="text" id="name" placeholder="Nama Anda" required minlength="3" maxlength="100">
-  <label>Email</label>
-  <input type="email" id="email" placeholder="nama@email.com" required>
-  <label>Password</label>
-  <input type="password" id="password" placeholder="Min 8 karakter, huruf+angka+karakter unik" required>
-  <p class="muted" style="font-size:11px;margin-top:-8px;margin-bottom:12px">Syarat: minimal 8 karakter, wajib huruf + angka + karakter spesial (contoh: Test123!).</p>
-  <label>Peran</label>
-  <select id="role" required style="width:100%;padding:10px;margin:6px 0 12px;border:1px solid #cbd5e1;border-radius:6px">
-    <option value="mahasiswa">Mahasiswa</option>
-    <option value="perusahaan">Perusahaan</option>
-    <option value="kampus">Kampus</option>
-  </select>
-  <div class="err" id="err"></div>
-  <div class="muted" id="ok" style="color:#15803d;font-size:13px;min-height:18px"></div>
-  <button class="btn" type="submit" style="width:100%" id="btnSubmit">Daftar</button>
-  <p class="muted" style="font-size:12px;margin-top:12px">Sudah punya akun? <a href="/login">Masuk di sini</a></p>
-  <p class="muted" style="font-size:12px"><a href="/">← Landing</a> · <a href="/app">Dashboard App</a></p>
-</form>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-logo">CI</div>
+      <div>
+        <div style="font-weight:800;color:#0f172a;letter-spacing:-.02em">Campus Industry Talent Hub</div>
+        <div style="font-size:11px;color:#64748b">Buat akun baru — langsung bisa dipakai</div>
+      </div>
+    </div>
+    <h1 class="auth-title">Daftar akun baru</h1>
+    <p class="auth-sub">Pilih peran, isi data, dan langsung masuk ke dashboard. Tidak perlu menunggu verifikasi.</p>
+    <form class="login" id="f" novalidate>
+      <label>Pilih peran</label>
+      <div class="role-grid" id="roleGrid">
+        <div class="role-card active" data-role="mahasiswa"><div class="rc-icon">🎓</div><div class="rc-label">Mahasiswa</div><div class="rc-desc">Isi skill & daftar project</div></div>
+        <div class="role-card" data-role="perusahaan"><div class="rc-icon">🏢</div><div class="rc-label">Perusahaan</div><div class="rc-desc">Buat project & nilai</div></div>
+        <div class="role-card" data-role="kampus"><div class="rc-icon">🏛️</div><div class="rc-label">Kampus</div><div class="rc-desc">Pantau analytics</div></div>
+      </div>
+      <input type="hidden" id="role" value="mahasiswa">
+      <label for="name">Nama lengkap</label>
+      <input type="text" id="name" placeholder="Nama Anda" required minlength="3" maxlength="100" autocomplete="name">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="nama@email.com" required autocomplete="email">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <input type="password" id="password" placeholder="Min 8 karakter, huruf+angka+simbol" required autocomplete="new-password" style="padding-right:72px">
+        <button type="button" class="toggle" id="togglePw" tabindex="-1">Lihat</button>
+      </div>
+      <div class="pw-meter"><div id="pwBar" style="width:0%"></div></div>
+      <div class="pw-hint" id="pwHint">Syarat: minimal 8 karakter, wajib huruf + angka + karakter spesial (contoh: Test123!).</div>
+      <div class="err" id="err"></div>
+      <div class="ok" id="ok"></div>
+      <button class="btn" type="submit" style="width:100%;margin-top:14px" id="btnSubmit">Daftar & Masuk</button>
+      <div class="auth-foot">Sudah punya akun? <a href="/login">Masuk di sini</a></div>
+    </form>
+    <div class="auth-links">
+      <a href="/">← Landing</a>
+      <a href="/app">Dashboard App</a>
+      <a href="/login">Masuk</a>
+    </div>
+  </div>
+</div>
 <script>
-document.getElementById('f').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('btnSubmit');
+(function(){
+  const nameEl = document.getElementById('name');
+  const emailEl = document.getElementById('email');
+  const pwEl = document.getElementById('password');
+  const roleEl = document.getElementById('role');
   const errEl = document.getElementById('err');
   const okEl = document.getElementById('ok');
-  errEl.textContent = ''; okEl.textContent = '';
-  const name = document.getElementById('name').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const role = document.getElementById('role').value;
-  if (name.length < 3) { errEl.textContent = 'Nama 3-100 karakter'; return; }
-  btn.disabled = true; btn.textContent = 'Memproses...';
-  try {
-    const r = await fetch('/api/v1/auth/register', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, role })
+  const btn = document.getElementById('btnSubmit');
+  const bar = document.getElementById('pwBar');
+  const hint = document.getElementById('pwHint');
+  const toggle = document.getElementById('togglePw');
+  const form = document.getElementById('f');
+  // Role cards
+  document.querySelectorAll('.role-card').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.role-card').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      roleEl.value = c.dataset.role;
     });
-    const j = await r.json();
-    if (!j.success) {
-      const msg = (j.errors && j.errors.length) ? j.errors.map(e=>e.message).join(', ') : j.message;
-      errEl.textContent = msg;
-      return;
-    }
-    okEl.textContent = 'Pendaftaran berhasil! Mengalihkan...';
-    localStorage.setItem('token', j.data.token);
-    setTimeout(() => { location.href = j.data.dashboard_url + '?token=' + encodeURIComponent(j.data.token); }, 600);
-  } catch (ex) {
-    errEl.textContent = 'Tidak dapat menghubungi server.';
-  } finally {
-    btn.disabled = false; btn.textContent = 'Daftar';
+  });
+  toggle.addEventListener('click', () => {
+    const t = pwEl.type === 'password' ? 'text' : 'password';
+    pwEl.type = t; toggle.textContent = t === 'password' ? 'Lihat' : 'Sembunyi';
+  });
+  function scorePw(pw){
+    let s=0;
+    if(pw.length>=8) s++;
+    if(/[A-Za-z]/.test(pw) && /\\d/.test(pw)) s++;
+    if(/[^A-Za-z\\d]/.test(pw)) s++;
+    if(pw.length>=12 && s===3) s=4;
+    return s;
   }
-});
+  pwEl.addEventListener('input', () => {
+    const s = scorePw(pwEl.value);
+    const pct = [0,25,50,75,100][s];
+    bar.style.width = pct+'%';
+    if(s===0){ bar.style.background='#e2e8f0'; hint.textContent='Syarat: minimal 8 karakter, wajib huruf + angka + karakter spesial (contoh: Test123!).'; hint.className='pw-hint'; }
+    else if(s===1){ bar.style.background='#ef4444'; hint.textContent='Lemah — tambah angka & simbol.'; hint.className='pw-hint bad'; }
+    else if(s===2){ bar.style.background='#f59e0b'; hint.textContent='Cukup — tambah karakter spesial.'; hint.className='pw-hint bad'; }
+    else if(s===3){ bar.style.background='#22c55e'; hint.textContent='Kuat — siap dipakai.'; hint.className='pw-hint ok'; }
+    else { bar.style.background='#16a34a'; hint.textContent='Sangat kuat.'; hint.className='pw-hint ok'; }
+  });
+  function showErr(msg){
+    errEl.textContent = msg; errEl.classList.add('show'); okEl.classList.remove('show');
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+  function showOk(msg){
+    okEl.textContent = msg; okEl.classList.add('show'); errEl.classList.remove('show');
+  }
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.textContent=''; errEl.classList.remove('show'); okEl.classList.remove('show');
+    [nameEl,emailEl,pwEl].forEach(el=>el.classList.remove('input-err'));
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const password = pwEl.value;
+    const role = roleEl.value;
+    if(name.length<3){ showErr('Nama 3–100 karakter.'); nameEl.classList.add('input-err'); return; }
+    if(!email){ showErr('Email wajib diisi.'); emailEl.classList.add('input-err'); return; }
+    if(scorePw(password)<3){ showErr('Password belum memenuhi syarat (8 karakter, huruf+angka+simbol).'); pwEl.classList.add('input-err'); return; }
+    btn.disabled = true; const oldHtml = btn.innerHTML; btn.innerHTML = '<span class="spinner"></span> Mendaftarkan...';
+    try {
+      const r = await fetch('/api/v1/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password, role }) });
+      const j = await r.json();
+      if(!j.success){
+        const msg = (j.errors && j.errors.length) ? j.errors.map(x=>x.message).join(', ') : j.message;
+        showErr(msg || 'Pendaftaran gagal.'); return;
+      }
+      showOk('Pendaftaran berhasil! Mengalihkan ke dashboard...');
+      try { localStorage.setItem('token', j.data.token); } catch(ex){}
+      btn.innerHTML = 'Berhasil — mengalihkan...';
+      // Arahkan ke SPA /app agar UX konsisten dengan login (bukan EJS dashboard lama)
+      setTimeout(() => { location.href = '/app#/?token=' + encodeURIComponent(j.data.token); }, 600);
+    } catch(ex){
+      showErr('Tidak dapat menghubungi server. Coba lagi.');
+    } finally {
+      if(btn.innerHTML.includes('Mendaftarkan')){ btn.disabled=false; btn.innerHTML=oldHtml; }
+    }
+  });
+})();
 </script>
 `; %>
 <%- include('layout', { title: title, body: body }) %>

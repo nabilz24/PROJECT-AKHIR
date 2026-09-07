@@ -7,7 +7,7 @@
 <title><%= title %> — Campus Industry Talent Hub</title>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #f4f6fb; color: #1f2937; }
+  body { font-family: 'Segoe UI', Inter, Arial, sans-serif; margin: 0; background: #f4f6fb; color: #1f2937; }
   .shell { display: flex; min-height: 100vh; }
   nav.sidebar { width: 230px; background: #1e3a5f; color: #fff; padding: 20px 0; flex-shrink: 0; }
   nav.sidebar h2 { font-size: 16px; padding: 0 20px; margin: 0 0 16px; }
@@ -32,12 +32,56 @@
   .pill.large { background: #ffedd5; color: #c2410c; }
   .bar { height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden; }
   .bar > div { height: 100%; background: #2d5a8b; }
-  .btn { display: inline-block; background: #1e3a5f; color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; border: 0; cursor: pointer; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #1e3a5f; color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; border: 0; cursor: pointer; transition: background .15s, transform .1s, box-shadow .15s; }
+  .btn:hover { background: #2d5a8b; }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .6; pointer-events: none; }
   .btn.secondary { background: #64748b; }
+  .btn.secondary:hover { background: #475569; }
+  .btn.ghost { background: #fff; color: #1e3a5f; border: 1px solid #e2e8f0; }
+  .btn.ghost:hover { background: #f8fafc; border-color: #cbd5e1; }
   .muted { color: #64748b; font-size: 13px; }
-  form.login { max-width: 380px; margin: 60px auto; background: #fff; padding: 28px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
-  form.login input, form.login select { width: 100%; padding: 10px; margin: 6px 0 12px; border: 1px solid #cbd5e1; border-radius: 6px; }
-  .err { color: #b91c1c; font-size: 13px; min-height: 18px; }
+  /* Auth pages — polished centered card */
+  .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(1200px 600px at 20% -10%, #dbeafe 0%, transparent 60%), radial-gradient(1000px 500px at 90% 110%, #e0e7ff 0%, transparent 60%), #f4f6fb; }
+  .auth-card { width: 100%; max-width: 440px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 28px; box-shadow: 0 8px 30px rgba(30,58,95,.08), 0 1px 3px rgba(0,0,0,.06); }
+  .auth-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .auth-logo { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #1e3a5f, #3b82f6); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 16px; }
+  .auth-title { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -.02em; }
+  .auth-sub { font-size: 13px; color: #64748b; margin: 4px 0 18px; line-height: 1.5; }
+  form.login { max-width: none; margin: 0; background: transparent; padding: 0; border-radius: 0; box-shadow: none; }
+  form.login label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin: 12px 0 6px; }
+  form.login input, form.login select { width: 100%; padding: 10px 12px; margin: 0; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #fff; transition: border-color .15s, box-shadow .15s; }
+  form.login input:focus, form.login select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+  form.login input.input-err, form.login select.input-err { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.12); }
+  .input-wrap { position: relative; }
+  .input-wrap .toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+  .input-wrap .toggle:hover { background: #e2e8f0; }
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 6px 0 12px; }
+  .role-card { border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; background: #fff; transition: border-color .15s, background .15s, box-shadow .15s; }
+  .role-card:hover { border-color: #93c5fd; background: #f8fafc; }
+  .role-card.active { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+  .role-card .rc-icon { font-size: 18px; margin-bottom: 4px; }
+  .role-card .rc-label { font-size: 12px; font-weight: 700; color: #1e293b; }
+  .role-card .rc-desc { font-size: 10px; color: #64748b; margin-top: 2px; }
+  .pw-meter { height: 4px; border-radius: 4px; background: #e2e8f0; overflow: hidden; margin: 6px 0 4px; }
+  .pw-meter > div { height: 100%; border-radius: 4px; transition: width .2s, background .2s; }
+  .pw-hint { font-size: 11px; color: #64748b; min-height: 14px; }
+  .pw-hint.ok { color: #15803d; }
+  .pw-hint.bad { color: #b91c1c; }
+  .err { color: #b91c1c; font-size: 13px; min-height: 18px; margin-top: 8px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 8px 10px; display: none; }
+  .err.show { display: block; }
+  .ok { color: #15803d; font-size: 13px; min-height: 18px; margin-top: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 10px; display: none; }
+  .ok.show { display: block; }
+  .auth-foot { text-align: center; margin-top: 16px; font-size: 12px; color: #64748b; }
+  .auth-foot a { color: #2563eb; text-decoration: none; font-weight: 600; }
+  .auth-foot a:hover { text-decoration: underline; }
+  .auth-links { display: flex; justify-content: center; gap: 12px; margin-top: 10px; font-size: 12px; }
+  .auth-links a { color: #64748b; text-decoration: none; }
+  .auth-links a:hover { color: #1e3a5f; }
+  .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
+  .shake { animation: shake .3s; }
   @media print { nav.sidebar, .noprint { display: none; } main { padding: 0; } }
 </style>
 </head>

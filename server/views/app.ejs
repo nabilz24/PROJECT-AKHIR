@@ -168,12 +168,19 @@
     ];
 
     function LoginView(props) {
+      const [mode, setMode] = useState('login');
+      const [name, setName] = useState('');
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
+      const [showPw, setShowPw] = useState(false);
+      const [role, setRole] = useState('mahasiswa');
       const [err, setErr] = useState('');
+      const [ok, setOk] = useState('');
       const [loading, setLoading] = useState(false);
-      async function submit(e) {
-        e.preventDefault(); setErr(''); setLoading(true);
+      function pwScore(pw){ let s=0; if(pw.length>=8) s++; if(/[A-Za-z]/.test(pw) && /\d/.test(pw)) s++; if(/[^A-Za-z\d]/.test(pw)) s++; if(pw.length>=12 && s===3) s=4; return s; }
+      const score = pwScore(password);
+      async function submitLogin(e) {
+        e.preventDefault(); setErr(''); setOk(''); setLoading(true);
         try {
           const r = await fetch(API + '/auth/login', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -185,25 +192,94 @@
         } catch (ex) { setErr('Tidak dapat menghubungi server.'); }
         finally { setLoading(false); }
       }
-      function fillDemo(mail) { setEmail(mail); setPassword('Test123!'); setErr(''); }
+      async function submitRegister(e) {
+        e.preventDefault(); setErr(''); setOk('');
+        if (name.trim().length < 3) { setErr('Nama 3-100 karakter'); return; }
+        if (score < 3) { setErr('Password belum memenuhi syarat (8 karakter, huruf+angka+simbol).'); return; }
+        setLoading(true);
+        try {
+          const r = await fetch(API + '/auth/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name.trim(), email: email.trim(), password, role }),
+          });
+          const j = await r.json();
+          if (!j.success) {
+            const msg = (j.errors && j.errors.length) ? j.errors.map(x=>x.message).join(', ') : j.message;
+            setErr(msg || 'Pendaftaran gagal');
+            return;
+          }
+          setOk('Pendaftaran berhasil! Memuat dashboard...');
+          setTimeout(()=> props.onLogin(j.data.token, j.data.user), 400);
+        } catch (ex) { setErr('Tidak dapat menghubungi server.'); }
+        finally { setLoading(false); }
+      }
+      function fillDemo(mail) { setMode('login'); setEmail(mail); setPassword('Test123!'); setErr(''); setOk(''); }
+      const ROLES = [
+        { id: 'mahasiswa', icon: '🎓', label: 'Mahasiswa' },
+        { id: 'perusahaan', icon: '🏢', label: 'Perusahaan' },
+        { id: 'kampus', icon: '🏛️', label: 'Kampus' },
+      ];
       return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <div className="min-h-screen flex items-center justify-center px-4 py-6">
           <div className="w-full max-w-sm">
-            <form onSubmit={submit} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
-              <h1 className="font-bold text-white text-lg">Dashboard App</h1>
-              <p className="text-sm text-slate-400 mb-5">Login untuk melihat dashboard sesuai role.</p>
-              <label className="block text-sm text-slate-300 mb-1">Email</label>
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={INP} />
-              <label className="block text-sm text-slate-300 mb-1">Password</label>
-              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={INP} />
-              {err && <p className="text-sm text-red-400 mb-3">{err}</p>}
-              <button disabled={loading} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2 transition">
-                {loading ? 'Memproses…' : 'Login'}
-              </button>
-              <p className="text-xs text-slate-500 mt-3"><a className="underline" href="/">← Kembali ke landing</a></p>
-            </form>
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">CI</div>
+                <h1 className="font-bold text-white">Talent Hub</h1>
+                <span className="ml-auto text-xs text-slate-500"><a className="underline" href="/">Landing</a></span>
+              </div>
+              <div className="flex gap-1 bg-slate-800 rounded-lg p-1 mb-5 mt-3">
+                <button onClick={()=>{setMode('login'); setErr(''); setOk('');}} className={'flex-1 text-sm font-semibold rounded-md py-1.5 transition ' + (mode==='login' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200')}>Masuk</button>
+                <button onClick={()=>{setMode('register'); setErr(''); setOk('');}} className={'flex-1 text-sm font-semibold rounded-md py-1.5 transition ' + (mode==='register' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200')}>Daftar</button>
+              </div>
+              {mode === 'login' ? (
+                <form onSubmit={submitLogin}>
+                  <p className="text-sm text-slate-400 mb-4">Login untuk melihat dashboard sesuai peran.</p>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" className={INP} />
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                  <div className="relative">
+                    <input type={showPw ? 'text' : 'password'} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className={INP + ' pr-16'} />
+                    <button type="button" onClick={()=>setShowPw(!showPw)} className="absolute right-1.5 top-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 bg-slate-800 border border-slate-700 rounded-md px-2 py-1">{showPw ? 'Sembunyi' : 'Lihat'}</button>
+                  </div>
+                  {err && <p className="text-sm text-red-400 bg-red-950/30 border border-red-800 rounded-lg px-3 py-2 mt-2">{err}</p>}
+                  {ok && <p className="text-sm text-emerald-400 bg-emerald-950/30 border border-emerald-800 rounded-lg px-3 py-2 mt-2">{ok}</p>}
+                  <button disabled={loading} className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2.5 mt-3 transition">{loading ? 'Memproses...' : 'Masuk'}</button>
+                </form>
+              ) : (
+                <form onSubmit={submitRegister}>
+                  <p className="text-sm text-slate-400 mb-3">Buat akun baru — langsung bisa dipakai.</p>
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {ROLES.map((rc)=>(
+                      <button key={rc.id} type="button" onClick={()=>setRole(rc.id)} className={'rounded-xl border p-2.5 text-center transition ' + (role===rc.id ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500')}>
+                        <div className="text-base">{rc.icon}</div><div className="text-xs font-bold">{rc.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Nama Lengkap</label>
+                  <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nama Anda" required minLength={3} maxLength={100} className={INP} />
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
+                  <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nama@email.com" required className={INP} />
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                  <div className="relative">
+                    <input type={showPw ? 'text' : 'password'} value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Min 8 huruf+angka+simbol" required className={INP + ' pr-16'} />
+                    <button type="button" onClick={()=>setShowPw(!showPw)} className="absolute right-1.5 top-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 bg-slate-800 border border-slate-700 rounded-md px-2 py-1">{showPw ? 'Sembunyi' : 'Lihat'}</button>
+                  </div>
+                  {password && (
+                    <div className="mb-2">
+                      <div className="h-1.5 rounded bg-slate-800 overflow-hidden"><div className={'h-full ' + (score<=1 ? 'bg-red-500' : score===2 ? 'bg-amber-500' : 'bg-emerald-500')} style={{width: [0,25,50,75,100][score]+'%'}}></div></div>
+                      <p className={'text-xs mt-1 ' + (score>=3 ? 'text-emerald-400' : 'text-amber-400')}>{score===1 ? 'Lemah' : score===2 ? 'Cukup' : score>=3 ? 'Kuat' : ''}</p>
+                    </div>
+                  )}
+                  {err && <p className="text-sm text-red-400 bg-red-950/30 border border-red-800 rounded-lg px-3 py-2 mt-2">{err}</p>}
+                  {ok && <p className="text-sm text-emerald-400 bg-emerald-950/30 border border-emerald-800 rounded-lg px-3 py-2 mt-2">{ok}</p>}
+                  <button disabled={loading} className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-2.5 mt-3 transition">{loading ? 'Memproses...' : 'Daftar & Masuk'}</button>
+                  <p className="text-xs text-slate-500 mt-2 text-center">Sudah ada akun? <button type="button" onClick={()=>setMode('login')} className="text-indigo-400 underline">Masuk</button></p>
+                </form>
+              )}
+            </div>
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 mt-3">
-              <p className="text-xs text-slate-400 mb-2">Akun demo (seed lokal) — klik untuk isi otomatis:</p>
+              <p className="text-xs text-slate-400 mb-2">Akun demo — klik untuk isi otomatis (login tab):</p>
               <div className="flex flex-wrap gap-1.5">
                 {DEMO_ACCOUNTS.map((d) => (
                   <button key={d.email} type="button" onClick={() => fillDemo(d.email)} className="text-xs rounded-lg border border-slate-700 hover:border-indigo-500 text-slate-300 px-2 py-1 transition">{d.role}</button>

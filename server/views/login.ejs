@@ -1,31 +1,84 @@
 <% const body = `
-<form class="login" id="f">
-  <h2 style="margin-top:0">Campus Industry Talent Hub</h2>
-  <p class="muted">Login untuk masuk dashboard sesuai role.</p>
-  <label>Email</label>
-  <input type="email" id="email" required>
-  <label>Password</label>
-  <input type="password" id="password" required>
-  <div class="err" id="err"></div>
-  <button class="btn" type="submit" style="width:100%">Login</button>
-  <p class="muted" style="font-size:12px;margin-top:12px">Akun demo (seed lokal): mhs/perusahaan/kampus/dosen@test.id · password Test123!</p>
-  <p class="muted" style="font-size:12px">Belum punya akun? <a href="/register">Daftar di sini</a></p>
-  <p class="muted" style="font-size:12px"><a href="/">← Landing</a> · <a href="/app">Dashboard App (React)</a> · <a href="/#daftar">Daftar di Landing</a></p>
-</form>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-logo">CI</div>
+      <div>
+        <div style="font-weight:800;color:#0f172a;letter-spacing:-.02em">Campus Industry Talent Hub</div>
+        <div style="font-size:11px;color:#64748b">Masuk untuk melanjutkan</div>
+      </div>
+    </div>
+    <h1 class="auth-title">Selamat datang kembali</h1>
+    <p class="auth-sub">Login untuk masuk ke dashboard sesuai peran Anda.</p>
+    <form class="login" id="f" novalidate>
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="nama@email.com" required autocomplete="email">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <input type="password" id="password" placeholder="Password Anda" required autocomplete="current-password" style="padding-right:72px">
+        <button type="button" class="toggle" id="togglePw" tabindex="-1">Lihat</button>
+      </div>
+      <div class="err" id="err"></div>
+      <button class="btn" type="submit" style="width:100%;margin-top:14px" id="btnSubmit">Masuk</button>
+      <div class="auth-foot">Belum punya akun? <a href="/register">Daftar di sini</a></div>
+      <div style="margin-top:14px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:10px;padding:12px">
+        <div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px">Akun demo — klik untuk isi otomatis</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <button type="button" class="btn ghost" style="font-size:11px;padding:6px 10px" onclick="fillDemo('mhs@test.id')">Mahasiswa</button>
+          <button type="button" class="btn ghost" style="font-size:11px;padding:6px 10px" onclick="fillDemo('perusahaan@test.id')">Perusahaan</button>
+          <button type="button" class="btn ghost" style="font-size:11px;padding:6px 10px" onclick="fillDemo('kampus@test.id')">Kampus</button>
+          <button type="button" class="btn ghost" style="font-size:11px;padding:6px 10px" onclick="fillDemo('dosen@test.id')">Dosen</button>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:6px">Password demo: <code style="background:#e2e8f0;padding:1px 6px;border-radius:4px">Test123!</code></div>
+      </div>
+    </form>
+    <div class="auth-links">
+      <a href="/">← Landing</a>
+      <a href="/app">Dashboard App</a>
+      <a href="/register">Daftar</a>
+    </div>
+  </div>
+</div>
 <script>
-document.getElementById('f').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const r = await fetch('/api/v1/auth/login', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+(function(){
+  const emailEl = document.getElementById('email');
+  const pwEl = document.getElementById('password');
+  const errEl = document.getElementById('err');
+  const btn = document.getElementById('btnSubmit');
+  const toggle = document.getElementById('togglePw');
+  const form = document.getElementById('f');
+  toggle.addEventListener('click', () => {
+    const t = pwEl.type === 'password' ? 'text' : 'password';
+    pwEl.type = t; toggle.textContent = t === 'password' ? 'Lihat' : 'Sembunyi';
   });
-  const j = await r.json();
-  if (!j.success) { document.getElementById('err').textContent = j.message; return; }
-  localStorage.setItem('token', j.data.token);
-  location.href = j.data.dashboard_url + '?token=' + encodeURIComponent(j.data.token);
-});
+  window.fillDemo = function(mail){ emailEl.value = mail; pwEl.value = 'Test123!'; errEl.textContent=''; errEl.classList.remove('show'); emailEl.classList.remove('input-err'); pwEl.classList.remove('input-err'); };
+  function showErr(msg){
+    errEl.textContent = msg; errEl.classList.add('show');
+    form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  }
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.textContent=''; errEl.classList.remove('show');
+    emailEl.classList.remove('input-err'); pwEl.classList.remove('input-err');
+    const email = emailEl.value.trim();
+    const password = pwEl.value;
+    if(!email || !password){ showErr('Email dan password wajib diisi.'); if(!email) emailEl.classList.add('input-err'); if(!password) pwEl.classList.add('input-err'); return; }
+    btn.disabled = true; const oldHtml = btn.innerHTML; btn.innerHTML = '<span class="spinner"></span> Memproses...';
+    try {
+      const r = await fetch('/api/v1/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+      const j = await r.json();
+      if (!j.success) { showErr(j.message || 'Login gagal. Periksa email/password.'); if(j.message && j.message.toLowerCase().includes('email')) emailEl.classList.add('input-err'); else pwEl.classList.add('input-err'); return; }
+      localStorage.setItem('token', j.data.token);
+      btn.innerHTML = 'Berhasil — mengalihkan...';
+      // Arahkan ke SPA /app agar konsisten dengan daftar; EJS dashboard tetap bisa via ?token= bila dibutuhkan
+      location.href = '/app#/?token=' + encodeURIComponent(j.data.token);
+    } catch (ex) {
+      showErr('Tidak dapat menghubungi server. Coba lagi.');
+    } finally {
+      if(btn.innerHTML.includes('Memproses')) { btn.disabled = false; btn.innerHTML = oldHtml; }
+    }
+  });
+})();
 </script>
 `; %>
 <%- include('layout', { title: title, body: body }) %>
