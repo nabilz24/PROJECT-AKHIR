@@ -185,6 +185,55 @@
         </div>
       );
     }
+    // ---- EvaluateModal — fitur khusus evaluasi (dedicated) ----
+    function EvaluateModal(props) {
+      if (!props.open) return null;
+      const { project, student, onClose, onSubmit } = props;
+      const [ratings, setRatings] = useState({ rating_skill: 4, rating_communication: 4, rating_punctuality: 4, rating_overall: 4 });
+      const [comments, setComments] = useState('');
+      const [saving, setSaving] = useState(false);
+      const [msg, setMsg] = useState('');
+      const bump = ratings.rating_skill >=4 ? 10 : ratings.rating_skill===3 ? 5 : 0;
+      function setR(k,v){ setRatings(Object.assign({}, ratings, {[k]: Number(v)})); }
+      async function handle(){
+        setMsg(''); setSaving(true);
+        try { await onSubmit({ project_id: project.id, student_id: student.id, ...ratings, comments: comments || undefined }); }
+        catch(e){ setMsg(e.message); }
+        finally{ setSaving(false); }
+      }
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-auto" onClick={(e)=> e.stopPropagation()}>
+            <div className="sticky top-0 bg-slate-900 border-b border-slate-800 p-5 pb-3">
+              <h3 className="font-bold text-white">Evaluasi — {student.name}</h3>
+              <p className="text-xs text-slate-500">{project.judul} · {student.email || ('ID '+student.id)}</p>
+              {project.status !== 'closed' && <div className="mt-2 bg-amber-950/40 border border-amber-800 rounded-lg px-3 py-2 text-xs text-amber-300">Project status <b>{project.status}</b> — akan ditutup otomatis saat menilai (syarat: closed).</div>}
+            </div>
+            <div className="p-5">
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                {[['rating_skill','Skill'],['rating_communication','Komunikasi'],['rating_punctuality','Ketepatan'],['rating_overall','Overall']].map(([k,label])=> (
+                  <label key={k} className="text-xs text-slate-400">{label} <span className="text-indigo-400 font-bold">{ratings[k]}/5</span>
+                    <select value={ratings[k]} onChange={(e)=> setR(k, e.target.value)} className="mt-1 w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-2 py-2 text-sm">
+                      {[1,2,3,4,5].map(v=> <option key={v} value={v}>{v} — {v===5?'Sangat baik':v===4?'Baik':v===3?'Cukup':v===2?'Kurang':'Sangat kurang'}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </div>
+              <div className={'rounded-lg px-3 py-2 mb-3 text-xs border ' + (bump===10 ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : bump===5 ? 'bg-amber-950/30 border-amber-800 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-400')}>
+                Skill bump preview: {bump===0 ? 'Tidak ada kenaikan (rating <3)' : '+' + bump + ' poin pada skill project (cap 100)'}
+              </div>
+              <label className="block text-xs text-slate-400 mb-1">Komentar (opsional)</label>
+              <textarea value={comments} onChange={(e)=> setComments(e.target.value)} placeholder="Feedback membangun..." rows="3" className={INP}></textarea>
+              {msg && <p className="text-sm text-red-400 bg-red-950/30 border border-red-800 rounded-lg px-3 py-2 mt-2">{msg}</p>}
+              <div className="flex gap-2 justify-end mt-4">
+                <button onClick={onClose} className={BTN2}>Batal</button>
+                <button onClick={handle} disabled={saving} className={BTN}>{saving ? 'Menyimpan...' : (project.status !== 'closed' ? 'Tutup & Nilai' : 'Kirim Nilai')}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
     function PageHead(props) {
       return (
         <div className="flex flex-wrap items-end gap-3 mb-5">
@@ -924,6 +973,8 @@
       const [q, setQ] = useState('');
       const [expanded, setExpanded] = useState(null);
       const [closing, setClosing] = useState(false);
+      const [evalOpen, setEvalOpen] = useState(false);
+      const [evalTarget, setEvalTarget] = useState({ project: null, student: null });
       useEffect(() => {
         apiFetch('/companies/projects', props.token)
           .then((j) => {
@@ -974,6 +1025,23 @@
           loadAll(pid);
         } catch(e){ if(e.code===401) props.onExpire(); else setMsg(e.message); }
         finally{ setClosing(false); }
+      }
+      function openEval(project, student){
+        setEvalTarget({ project, student });
+        setEvalOpen(true);
+      }
+      async function submitEval(payload){
+        // Auto-close bila project masih active/draft
+        const proj = evalTarget.project;
+        if (proj && proj.status !== 'closed') {
+          try { await apiSend('/companies/projects/' + proj.id, props.token, 'PUT', { status: 'closed' }); } catch(e){ /* lanjut tetap coba nilai, backend akan kasih 400 bila belum closed */ }
+        }
+        await apiSend('/assessments', props.token, 'POST', payload);
+        props.notify('Penilaian tersimpan — skill mahasiswa terupdate.');
+        setEvalOpen(false);
+        loadAll(pid);
+        // refresh projects list untuk status closed
+        try { const j = await apiFetch('/companies/projects', props.token); setProjects(j.data.projects || []); } catch(e){}
       }
       const curProj = projects.find(p=> String(p.id)===String(pid));
       const needle = q.trim().toLowerCase();
@@ -1047,67 +1115,123 @@
             )}
             {isClosed && accepted.length>0 && <p className="text-xs text-emerald-400 mb-2">Project sudah closed — silakan nilai kandidat accepted.</p>}
             {accepted.length===0 && <EmptyState title="Belum ada yang diterima" hint="Terima kandidat di Ranking atas, lalu nilai di sini setelah project closed." />}
-            {accepted.map((a)=> (
+            {accepted.map((a)=> {
+              const projForEval = projects.find(p=> p.id===a.project_id) || curProj;
+              return (
               <div key={a.id} className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 mb-2 flex items-center gap-3">
                 <span className="flex-1 text-sm text-slate-200">{a.student_name} <span className="text-xs text-slate-500">· {a.student_email}</span></span>
-                <button onClick={() => props.onAssess({ project_id: a.project_id, student_id: a.student_id })} className={isClosed ? BTN : BTN2} disabled={!isClosed && false} title={isClosed ? 'Nilai' : 'Tutup project dulu'}>Nilai</button>
+                <button onClick={() => openEval(projForEval, { id: a.student_id, name: a.student_name, email: a.student_email })} className={BTN}>Nilai</button>
               </div>
-            ))}
+              );
+            })}
           </Section>
+          {evalOpen && <EvaluateModal open={evalOpen} project={evalTarget.project} student={evalTarget.student} onClose={()=> setEvalOpen(false)} onSubmit={submitEval} />}
         </div>
       );
     }
 
-    // ---- Halaman: Assess (perusahaan + dosen) — dengan preview skill bump ----
+    // ---- Halaman: Assess — dedicated hub (perusahaan: semua accepted, dosen: awaiting) ----
     function AssessView(props) {
       const t = props.target || {};
-      const [pid, setPid] = useState(t.project_id || '');
-      const [sid, setSid] = useState(t.student_id || '');
-      const [ratings, setRatings] = useState({ rating_skill: 4, rating_communication: 4, rating_punctuality: 4, rating_overall: 4 });
-      const [comments, setComments] = useState('');
+      const [list, setList] = useState([]);
+      const [loading, setLoading] = useState(true);
       const [msg, setMsg] = useState('');
-      const [isErr, setIsErr] = useState(false);
-      const [saving, setSaving] = useState(false);
-      useEffect(() => { setPid(t.project_id || ''); setSid(t.student_id || ''); }, [t.project_id, t.student_id]);
-      function setR(k, v) { setRatings(Object.assign({}, ratings, { [k]: Number(v) })); }
-      const bump = ratings.rating_skill >=4 ? 10 : ratings.rating_skill===3 ? 5 : 0;
-      async function submit() {
-        setMsg(''); setIsErr(false); setSaving(true);
+      const [evalOpen, setEvalOpen] = useState(false);
+      const [evalTarget, setEvalTarget] = useState({ project: null, student: null });
+      useEffect(()=> {
+        if (t.project_id && t.student_id) {
+          const proj = { id: t.project_id, judul: 'Project #' + t.project_id, status: 'closed' };
+          const stud = { id: t.student_id, name: 'Mahasiswa #' + t.student_id };
+          setEvalTarget({ project: proj, student: stud });
+          setEvalOpen(true);
+        }
+      }, [t.project_id, t.student_id]);
+      async function load(){
+        setLoading(true);
         try {
-          const j = await apiSend('/assessments', props.token, 'POST', Object.assign({ project_id: Number(pid), student_id: Number(sid), comments: comments || undefined }, ratings));
-          const bumped = (j.data && j.data.skills_bumped) || [];
-          props.notify('Penilaian tersimpan' + (bumped.length ? ' — skill naik +' + bumped[0].to + ' (bump +' + bump + ')' : ' (skill tidak di-bump)') + '.');
-          if(bumped.length) setMsg('Skill mahasiswa ter-update: ' + bumped.map(b=> 'skill #'+b.skill_id+' ' + b.from + ' → ' + b.to).join(', '));
-        } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
-        finally { setSaving(false); }
+          const me = await apiFetch('/auth/me', props.token).catch(()=> null);
+          const role = me && me.data && me.data.user ? me.data.user.role : 'perusahaan';
+          if (role === 'dosen') {
+            const j = await apiFetch('/mentor/awaiting', props.token);
+            const arr = j.data.awaiting || [];
+            setList(arr.map(x=> ({ project_id: x.project_id, project_judul: x.project_judul, student_id: x.student_id, student_name: x.student_name, assessed: !!x.assessed })));
+          } else {
+            const pj = await apiFetch('/companies/projects', props.token);
+            const projs = pj.data.projects || [];
+            let all = [];
+            for (const p of projs) {
+              const aj = await apiFetch('/companies/projects/' + p.id + '/applications', props.token).catch(()=> ({data:{applications:[]}}));
+              const acc = (aj.data.applications || []).filter(a=> a.status==='accepted');
+              for (const a of acc) all.push({ project_id: p.id, project_judul: p.judul, project_status: p.status, student_id: a.student_id, student_name: a.student_name, student_email: a.student_email, application_id: a.id });
+            }
+            setList(all);
+          }
+        } catch(e){ if(e.code===401) props.onExpire(); else setMsg(e.message); }
+        finally{ setLoading(false); }
+      }
+      useEffect(()=> { load(); }, []);
+      function openEval(item){
+        const proj = { id: item.project_id, judul: item.project_judul, status: item.project_status || 'closed' };
+        const stud = { id: item.student_id, name: item.student_name, email: item.student_email };
+        setEvalTarget({ project: proj, student: stud });
+        setEvalOpen(true);
+      }
+      async function submitEval(payload){
+        const proj = evalTarget.project;
+        if (proj && proj.status !== 'closed' && proj.status !== undefined) {
+          try { await apiSend('/companies/projects/' + proj.id, props.token, 'PUT', { status: 'closed' }); } catch(e){}
+        }
+        await apiSend('/assessments', props.token, 'POST', payload);
+        props.notify('Penilaian tersimpan — skill terupdate.');
+        setEvalOpen(false);
+        load();
       }
       return (
         <div>
-          <PageHead title="Assess" desc="Nilai mahasiswa — syarat: aplikasi accepted + project closed. Rating skill menentukan bump (+10 bila ≥4, +5 bila 3)." />
-          <Msg text={msg} err={isErr} />
-          {t.project_id && t.student_id && <div className="bg-indigo-950/30 border border-indigo-800 rounded-xl px-3 py-2 mb-3 text-sm text-indigo-200">Menilai: project #{t.project_id} · mahasiswa #{t.student_id}</div>}
-          <Section title="Form Penilaian">
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div><label className="block text-xs text-slate-400 mb-1">Project ID</label><input value={pid} onChange={(e) => setPid(e.target.value)} placeholder="project_id" className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 text-sm" /></div>
-              <div><label className="block text-xs text-slate-400 mb-1">Mahasiswa ID</label><input value={sid} onChange={(e) => setSid(e.target.value)} placeholder="student_id" className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 text-sm" /></div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-              {[['rating_skill', 'Skill'], ['rating_communication', 'Komunikasi'], ['rating_punctuality', 'Ketepatan'], ['rating_overall', 'Overall']].map((f) => (
-                <label key={f[0]} className="text-xs text-slate-400">{f[1]} <span className="text-indigo-400">{ratings[f[0]]}/5</span>
-                  <select value={ratings[f[0]]} onChange={(e) => setR(f[0], e.target.value)} className="mt-1 w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-2 py-2 text-sm">
-                    {[1, 2, 3, 4, 5].map((v) => <option key={v} value={v}>{v} — {v===5?'Sangat baik':v===4?'Baik':v===3?'Cukup':v===2?'Kurang':'Sangat kurang'}</option>)}
-                  </select>
-                </label>
-              ))}
-            </div>
-            <div className={'rounded-lg px-3 py-2 mb-3 text-sm border ' + (bump===10 ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : bump===5 ? 'bg-amber-950/30 border-amber-800 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-400')}>
-              Preview skill bump: {bump===0 ? 'Tidak ada kenaikan (rating <3)' : '+' + bump + ' poin pada skill project yang sudah dimiliki (cap 100)'}
-            </div>
-            <label className="block text-xs text-slate-400 mb-1">Komentar (opsional)</label>
-            <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Berikan feedback membangun..." rows="3" className={INP}></textarea>
-            <button onClick={submit} disabled={saving} className={BTN + ' mt-2'}>{saving ? 'Menyimpan...' : 'Kirim Penilaian'}</button>
-            <p className="text-xs text-slate-500 mt-2">Tips: Tutup project terlebih dahulu di <b>My Projects → Edit → status closed</b>, lalu kembali ke Applications untuk menilai.</p>
+          <PageHead title="Evaluasi" desc="Fitur khusus evaluasi — nilai mahasiswa accepted. Otomatis tutup project bila belum closed, lalu bump skill." />
+          {msg && <p className="text-sm text-red-400 bg-red-950/30 border border-red-800 rounded-lg px-3 py-2 mb-3">{msg}</p>}
+          <Section title={'Antrian Evaluasi (' + list.length + ')'}>
+            {loading && <SkeletonList n={4} />}
+            {!loading && list.length===0 && <EmptyState title="Tidak ada yang perlu dinilai" hint="Terima pelamar di Applications, lalu nilai di sini." action={<button onClick={load} className={BTN2}>Muat ulang</button>} />}
+            {!loading && list.map((it, idx)=> (
+              <div key={idx} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
+                <span className="flex-1 text-sm text-slate-200">{it.student_name || ('Mahasiswa #'+it.student_id)} <span className="text-slate-500">· {it.project_judul || ('Project #'+it.project_id)}</span> {it.assessed ? <span className="text-xs bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded">sudah dinilai</span> : null}</span>
+                <button onClick={()=> openEval(it)} className={BTN}>Nilai</button>
+              </div>
+            ))}
           </Section>
+          <Section title="Nilai Manual (by ID)">
+            <p className="text-xs text-slate-500 mb-2">Jika tidak ada di antrian, isi ID manual di bawah — akan dibuka via modal yang sama.</p>
+            <ManualAssessInline token={props.token} onExpire={props.onExpire} notify={props.notify} onDone={load} />
+          </Section>
+          {evalOpen && <EvaluateModal open={evalOpen} project={evalTarget.project} student={evalTarget.student} onClose={()=> setEvalOpen(false)} onSubmit={submitEval} />}
+        </div>
+      );
+    }
+    function ManualAssessInline(props){
+      const [pid, setPid] = useState('');
+      const [sid, setSid] = useState('');
+      const [open, setOpen] = useState(false);
+      const [target, setTarget] = useState(null);
+      function go(){
+        if(!pid || !sid) return;
+        setTarget({ project: { id: Number(pid), judul: 'Project #'+pid, status: 'closed' }, student: { id: Number(sid), name: 'Mahasiswa #'+sid } });
+        setOpen(true);
+      }
+      async function submit(payload){
+        await apiSend('/assessments', props.token, 'POST', payload);
+        props.notify('Penilaian manual tersimpan.');
+        setOpen(false);
+        if(props.onDone) props.onDone();
+      }
+      return (
+        <div>
+          <div className="flex gap-2 mb-2">
+            <input value={pid} onChange={(e)=> setPid(e.target.value)} placeholder="project_id" className="w-28 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+            <input value={sid} onChange={(e)=> setSid(e.target.value)} placeholder="student_id" className="w-28 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+            <button onClick={go} className={BTN2}>Buka Form</button>
+          </div>
+          {open && <EvaluateModal open={open} project={target.project} student={target.student} onClose={()=> setOpen(false)} onSubmit={submit} />}
         </div>
       );
     }
