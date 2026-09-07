@@ -53,6 +53,18 @@
       return j;
     }
 
+
+    async function saveAssessment(payload, token) {
+      const pid = payload.project_id; const sid = payload.student_id;
+      try {
+        const probe = await apiFetch('/evaluations/' + pid + '/' + sid, token);
+        if (probe && probe.success && probe.data && probe.data.assessment) {
+          return apiSend('/evaluations/' + pid + '/' + sid, token, 'PUT', payload);
+        }
+      } catch (e) { if (e.code === 401) throw e; }
+      return apiSend('/assessments', token, 'POST', payload);
+    }
+
     function matchColor(s) {
       if (s == null) return 'bg-slate-700 text-slate-200';
       if (s >= 70) return 'bg-green-600 text-white';
@@ -1031,12 +1043,11 @@
         setEvalOpen(true);
       }
       async function submitEval(payload){
-        // Auto-close bila project masih active/draft
         const proj = evalTarget.project;
         if (proj && proj.status !== 'closed') {
-          try { await apiSend('/companies/projects/' + proj.id, props.token, 'PUT', { status: 'closed' }); } catch(e){ /* lanjut tetap coba nilai, backend akan kasih 400 bila belum closed */ }
+          try { await apiSend('/companies/projects/' + proj.id, props.token, 'PUT', { status: 'closed' }); } catch(e){}
         }
-        await apiSend('/assessments', props.token, 'POST', payload);
+        await saveAssessment(payload, props.token);
         props.notify('Penilaian tersimpan — skill mahasiswa terupdate.');
         setEvalOpen(false);
         loadAll(pid);
@@ -1181,7 +1192,7 @@
         if (proj && proj.status !== 'closed' && proj.status !== undefined) {
           try { await apiSend('/companies/projects/' + proj.id, props.token, 'PUT', { status: 'closed' }); } catch(e){}
         }
-        await apiSend('/assessments', props.token, 'POST', payload);
+        await saveAssessment(payload, props.token);
         props.notify('Penilaian tersimpan — skill terupdate.');
         setEvalOpen(false);
         load();
@@ -1219,7 +1230,8 @@
         setOpen(true);
       }
       async function submit(payload){
-        await apiSend('/assessments', props.token, 'POST', payload);
+        try { await apiSend('/companies/projects/' + payload.project_id, props.token, 'PUT', { status: 'closed' }); } catch(e){}
+        await saveAssessment(payload, props.token);
         props.notify('Penilaian manual tersimpan.');
         setOpen(false);
         if(props.onDone) props.onDone();
