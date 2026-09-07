@@ -118,6 +118,11 @@ function apply(req, res, next) {
     const result = db
       .prepare('INSERT INTO applications (student_id, project_id, status, cover_letter, portfolio_url) VALUES (?, ?, ?, ?, ?)')
       .run(req.user.id, full.id, 'pending', cover_letter, portfolio_url);
+    // Hitung match_score langsung agar kandidat menunggu langsung bernilai
+    try {
+      const sc = calculateMatchScore(buildInputs(db, req.user.id, full.id)).score;
+      db.prepare('UPDATE applications SET match_score = ? WHERE id = ?').run(sc, result.lastInsertRowid);
+    } catch (e) { /* abaikan */ }
     const application = db.prepare('SELECT * FROM applications WHERE id = ?').get(result.lastInsertRowid);
     logAudit({ userId: req.user.id, action: 'apply_project', entityType: 'application', entityId: application.id, req });
     // TASK-051: notifikasi in-app + email (simulasi) ke perusahaan.

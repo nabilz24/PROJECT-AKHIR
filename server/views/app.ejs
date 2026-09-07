@@ -67,6 +67,43 @@
       return 'bg-slate-700 text-slate-200';
     }
 
+    // ---- i18n: ID / EN (persist di localStorage) ----
+    const I18N = {
+      id: {
+        nav_dash: 'Dashboard', nav_projects: 'Projects', nav_skills: 'My Skills', nav_gap: 'Gap Analysis', nav_recs: 'Recommendations',
+        nav_myprojects: 'My Projects', nav_apps: 'Applications', nav_assess: 'Assess', nav_analytics: 'Analytics', nav_notifs: 'Notifikasi', nav_profile: 'Profil',
+        search_placeholder: 'Cari...', search_projects: 'Cari project...', search_candidates: 'Cari kandidat...', search_skills: 'Cari skill...',
+        lang_id: 'ID', lang_en: 'EN',
+        ranking_title: 'Talent Matching — Ranking', ranking_desc: 'Kandidat terurut match score (50/20/10/10/10). Klik bar untuk lihat breakdown.',
+      },
+      en: {
+        nav_dash: 'Dashboard', nav_projects: 'Projects', nav_skills: 'My Skills', nav_gap: 'Gap Analysis', nav_recs: 'Recommendations',
+        nav_myprojects: 'My Projects', nav_apps: 'Applications', nav_assess: 'Assess', nav_analytics: 'Analytics', nav_notifs: 'Notifications', nav_profile: 'Profile',
+        search_placeholder: 'Search...', search_projects: 'Search projects...', search_candidates: 'Search candidates...', search_skills: 'Search skills...',
+        lang_id: 'ID', lang_en: 'EN',
+        ranking_title: 'Talent Matching — Ranking', ranking_desc: 'Candidates sorted by match score (50/20/10/10/10). Click bar to see breakdown.',
+      },
+    };
+    function tr(lang, key) { return (I18N[lang] && I18N[lang][key]) || (I18N.id[key] || key); }
+
+    // ---- SearchInput: debounced ----
+    function SearchInput(props) {
+      const [val, setVal] = useState(props.value || '');
+      useEffect(()=> setVal(props.value || ''), [props.value]);
+      useEffect(()=>{
+        const t = setTimeout(()=> { if (props.onSearch) props.onSearch(val); }, 300);
+        return ()=> clearTimeout(t);
+      }, [val]);
+      return (
+        <div className="relative flex-1 min-w-40">
+          <span className="absolute left-2.5 top-2.5 text-slate-500">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+          <input value={val} onChange={(e)=> setVal(e.target.value)} placeholder={props.placeholder || tr(props.lang || 'id','search_placeholder')} className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 pl-8 pr-3 py-1.5 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+      );
+    }
+
     // ---- UI system ----
     function StatCard(props) {
       return (
@@ -479,13 +516,15 @@
       );
     }
 
-    // ---- Halaman: Projects (mahasiswa) ----
+    // ---- Halaman: Projects (mahasiswa) — dengan Search ----
     function ProjectsView(props) {
+      const lang = props.lang || 'id';
       const [list, setList] = useState([]);
       const [loading, setLoading] = useState(true);
       const [sektor, setSektor] = useState('');
       const [diff, setDiff] = useState('');
       const [sort, setSort] = useState('terbaru');
+      const [search, setSearch] = useState('');
       const [detail, setDetail] = useState(null);
       const [cover, setCover] = useState('');
       const [msg, setMsg] = useState('');
@@ -496,10 +535,17 @@
           const q = [];
           if (sektor) q.push('filter[sektor_industri]=' + encodeURIComponent(sektor));
           if (diff) q.push('filter[difficulty]=' + diff);
+          if (search.trim()) q.push('filter[skill]=' + encodeURIComponent(search.trim()));
           q.push('filter[status]=active');
           q.push('sort=' + sort);
           const j = await apiFetch('/projects?' + q.join('&'), props.token);
-          setList(j.data.projects || []);
+          let arr = j.data.projects || [];
+          // Client-side tambahan: filter judul yang mengandung search (karena skill filter hanya untuk skill)
+          if (search.trim()) {
+            const needle = search.trim().toLowerCase();
+            arr = arr.filter(p=> p.judul.toLowerCase().includes(needle) || (p.sektor_industri||'').toLowerCase().includes(needle) || (p.skills||[]).some(s=> (s.name||'').toLowerCase().includes(needle)));
+          }
+          setList(arr);
           setDetail(null);
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
         finally { setLoading(false); }
@@ -521,16 +567,17 @@
       }
       return (
         <div>
-          <PageHead title="Projects" desc="Jelajahi project aktif industri dan daftar sesuai skill." />
-          <div className="flex flex-wrap gap-2 mb-3">
-            <input value={sektor} onChange={(e) => setSektor(e.target.value)} placeholder="Sektor…" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm" />
+          <PageHead title={tr(lang,'nav_projects')} desc={lang==='en' ? 'Browse active industry projects and apply by skill.' : 'Jelajahi project aktif industri dan daftar sesuai skill.'} />
+          <div className="flex flex-wrap gap-2 mb-3 items-center">
+            <SearchInput value={search} onSearch={setSearch} placeholder={tr(lang,'search_projects')} lang={lang} />
+            <input value={sektor} onChange={(e) => setSektor(e.target.value)} placeholder={lang==='en' ? 'Sector…' : 'Sektor…'} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm w-32" />
             <select value={diff} onChange={(e) => setDiff(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
-              <option value="">Semua difficulty</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+              <option value="">{lang==='en' ? 'All difficulty' : 'Semua difficulty'}</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
             </select>
             <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
-              <option value="terbaru">Terbaru</option><option value="deadline">Deadline</option><option value="match_score">Match score</option>
+              <option value="terbaru">{lang==='en' ? 'Newest' : 'Terbaru'}</option><option value="deadline">Deadline</option><option value="match_score">Match score</option>
             </select>
-            <button onClick={browse} className={BTN}>Cari</button>
+            <button onClick={browse} className={BTN}>{lang==='en' ? 'Search' : 'Cari'}</button>
           </div>
           <Msg text={msg} err={isErr} />
           {loading && <SkeletonList />}
@@ -559,8 +606,9 @@
       );
     }
 
-    // ---- Halaman: My Skills (mahasiswa) ----
+    // ---- Halaman: My Skills (mahasiswa) — dengan Search ----
     function SkillsView(props) {
+      const lang = props.lang || 'id';
       const [mine, setMine] = useState([]);
       const [loading, setLoading] = useState(true);
       const [tax, setTax] = useState([]);
@@ -572,6 +620,7 @@
       const [pendingDel, setPendingDel] = useState(null);
       const [msg, setMsg] = useState('');
       const [isErr, setIsErr] = useState(false);
+      const [q, setQ] = useState('');
       async function load() {
         setLoading(true);
         try {
@@ -606,10 +655,13 @@
           props.notify('Skill dihapus.'); load();
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
       }
+      const needle = q.trim().toLowerCase();
+      const filteredMine = mine.filter(s=> !needle || s.name.toLowerCase().includes(needle) || s.source.toLowerCase().includes(needle));
       return (
         <div>
-          <PageHead title="My Skills" desc="Kelola skill dan level penguasaan." />
+          <PageHead title={tr(lang,'nav_skills')} desc={lang==='en' ? 'Manage your skills and proficiency.' : 'Kelola skill dan level penguasaan.'} />
           <Msg text={msg} err={isErr} />
+          <div className="mb-3"><SearchInput value={q} onSearch={setQ} placeholder={tr(lang,'search_skills')} lang={lang} /></div>
           <Section title="Tambah Skill">
             <div className="flex flex-wrap gap-2">
               <select value={sid} onChange={(e) => setSid(e.target.value)} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
@@ -622,10 +674,10 @@
               <button onClick={add} className={BTN}>Tambah</button>
             </div>
           </Section>
-          <Section title={'Skill Saya (' + mine.length + ')'}>
+          <Section title={'Skill Saya (' + filteredMine.length + '/' + mine.length + ')'}>
             {loading && <SkeletonList n={3} />}
-            {!loading && mine.length === 0 && <EmptyState title="Belum ada skill" hint="Tambahkan skill pertama dari taxonomy di atas." />}
-            {!loading && mine.map((s) => (
+            {!loading && filteredMine.length === 0 && <EmptyState title={needle ? 'Tidak ada skill cocok' : 'Belum ada skill'} hint={needle ? 'Coba kata kunci lain.' : 'Tambahkan skill pertama dari taxonomy di atas.'} />}
+            {!loading && filteredMine.map((s) => (
               <div key={s.skill_id} className="py-2 border-b border-slate-800 last:border-0">
                 <div className="flex items-center gap-2">
                   <span className="flex-1 text-sm text-slate-200">{s.name} <span className="text-slate-500">[{s.proficiency_category} · {s.source}]</span></span>
@@ -860,65 +912,153 @@
       );
     }
 
-    // ---- Halaman: Applications (perusahaan) ----
+    // ---- Halaman: Applications — Talent Matching + Ranking + Evaluasi (perusahaan) ----
     function ApplicationsView(props) {
+      const lang = props.lang || 'id';
       const [projects, setProjects] = useState([]);
       const [pid, setPid] = useState('');
-      const [apps, setApps] = useState([]);
+      const [ranked, setRanked] = useState([]);
+      const [accepted, setAccepted] = useState([]);
       const [loading, setLoading] = useState(true);
       const [msg, setMsg] = useState('');
+      const [q, setQ] = useState('');
+      const [expanded, setExpanded] = useState(null);
+      const [closing, setClosing] = useState(false);
       useEffect(() => {
         apiFetch('/companies/projects', props.token)
           .then((j) => {
             const arr = j.data.projects || [];
             setProjects(arr);
-            if (arr.length > 0) { setPid(String(arr[0].id)); loadApps(arr[0].id); }
+            if (arr.length > 0) { setPid(String(arr[0].id)); loadAll(arr[0].id); }
             else setLoading(false);
           })
           .catch((e) => { if (e.code === 401) props.onExpire(); else setLoading(false); });
       }, []);
-      async function loadApps(id) {
-        setLoading(true);
+      async function loadAll(id) {
+        setLoading(true); setMsg('');
         try {
-          const j = await apiFetch('/companies/projects/' + id + '/applications', props.token);
-          setApps(j.data.applications || []);
+          const [r, a] = await Promise.all([
+            apiFetch('/companies/candidates?project_id=' + id, props.token).catch(()=> ({ data:{candidates:[]} })),
+            apiFetch('/companies/projects/' + id + '/applications', props.token).catch(()=> ({ data:{applications:[]} })),
+          ]);
+          const cand = r.data.candidates || r.data.candidates === undefined ? (r.data.candidates || []) : [];
+          // Fallback: bila endpoint candidates kosong tapi aplikasi pending ada (mis. belum ter-rank), hitung dari applications
+          let pendingRanked = cand;
+          if (pendingRanked.length === 0) {
+            const pend = (a.data.applications || []).filter(x=> x.status==='pending');
+            // Jika pending punya match_score (sudah dihitung backend dashboard), pakai itu untuk urut
+            pendingRanked = pend.map(p=> ({ application_id: p.id, student: { id: p.student_id, name: p.student_name, email: p.student_email }, match_score: p.match_score, components: null, breakdown: null, skills: (p.skills||[]).map(s=>s.name), applied_at: p.applied_at, cover_letter: p.cover_letter, status: p.status, project_id: p.project_id }));
+            pendingRanked.sort((x,y)=> (y.match_score??-1)-(x.match_score??-1));
+          }
+          setRanked(pendingRanked);
+          const acc = (a.data.applications || []).filter(x=> x.status==='accepted');
+          setAccepted(acc);
         } catch (e) { if (e.code === 401) props.onExpire(); }
         finally { setLoading(false); }
       }
       async function decide(id, status) {
         try {
           await apiSend('/companies/applications/' + id, props.token, 'PATCH', { status });
-          props.notify('Aplikasi ' + status + '.'); loadApps(pid);
+          props.notify('Aplikasi ' + status + '.'); loadAll(pid);
         } catch (e) { if (e.code === 401) props.onExpire(); else setMsg(e.message); }
       }
+      async function closeProject() {
+        const proj = projects.find(p=> String(p.id)===String(pid));
+        if(!proj) return;
+        setClosing(true);
+        try {
+          await apiSend('/companies/projects/' + proj.id, props.token, 'PUT', { status: 'closed' });
+          props.notify('Project ditutup — kini bisa menilai.');
+          const j = await apiFetch('/companies/projects', props.token);
+          setProjects(j.data.projects || []);
+          loadAll(pid);
+        } catch(e){ if(e.code===401) props.onExpire(); else setMsg(e.message); }
+        finally{ setClosing(false); }
+      }
+      const curProj = projects.find(p=> String(p.id)===String(pid));
+      const needle = q.trim().toLowerCase();
+      const filteredRanked = ranked.filter(c=>{
+        if(!needle) return true;
+        return (c.student.name||'').toLowerCase().includes(needle) || (c.student.email||'').toLowerCase().includes(needle) || (c.skills||[]).join(' ').toLowerCase().includes(needle);
+      });
+      const isClosed = curProj && curProj.status === 'closed';
       return (
         <div>
-          <PageHead title="Applications" desc="Kelola pelamar per project." />
-          {msg && <p className="text-sm text-red-400 mb-3">{msg}</p>}
-          <div className="flex gap-2 mb-3">
-            <select value={pid} onChange={(e) => { setPid(e.target.value); loadApps(e.target.value); }} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm">
+          <PageHead title={tr(lang,'nav_apps')} desc={tr(lang,'ranking_desc')} />
+          {msg && <p className="text-sm text-red-400 bg-red-950/30 border border-red-800 rounded-lg px-3 py-2 mb-3">{msg}</p>}
+          <div className="flex flex-wrap gap-2 mb-3 items-center">
+            <select value={pid} onChange={(e) => { setPid(e.target.value); loadAll(e.target.value); }} className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 text-sm min-w-48">
               {projects.map((p) => <option key={p.id} value={p.id}>{p.judul} [{p.status}]</option>)}
             </select>
+            <SearchInput value={q} onSearch={setQ} placeholder={tr(lang,'search_candidates')} lang={lang} />
+            {curProj && <span className="text-xs text-slate-500">{curProj.judul} · {filteredRanked.length} kandidat</span>}
           </div>
-          {loading && <SkeletonList />}
-          {!loading && apps.length === 0 && <EmptyState title="Belum ada aplikasi" hint="Bagikan project agar mahasiswa mendaftar." />}
-          {!loading && apps.map((a) => (
-            <div key={a.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-2">
-              <p className="text-sm text-slate-200 font-semibold">{a.student_name} <span className="text-xs text-indigo-400">[{a.status}]</span></p>
-              <p className="text-xs text-slate-500 mb-2">{a.student_email || ''} {a.match_score != null && <span>· match {a.match_score}</span>}</p>
-              {a.cover_letter && <p className="text-xs text-slate-400 mb-2">“{a.cover_letter}”</p>}
-              <div className="flex gap-2">
-                {a.status === 'pending' && <button onClick={() => decide(a.id, 'accepted')} className={BTN}>Terima</button>}
-                {a.status === 'pending' && <button onClick={() => decide(a.id, 'rejected')} className={DANGER}>Tolak</button>}
-                {a.status === 'accepted' && <button onClick={() => props.onAssess({ project_id: a.project_id, student_id: a.student_id })} className={BTN2}>Nilai</button>}
+
+          <Section title={'Talent Matching — Ranking (' + filteredRanked.length + ')'} >
+            {loading && <SkeletonList n={3} />}
+            {!loading && filteredRanked.length === 0 && <EmptyState title="Belum ada kandidat pending" hint="Bagikan project agar mahasiswa mendaftar. Kandidat akan terurut otomatis 50/20/10/10/10." />}
+            {!loading && filteredRanked.map((c, idx)=> {
+              const isFirst = idx===0, isSecond = idx===1, isThird = idx===2;
+              const rankBadge = isFirst ? '🥇' : isSecond ? '🥈' : isThird ? '🥉' : '#' + (idx+1);
+              return (
+                <div key={c.application_id} className={'rounded-2xl p-4 mb-3 border ' + (isFirst ? 'bg-gradient-to-br from-indigo-950/40 to-slate-900 border-indigo-700/40' : 'bg-slate-900 border-slate-800')}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-sm font-bold text-slate-400 w-8 text-center pt-1">{rankBadge}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-slate-100 font-semibold truncate">{c.student.name} <span className="text-xs text-slate-500 font-normal">· {c.student.email}</span></p>
+                      <p className="text-xs text-slate-500 truncate">{(c.skills||[]).join(', ') || '—'}</p>
+                      {c.cover_letter && <p className="text-xs text-slate-400 mt-1 line-clamp-2">“{c.cover_letter}”</p>}
+                      {expanded===c.application_id && c.breakdown && (
+                        <div className="mt-3">
+                          <div className="grid grid-cols-3 gap-1.5 mb-2">
+                            {c.components && Object.entries(c.components).map(([k,v])=> (
+                              <div key={k} className="bg-slate-800 rounded-lg px-2 py-1.5 text-center"><div className="text-xs text-slate-500">{k}</div><div className="text-sm font-bold text-white">{v}</div></div>
+                            ))}
+                          </div>
+                          <table className="w-full text-xs">
+                            <thead><tr className="text-slate-500"><th className="text-left py-1">Skill</th><th>Butuh</th><th>Saya</th><th>Gap</th><th>Status</th></tr></thead>
+                            <tbody>{c.breakdown.map(b=> (<tr key={b.skill_id} className="border-t border-slate-800"><td className="py-1 text-slate-200">{b.name}</td><td className="text-center">{b.required}</td><td className="text-center">{b.current}</td><td className="text-center font-bold">{b.gap}</td><td><span className={'text-xs px-1.5 py-0.5 rounded ' + (b.status==='kuat'?'bg-emerald-600 text-white': b.status==='close'?'bg-amber-500 text-slate-900':'bg-red-600 text-white')}>{b.status}</span></td></tr>))}</tbody>
+                          </table>
+                        </div>
+                      )}
+                      {expanded===c.application_id && !c.breakdown && <p className="text-xs text-slate-500 mt-2">Breakdown tidak tersedia — buka Candidates API untuk detail lengkap.</p>}
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={'text-sm font-extrabold px-2.5 py-1 rounded-lg ' + matchColor(c.match_score)}>{c.match_score ?? '—'}</span>
+                      {c.breakdown && <button onClick={()=> setExpanded(expanded===c.application_id ? null : c.application_id)} className="text-xs text-indigo-400 hover:text-indigo-300">{expanded===c.application_id ? 'Tutup' : 'Breakdown'}</button>}
+                      <span className="text-xs text-slate-500">{c.applied_at ? new Date(c.applied_at).toLocaleDateString('id-ID') : ''}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={() => decide(c.application_id, 'accepted')} className={BTN}>Terima</button>
+                    <button onClick={() => decide(c.application_id, 'rejected')} className={DANGER}>Tolak</button>
+                  </div>
+                </div>
+              );
+            })}
+          </Section>
+
+          <Section title={'Siap Dinilai (' + accepted.length + ') — Evaluasi'}>
+            {!isClosed && accepted.length>0 && (
+              <div className="bg-amber-950/30 border border-amber-800 rounded-xl px-3 py-2 mb-3 flex items-center gap-2">
+                <span className="text-amber-400 text-sm">Project masih {curProj?.status}. Tutup project terlebih dahulu agar bisa menilai (syarat: status closed).</span>
+                <button onClick={closeProject} disabled={closing} className={BTN2 + ' ml-auto'}>{closing ? 'Menutup...' : 'Tutup Project'}</button>
               </div>
-            </div>
-          ))}
+            )}
+            {isClosed && accepted.length>0 && <p className="text-xs text-emerald-400 mb-2">Project sudah closed — silakan nilai kandidat accepted.</p>}
+            {accepted.length===0 && <EmptyState title="Belum ada yang diterima" hint="Terima kandidat di Ranking atas, lalu nilai di sini setelah project closed." />}
+            {accepted.map((a)=> (
+              <div key={a.id} className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 mb-2 flex items-center gap-3">
+                <span className="flex-1 text-sm text-slate-200">{a.student_name} <span className="text-xs text-slate-500">· {a.student_email}</span></span>
+                <button onClick={() => props.onAssess({ project_id: a.project_id, student_id: a.student_id })} className={isClosed ? BTN : BTN2} disabled={!isClosed && false} title={isClosed ? 'Nilai' : 'Tutup project dulu'}>Nilai</button>
+              </div>
+            ))}
+          </Section>
         </div>
       );
     }
 
-    // ---- Halaman: Assess (perusahaan + dosen) ----
+    // ---- Halaman: Assess (perusahaan + dosen) — dengan preview skill bump ----
     function AssessView(props) {
       const t = props.target || {};
       const [pid, setPid] = useState(t.project_id || '');
@@ -927,35 +1067,46 @@
       const [comments, setComments] = useState('');
       const [msg, setMsg] = useState('');
       const [isErr, setIsErr] = useState(false);
+      const [saving, setSaving] = useState(false);
       useEffect(() => { setPid(t.project_id || ''); setSid(t.student_id || ''); }, [t.project_id, t.student_id]);
       function setR(k, v) { setRatings(Object.assign({}, ratings, { [k]: Number(v) })); }
+      const bump = ratings.rating_skill >=4 ? 10 : ratings.rating_skill===3 ? 5 : 0;
       async function submit() {
-        setMsg(''); setIsErr(false);
+        setMsg(''); setIsErr(false); setSaving(true);
         try {
-          await apiSend('/assessments', props.token, 'POST', Object.assign({ project_id: Number(pid), student_id: Number(sid), comments: comments || undefined }, ratings));
-          props.notify('Penilaian tersimpan (skill mahasiswa ikut terupdate).');
+          const j = await apiSend('/assessments', props.token, 'POST', Object.assign({ project_id: Number(pid), student_id: Number(sid), comments: comments || undefined }, ratings));
+          const bumped = (j.data && j.data.skills_bumped) || [];
+          props.notify('Penilaian tersimpan' + (bumped.length ? ' — skill naik +' + bumped[0].to + ' (bump +' + bump + ')' : ' (skill tidak di-bump)') + '.');
+          if(bumped.length) setMsg('Skill mahasiswa ter-update: ' + bumped.map(b=> 'skill #'+b.skill_id+' ' + b.from + ' → ' + b.to).join(', '));
         } catch (e) { if (e.code === 401) props.onExpire(); else { setMsg(e.message); setIsErr(true); } }
+        finally { setSaving(false); }
       }
       return (
         <div>
-          <PageHead title="Assess" desc="Nilai mahasiswa — syarat: aplikasi accepted + project closed." />
+          <PageHead title="Assess" desc="Nilai mahasiswa — syarat: aplikasi accepted + project closed. Rating skill menentukan bump (+10 bila ≥4, +5 bila 3)." />
           <Msg text={msg} err={isErr} />
+          {t.project_id && t.student_id && <div className="bg-indigo-950/30 border border-indigo-800 rounded-xl px-3 py-2 mb-3 text-sm text-indigo-200">Menilai: project #{t.project_id} · mahasiswa #{t.student_id}</div>}
           <Section title="Form Penilaian">
-            <div className="flex gap-2 mb-2">
-              <input value={pid} onChange={(e) => setPid(e.target.value)} placeholder="project_id" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm w-32" />
-              <input value={sid} onChange={(e) => setSid(e.target.value)} placeholder="student_id" className="rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-1.5 text-sm w-32" />
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div><label className="block text-xs text-slate-400 mb-1">Project ID</label><input value={pid} onChange={(e) => setPid(e.target.value)} placeholder="project_id" className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 text-sm" /></div>
+              <div><label className="block text-xs text-slate-400 mb-1">Mahasiswa ID</label><input value={sid} onChange={(e) => setSid(e.target.value)} placeholder="student_id" className="w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-3 py-2 text-sm" /></div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
               {[['rating_skill', 'Skill'], ['rating_communication', 'Komunikasi'], ['rating_punctuality', 'Ketepatan'], ['rating_overall', 'Overall']].map((f) => (
-                <label key={f[0]} className="text-xs text-slate-400">{f[1]}
-                  <select value={ratings[f[0]]} onChange={(e) => setR(f[0], e.target.value)} className="mt-1 w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-2 py-1.5 text-sm">
-                    {[1, 2, 3, 4, 5].map((v) => <option key={v} value={v}>{v}</option>)}
+                <label key={f[0]} className="text-xs text-slate-400">{f[1]} <span className="text-indigo-400">{ratings[f[0]]}/5</span>
+                  <select value={ratings[f[0]]} onChange={(e) => setR(f[0], e.target.value)} className="mt-1 w-full rounded-lg bg-slate-800 border border-slate-700 text-slate-100 px-2 py-2 text-sm">
+                    {[1, 2, 3, 4, 5].map((v) => <option key={v} value={v}>{v} — {v===5?'Sangat baik':v===4?'Baik':v===3?'Cukup':v===2?'Kurang':'Sangat kurang'}</option>)}
                   </select>
                 </label>
               ))}
             </div>
-            <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Komentar (opsional)" rows="2" className={INP}></textarea>
-            <button onClick={submit} className={BTN}>Kirim Penilaian</button>
+            <div className={'rounded-lg px-3 py-2 mb-3 text-sm border ' + (bump===10 ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : bump===5 ? 'bg-amber-950/30 border-amber-800 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-400')}>
+              Preview skill bump: {bump===0 ? 'Tidak ada kenaikan (rating <3)' : '+' + bump + ' poin pada skill project yang sudah dimiliki (cap 100)'}
+            </div>
+            <label className="block text-xs text-slate-400 mb-1">Komentar (opsional)</label>
+            <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Berikan feedback membangun..." rows="3" className={INP}></textarea>
+            <button onClick={submit} disabled={saving} className={BTN + ' mt-2'}>{saving ? 'Menyimpan...' : 'Kirim Penilaian'}</button>
+            <p className="text-xs text-slate-500 mt-2">Tips: Tutup project terlebih dahulu di <b>My Projects → Edit → status closed</b>, lalu kembali ke Applications untuk menilai.</p>
           </Section>
         </div>
       );
@@ -1103,6 +1254,8 @@
       const [err, setErr] = useState('');
       const [loading, setLoading] = useState(false);
       const [toasts, setToasts] = useState([]);
+      const [lang, setLang] = useState(localStorage.getItem('app_lang') || 'id');
+      function toggleLang(){ const n = lang==='id' ? 'en' : 'id'; setLang(n); localStorage.setItem('app_lang', n); }
 
       function notify(text, isErr) {
         const id = Date.now() + Math.random();
@@ -1157,18 +1310,20 @@
       }
       function goAssess(t) { setAssessTarget(t || {}); navigate('assess'); }
 
-      if (!token || !user) return (<div><LoginView onLogin={onLogin} /><Toasts items={toasts} /></div>);
+      if (!token || !user) return (<div><LoginView onLogin={onLogin} lang={lang} onToggleLang={toggleLang} /><Toasts items={toasts} /></div>);
       const nav = NAV[user.role] || NAV.mahasiswa;
       const canAnalytics = user.role === 'kampus' || user.role === 'dosen';
-      const expire = () => logout('Sesi berakhir, silakan login ulang.');
+      const expire = () => logout(lang==='en' ? 'Session expired, please login again.' : 'Sesi berakhir, silakan login ulang.');
+      const i18nNav = { dash: 'nav_dash', projects: 'nav_projects', skills: 'nav_skills', gap: 'nav_gap', recs: 'nav_recs', myprojects: 'nav_myprojects', applications: 'nav_apps', assess: 'nav_assess', analytics: 'nav_analytics', notifs: 'nav_notifs', profile: 'nav_profile' };
       return (
         <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col md:flex-row">
           <aside className="hidden md:flex w-52 shrink-0 bg-slate-900 border-r border-slate-800 p-4 flex-col">
             <p className="font-bold text-white text-sm mb-1">Talent Hub App</p>
-            <p className="text-xs text-slate-500 mb-4">{user.name} · {user.role}</p>
+            <p className="text-xs text-slate-500 mb-3">{user.name} · {user.role}</p>
+            <button onClick={toggleLang} className="mb-3 text-xs rounded-lg border border-slate-700 hover:border-slate-500 text-slate-300 px-2 py-1 self-start">{lang==='id' ? '🇮🇩 ID' : '🇬🇧 EN'} · {lang==='id' ? 'Ganti ke EN' : 'Switch to ID'}</button>
             {nav.map((n) => (
               <a key={n[0]} href={HASH[n[0]]} onClick={(e) => { e.preventDefault(); navigate(n[0]); }}
-                className={'text-left text-sm rounded-lg px-3 py-2 mb-1 transition ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>{n[1]}</a>
+                className={'text-left text-sm rounded-lg px-3 py-2 mb-1 transition ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800')}>{tr(lang, i18nNav[n[0]] || n[0])}</a>
             ))}
             <div className="flex-1"></div>
             <a href="/" className="text-xs text-slate-500 hover:text-slate-300 px-3 py-1">← Landing</a>
@@ -1179,8 +1334,9 @@
               <span className="text-xs font-bold text-white whitespace-nowrap">Talent Hub</span>
               {nav.map((n) => (
                 <a key={n[0]} href={HASH[n[0]]} onClick={(e) => { e.preventDefault(); navigate(n[0]); }}
-                  className={'text-xs whitespace-nowrap rounded-lg px-2.5 py-1.5 ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'text-slate-300')}>{n[1]}</a>
+                  className={'text-xs whitespace-nowrap rounded-lg px-2.5 py-1.5 ' + (view === n[0] ? 'bg-indigo-600 text-white' : 'text-slate-300')}>{tr(lang, i18nNav[n[0]] || n[0])}</a>
               ))}
+              <button onClick={toggleLang} className="text-xs border border-slate-700 rounded px-2 py-1 text-slate-300">{lang==='id'?'EN':'ID'}</button>
               <button onClick={() => logout()} className="text-xs text-red-400 whitespace-nowrap px-2">Keluar</button>
             </div>
           </div>
@@ -1191,13 +1347,13 @@
             {!loading && data && view === 'dash' && user.role === 'mahasiswa' && <StudentDash data={data} />}
             {!loading && data && view === 'dash' && user.role === 'perusahaan' && <CompanyDash data={data} />}
             {!loading && data && view === 'dash' && (user.role === 'kampus' || user.role === 'dosen') && <CampusDash data={data} />}
-            {view === 'analytics' && canAnalytics && <AnalyticsView token={token} notify={notify} onExpire={expire} />}
-            {view === 'projects' && <ProjectsView token={token} notify={notify} onExpire={expire} />}
-            {view === 'skills' && <SkillsView token={token} notify={notify} onExpire={expire} />}
-            {view === 'gap' && <GapView token={token} user={user} notify={notify} onExpire={expire} />}
-            {view === 'recs' && <RecsView token={token} user={user} notify={notify} onExpire={expire} />}
-            {view === 'myprojects' && <MyProjectsView token={token} notify={notify} onExpire={expire} />}
-            {view === 'applications' && <ApplicationsView token={token} notify={notify} onAssess={goAssess} onExpire={expire} />}
+            {view === 'analytics' && canAnalytics && <AnalyticsView token={token} notify={notify} onExpire={expire} lang={lang} />}
+            {view === 'projects' && <ProjectsView token={token} notify={notify} onExpire={expire} lang={lang} />}
+            {view === 'skills' && <SkillsView token={token} notify={notify} onExpire={expire} lang={lang} />}
+            {view === 'gap' && <GapView token={token} user={user} notify={notify} onExpire={expire} lang={lang} />}
+            {view === 'recs' && <RecsView token={token} user={user} notify={notify} onExpire={expire} lang={lang} />}
+            {view === 'myprojects' && <MyProjectsView token={token} notify={notify} onExpire={expire} lang={lang} />}
+            {view === 'applications' && <ApplicationsView token={token} notify={notify} onAssess={goAssess} onExpire={expire} lang={lang} />}
             {view === 'assess' && user.role === 'dosen' && <MentorView token={token} notify={notify} onAssess={goAssess} onExpire={expire} />}
             {view === 'assess' && user.role === 'perusahaan' && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} />}
             {(assessTarget.project_id && view === 'assess' && user.role === 'dosen') && <AssessView token={token} target={assessTarget} notify={notify} onExpire={expire} />}

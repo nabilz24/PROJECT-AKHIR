@@ -58,15 +58,25 @@ function companyDashboardData(db, userId) {
     const ph = projectIds.map(() => '?').join(',');
     waiting = db
       .prepare(
-        `SELECT a.id AS application_id, a.match_score, a.applied_at, u.name AS student_name, p.judul AS project_judul
+        `SELECT a.id AS application_id, a.match_score, a.project_id, a.student_id, a.applied_at, u.name AS student_name, p.judul AS project_judul
          FROM applications a JOIN users u ON u.id = a.student_id JOIN projects p ON p.id = a.project_id
          WHERE a.project_id IN (${ph}) AND a.status = 'pending' ORDER BY a.applied_at DESC`
       )
       .all(...projectIds);
-    const avg = db
-      .prepare(`SELECT AVG(match_score) AS avg FROM applications WHERE project_id IN (${ph}) AND match_score IS NOT NULL`)
-      .get(...projectIds).avg;
-    avgMatch = avg === null ? null : Math.round(avg * 10) / 10;
+    // Hitung live bila match_score masih null (seed lama / apply sebelum ranking dipanggil)
+    const upd = db.prepare('UPDATE applications SET match_score = ? WHERE id = ?');
+    for (const w of waiting) {
+      if (w.match_score == null) {
+        try {
+          const r = calculateMatchScore(buildInputs(db, w.student_id, w.project_id));
+          w.match_score = r.score;
+          upd.run(r.score, w.application_id);
+        } catch (e) { /* abaikan */ }
+      }
+    }
+    if (waiting.length > 0) waiting.sort((a, b) => (b.match_score ?? -1) - (a.match_score ?? -1) || new Date(a.applied_at) - new Date(b.applied_at));
+    const avg = waiting.length === 0 ? null : waiting.reduce((s, x) => s + (x.match_score ?? 0), 0) / waiting.length;
+    avgMatch = avg == null ? null : Math.round(avg * 10) / 10;
   }
   const allCompanyProjectIds = db.prepare('SELECT id FROM projects WHERE company_id = ? AND deleted_at IS NULL').all(company.id).map((r) => r.id);
   let pendingEvals = [];

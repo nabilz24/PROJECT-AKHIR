@@ -35,14 +35,14 @@ describe('Phase 0 — Repository Foundation Smoke Tests', () => {
   test('All 8 core documentation files exist in root', () => {
     const fs = require('fs');
     const docs = [
-      'PRD.md',
-      'G_DESIGN.md',
-      'DESIGN.md',
-      'TASK.md',
-      'QA.md',
-      'AGENTS.md',
-      'database.md',
-      'api.md'
+      'Doks/PRD.md',
+      'Doks/G_DESIGN.md',
+      'Doks/DESIGN.md',
+      'Doks/TASK.md',
+      'Doks/QA.md',
+      'Doks/AGENTS.md',
+      'Doks/database.md',
+      'Doks/api.md'
     ];
     docs.forEach(doc => {
       expect(fs.existsSync(doc)).toBe(true);
@@ -51,7 +51,7 @@ describe('Phase 0 — Repository Foundation Smoke Tests', () => {
 
   test('TECH_STACK.md exists (9th doc)', () => {
     const fs = require('fs');
-    expect(fs.existsSync('TECH_STACK.md')).toBe(true);
+    expect(fs.existsSync('Doks/TECH_STACK.md')).toBe(true);
   });
 
   test('README.md exists', () => {

@@ -121,9 +121,22 @@ async function seedTestAccounts(db) {
     projectId = Number(r.lastInsertRowid);
     db.prepare('INSERT OR IGNORE INTO project_skills (project_id, skill_id, level_required) VALUES (?, ?, ?)').run(projectId, skillId('React'), 60);
   }
-  const appExists = db.prepare("SELECT id FROM applications WHERE student_id = ? AND project_id = ? AND status IN ('pending', 'accepted')").get(mhs.id, projectId);
+  const appExists = db.prepare("SELECT id, match_score FROM applications WHERE student_id = ? AND project_id = ? AND status IN ('pending', 'accepted')").get(mhs.id, projectId);
   if (!appExists) {
-    db.prepare('INSERT INTO applications (student_id, project_id, status, cover_letter) VALUES (?, ?, ?, ?)').run(mhs.id, projectId, 'pending', 'Halo, saya tertarik (akun testing).');
+    const r = db.prepare('INSERT INTO applications (student_id, project_id, status, cover_letter) VALUES (?, ?, ?, ?)').run(mhs.id, projectId, 'pending', 'Halo, saya tertarik (akun testing).');
+    try {
+      const { calculateMatchScore } = require('../services/matchScore');
+      const { buildInputs } = require('../controllers/matching.controller');
+      const sc = calculateMatchScore(buildInputs(db, mhs.id, projectId)).score;
+      db.prepare('UPDATE applications SET match_score = ? WHERE id = ?').run(sc, r.lastInsertRowid);
+    } catch (e) { /* abaikan */ }
+  } else if (appExists.match_score == null) {
+    try {
+      const { calculateMatchScore } = require('../services/matchScore');
+      const { buildInputs } = require('../controllers/matching.controller');
+      const sc = calculateMatchScore(buildInputs(db, mhs.id, projectId)).score;
+      db.prepare('UPDATE applications SET match_score = ? WHERE id = ?').run(sc, appExists.id);
+    } catch (e) { /* abaikan */ }
   }
   return { testAccounts: TEST_ACCOUNTS.map((a) => a.email) };
 }
